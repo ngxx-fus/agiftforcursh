@@ -3,6 +3,8 @@
 
 #include "Arduino.h"
 
+#define LOG true
+
 template<class Tmsg>
 void msg2ser(Tmsg msg){
 #if defined(LOG) && LOG == true
