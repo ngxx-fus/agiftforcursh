@@ -1,0 +1,4 @@
+SPI
+nkawu/TFT 22 ILI9225@^1.4.5
+adafruit/Adafruit Unified Sensor@^1.1.14
+adafruit/DHT sensor library@^1.4.6
