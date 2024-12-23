@@ -143,8 +143,10 @@ public:
     /// @param w The number of cols (or the width of the image)
     /// @param filled_value The color will be filled in the image 
     /// default is black (0x0).
-    IMAGE(Timage* color_array, uint16_t h = 172, uint16_t w = 220){
-        this->resize(color_array, h, w);
+    IMAGE(  Timage* color_array, uint16_t h = 172, uint16_t w = 220, 
+            uint16_t filled_value = 0x0
+    ){
+        this->resize(color_array, h, w, filled_value);
     };
 
     /// @brief Initialize image from 1d-vector
@@ -202,7 +204,9 @@ public:
         rep(i, 0, h * w - 1) _img.push_back( *(color_array + i) );
     };
 
-
+    void fill(Timage color){
+        for(auto &p:_img) p = color;
+    }
 
     /// @return The height of image
     uint16_t& H(){return _h;}
@@ -265,23 +269,56 @@ public:
     }
 
     /// @brief Assign an image to this image
-    IMAGE<Timage> operator= (IMAGE o){
-        // this->vector_image() = o.vector_image();
+    /// @param o The other image.
+    void assign(IMAGE o){
+        this->vector_image() = o.vector_image();
+        this->H() = o.H();
+        this->W() = o.W();
+    }
+
+    /// @brief Assign an image to this image
+    /// @param o The other image.
+    IMAGE operator= (IMAGE o){
+        this->vector_image() = o.vector_image();
         this->H() = o.H();
         this->W() = o.W();
         return *this;
     }
 
+
+
+    /// @brief compare size of two image
+    /// @param o The other image.
+    bool size_cmp(IMAGE o){
+        if(this->H() != o.H() || this->W() != o.W())
+            return false;
+        return true;
+    }
+
     /// @brief compare two image
+    /// @param o The other image
     bool operator== (IMAGE o){
-        return bool(
-            this->H() == o.H() &&
-            this->W() == o.W()
-        );
+        if(this->H() != o.H() || this->W() != o.W())
+            return false;
+        rept(uint16_t, i, 0, this->H()-1){
+            rept(uint16_t, j, 0, this->W()-1){
+                if(this->vector_image()[i*this->W()+j]!=o.vector_image()[i*this->W()+j])
+                    return false;
+            }
+        }
+        return true;
     }
 
 };
 
+/// >>>>>>>>> some utilities of image processing >>>>>>>>
+uint16_t to_grayscale_565format(uint16_t _565color){
+    return (
+        ((_565color>>11) & 0x1F)*76 + 
+        ((_565color>>5) & 0x3F)*160 + 
+        (_565color & 0x1F)*30
+    )/256.0;
+}
 
 /// >>>>>>>>>>>>>>> definition of canvas >>>>>>>>>>>>>>>>
 
@@ -297,14 +334,12 @@ public:
 template<class Tcanvas = uint16_t>
 class CANVAS{
 private:
-    bool tft_initialized;
-    POINT<uint16_t> point;
+    uint16_t _background_color;
     IMAGE<Tcanvas> _canvas_old;
     IMAGE<Tcanvas> _canvas;
 public:
     /// @brief Initializing a empty CANVAS object
     CANVAS(){
-        
     };
 
     /// @brief Resize a CANVAS object
@@ -313,39 +348,93 @@ public:
     /// @param filled_value The color will be filled in the image 
     void resize(uint16_t h, uint16_t w, Tcanvas filled_value = 0)
     {
-        _canvas_old.resize(h, w, filled_value);
+        _background_color = filled_value;
+        _canvas_old.resize(h, w);
         _canvas.resize(h, w, filled_value);
     }
 
+    /// @brief Resize a CANVAS object
+    /// @param h The number of rows (or the height of the image)
+    /// @param w The number of cols (or the width of the image)
+    /// @param filled_value The color will be filled in the image 
+    void initialize( 
+        uint16_t h, uint16_t w, 
+        uint8_t orientation = 0, Tcanvas filled_value = 0
+    )
+    {
+        tft.begin(orientation, filled_value);
+        _background_color = filled_value;
+        _canvas_old.resize(h, w);
+        _canvas.resize(h, w, filled_value);
+    }
+
+    /// @brief  Restore current canvas to previous canvas
+    /// @param  screen_restore  restore what's shown in screen
+    /// @note   You only can restore 1 show-step.
+    void restore(bool screen_restore = true){
+        if(screen_restore){
+            for(uint16_t r = 0; r < _canvas.H(); ++r){
+                for(uint16_t c = 0; c < _canvas.W(); ++c){
+                    if((_canvas.pixel(r, c) == _canvas_old.pixel(r, c))) 
+                        continue;
+                    else{
+                        tft.drawPixel(c, r, _canvas_old.pixel(r, c));
+                    }
+                }
+            }
+        }
+        _canvas.vector_image()      = _canvas_old.vector_image();
+        _canvas.H()                 = _canvas_old.H();
+        _canvas.W()                 = _canvas_old.W();
+    }
+
     /// @brief Show in screen
+    /// @param store store curent canvas (for undo/restore);
+    /// @param force_show force to show all pixel in canvas
     /// @note  X and y in this header file is different with  x and y in FontGlyph.
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-    void show(){
+    void show(bool store = false, bool force_show = false){
         // msg2ser("_show()");
         for(uint16_t r = 0; r < _canvas.H(); ++r){
             for(uint16_t c = 0; c < _canvas.W(); ++c){
                 // msg2ser("r: ", r, " c: ", c);
-                if(_canvas.pixel(r, c) == _canvas_old.pixel(r, c)) 
+                if(force_show){
+                    tft.drawPixel(c, r, _canvas.pixel(r, c));
+                    continue;
+                }
+                if((_canvas.pixel(r, c) == _canvas_old.pixel(r, c))) 
                     continue;
                 else{
                     tft.drawPixel(c, r, _canvas.pixel(r, c));
-                    // msg2ser("?", _canvas.pixel(r, c));
                 }
             }
         }
-        // _canvas_old = _canvas;
+        if(store){
+            msg2ser("?");
+            _canvas_old.vector_image()      = _canvas.vector_image();
+            _canvas_old.H()                 = _canvas.H();
+            _canvas_old.W()                 = _canvas.W();
+        }
     }
 
-    /// @brief Set pixel at <pos> on screen
-    /// @param pos The position on the screen(unit: pixel) 
-    /// @param color The color of the text (16bit-color) 
-    /// @note  X and y in this header file is different with  x and y in FontGlyph.
-    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
-    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-    void set_pixel(POINT<uint16_t> pos, uint16_t color){
-        _canvas.set_pixel(point, color);
+    /// @brief Clear current canvas
+    /// @param clear_all to clear current canvas and old_canvas
+    void clear(bool clear_all = false){
+        this->_canvas.fill(this->_background_color);
+        if(clear_all)
+            this->_canvas_old.fill(this->_background_color);
     }
+
+    // /// @brief Set pixel at <pos> on screen
+    // /// @param pos The position on the screen(unit: pixel) 
+    // /// @param color The color of the text (16bit-color) 
+    // /// @note  X and y in this header file is different with  x and y in FontGlyph.
+    // /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    // /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
+    // void set_pixel(POINT<uint16_t> pos, uint16_t color){
+    //     _canvas.set_pixel(point, color);
+    // }
 
     /// @return the height of the canvas
     uint16_t H(){
@@ -366,7 +455,7 @@ public:
     /// @note  - X and y in this header file is different with  x and y in FontGlyph.
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-    void insert_text( POINT<uint16_t> pos, String text, uint16_t color = 0xFFFF){
+    void insert_text(POINT<uint16_t> pos, String text, uint16_t color = 0xFFFF){
         /// drawed bits
         uint8_t     dbits;
         /// the bitmap byte of the character in FontBitmap
@@ -423,13 +512,165 @@ public:
         }
     }
 
+    /// @brief Add bitmap image
+    /// @param pos The position on the screen (top-left, unit: pixel) 
+    /// @param color The color of the text (16bit-color) 
+    /// @param bitmap_img The binary image to be inserted to the canvas
+    /// @param W The width of the binary image
+    /// @param H The Height of the binary image
+    /// @param _1bit_color The color will be filled in canvas with 1-bit in bitmap
+    /// @param _0bit_color The color will be filled in canvas with 0-bit in bitmap.
+    /// If _0bit_color, it means no-changed!.
+    /// @note - The image is being inserted from the top-left to bottom-right;
+    /// the current position (left-bottom).
+    /// @note  - X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
+    void insert_bitmap_image(
+        POINT<uint16_t> pos, 
+        const uint8_t* bitmap_img, uint16_t w, uint16_t h, 
+        uint16_t _1bit_color = 0xFFFF, uint16_t _0bit_color = 0x0
+    ){
+        /// Compute the # of bytes per line (row)
+        /// The # of bytes per line = upper_bound(W/8)
+        uint16_t const bytes_per_row = (w/8) + ((w%8)?1:0);
+        /// drawed bits 
+        uint8_t    ins_bits = 0;
+        /// bitmap byte position
+        uint16_t    bm_byte_pos = 0;
+        /// bitmap byte
+        uint8_t     bm_byte = bitmap_img[bm_byte_pos];
+        /// insert position
+        POINT<uint16_t> ins_pos = 0;
+        /// process all pixel in bitmap image
+        rept(uint16_t, r, 0, h-1){
+            /// update X value
+            ins_pos.X() = pos.X() + r;
+            if(this->_canvas.invalid_position(ins_pos)) break;
+            /// reset bit count at new row
+            ins_bits = 0;
+            /// reset byte bitmap position at new row
+            bm_byte_pos = r * bytes_per_row;
+            /// update bitmap byte value
+            bm_byte = bitmap_img[ bm_byte_pos ];
+            /// process the row
+            rept(uint16_t, c, 0, w-1){
+                /// update Y value
+                ins_pos.Y() = pos.Y() + c;
+                if(this->_canvas.invalid_position(ins_pos)) break;
+                /// process each bit
+                if(bm_byte & 0x80){
+                    /// 1-bit
+                    _canvas.pixel(ins_pos) = _1bit_color;
+                }else{
+                    /// 0-bit
+                    if(_0bit_color != 0)
+                        _canvas.pixel(ins_pos) = _0bit_color;
+                }
+                /// inscrease the # of inserted bits
+                ++ins_bits;
+                /// move next byte if has inserted 8 bits
+                if(ins_bits > 0 && ins_bits%8 == 0)
+                    ins_bits == 0,
+                    bm_byte = bitmap_img[++bm_byte_pos];
+                else
+                    /// self shift-left to remove inserted bit
+                    bm_byte <<= 1;
+            }
+        }
+    }
+
+    /// @brief Add 565-color image
+    /// @param pos The position on the canvas (top-left, unit: pixel) 
+    /// @param color The color of the text (16bit-color) 
+    /// @param _565color_img The binary image to be inserted to the canvas
+    /// @param W The width of the binary image
+    /// @param H The Height of the binary image
+    /// @param chromakey TRUE: Enable chromakey
+    /// @param chromakey_color choose the color for chromakey
+    /// @note - The image is being inserted from the top-left to bottom-right;
+    /// the current position (left-bottom).
+    /// @note  - X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
+    void insert_565color_image(
+        POINT<uint16_t> pos, 
+        const uint16_t* _565color_img, 
+        uint16_t w, uint16_t h,
+        bool chromakey = false,
+        uint16_t chromakey_color = 0xFFFF
+    ){
+        /// insert pixel position (in 565-color array)
+        uint16_t inspix_pos = 0;
+        /// insert position
+        POINT<uint16_t> ins_pos = 0;
+
+        /// process all pixel in bitmap image
+        rept(uint16_t, r, 0, h-1){
+            /// update X value
+            ins_pos.X() = pos.X() + r;
+            if(this->_canvas.invalid_position(ins_pos)) break;
+            rept(uint16_t, c, 0, w-1){
+                /// update Y value
+                ins_pos.Y() = pos.Y() + c;
+                if(this->_canvas.invalid_position(ins_pos)) break;
+                /// check chromakey and process
+                if(
+                    chromakey
+                ){
+                    /// skip this pixel
+                    ++inspix_pos;
+                    continue;
+                }
+                /// process each pixel
+                _canvas.pixel(ins_pos) = _565color_img[inspix_pos++];
+            }
+        }
+    }
+
+    /// @brief Add a rectangle to canvas
+    /// @param pos The position on the canvas (top-left, unit: pixel) 
+    /// @param h The width of the rectangle
+    /// @param w The Height of the rectangle
+    /// @param border_color The color of the rectangle border  (16bit-color) 
+    /// @param fill TRUE: filled_color will be filled into the rectangle 
+    /// @param filled_color the color will be filled
+    /// @note - The shape is being inserted from the top-left to bottom-right;
+    /// the current position (left-bottom).
+    /// @note  - X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
+
+    void insert_rectangle(
+        POINT<uint16_t> pos, 
+        uint16_t w, uint16_t h, 
+        uint16_t border_color = 0xFFFF,
+        bool fill = false, 
+        uint16_t filled_color = 0x0
+    ){
+        if(fill == true){
+            /// process all pixel in rectangle
+            rept(uint16_t, r, 1, h-2){
+                rept(uint16_t, c, 1, w-2){
+                    /// process each pixel
+                    _canvas.pixel(pos.X() + r, pos.Y() + c) = filled_color;
+                }
+            }
+        }
+        /// fill the left and right edge
+        rept(uint16_t, r, 0, h-1){
+            _canvas.pixel(pos.X() + r, pos.Y() + 0) = border_color;
+            _canvas.pixel(pos.X() + r, pos.Y() + w-1) = border_color;
+        }
+        /// fill the upper and lower edge
+        rept(uint16_t, c, 0, w-1){
+            _canvas.pixel(pos.X() + 0,      pos.Y() + c) = border_color;
+            _canvas.pixel(pos.X() + h-1,    pos.Y() + c) = border_color;
+        }
+
+}
+
 };
-
-
-/// >>>>>>>>>>>>>>> dmake a canvas object >>>>>>>>>>>>>>>>
-
-
-
 
 
 

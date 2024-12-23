@@ -1,5 +1,4 @@
 .pio/build/esp32doit-devkit-v1/src/main.cpp.o: src/main.cpp \
- src/serial_utils.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/freertos/FreeRTOS.h \
@@ -134,10 +133,11 @@
  /home/msnp/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- src/tft_utils.h src/serial_utils.h \
+ src/serial_utils.h src/tft_utils.h src/serial_utils.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/mod/TFT_22_ILI9225_MOD.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
- .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h
+ .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
+ src/images.h
