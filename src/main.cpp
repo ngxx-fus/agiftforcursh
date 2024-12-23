@@ -12,15 +12,13 @@ void setup(){
 }
 
 void loop(){
-    tft.drawCircle(44, 44, 5, 0x1245);
+    tft.drawCircle(44, 90, 5, 0xFFFF);
 
     msg2ser("H: ", canvas.H());
     msg2ser("W: ", canvas.W());
     canvas.show();
-    canvas.insert_text(POINT<>(60, 4), "Hehehe", 0xFFFF);
-    canvas.insert_text(POINT<>(60, 14), "Hehehe", 0xFFFF);
+    canvas.insert_text(POINT<>(30, 20), "~Hello!#\nHAHA", 0xFFFF);
     canvas.show();
-    msg2ser("_nop()");
+    msg2ser("--nop--");
     while(0x1);
 }
-

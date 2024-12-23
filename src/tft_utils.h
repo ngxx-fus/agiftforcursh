@@ -1,12 +1,10 @@
 #ifndef TFT_UTILS
 #define TFT_UTILS
 
-#include "Arduino.h"
 #include <vector>
+#include <Arduino.h>
 #include <serial_utils.h>
 #include <mod/TFT_22_ILI9225_MOD.h>
-#include <gfxfont.h>
-#include <../fonts/FreeMono9pt7b.h>
 
 using namespace std;
 
@@ -27,8 +25,10 @@ template<class T> using vct = vector<T>;
 #endif
 
 /// >>>>>>>>>>> initializing font properties >>>>>>>>>>>>
-const uint8_t     *FontBitmap = FreeMono9pt7bBitmaps;
-const GFXglyph    *FontGlyph  = FreeMono9pt7bGlyphs;
+/// @note CUSTOM_FONT is a macro defined in <mod/TFT_22_ILI9225_MOD.h>
+
+const uint8_t     *FontBitmap = CUSTOM_FONT.bitmap;
+const GFXglyph    *FontGlyph  = CUSTOM_FONT.glyph;
 
 #ifdef TFT_SCREEN
     /// >>>>>>>>>>>>>> initializing tft object >>>>>>>>>>>>>>
@@ -44,6 +44,9 @@ const GFXglyph    *FontGlyph  = FreeMono9pt7bGlyphs;
 /// >>>>>>>>>>>>>>> definition of POINT >>>>>>>>>>>>>>>>
 
 /// @brief The point class, with add, minus method.
+/// @note  X and y in this header file is different with  x and y in FontGlyph and 
+/// tft screen. While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+/// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
 template<class Tpoint = uint16_t>
 class POINT{
     Tpoint x, y;
@@ -105,6 +108,12 @@ public:
 
 
 /// >>>>>>>>>>>>>>> definition of IMAGE >>>>>>>>>>>>>>>>
+/// @brief IMAEG class to provides some method to process the image
+/// (non-parallel computing). The image in this class is stored in
+/// a vector image.
+/// @note  X and y in this header file is different with  x and y in FontGlyph and 
+/// tft screen. While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+/// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
 template<class Timage>
 class IMAGE{
 private:
@@ -257,13 +266,13 @@ public:
 
     /// @brief Assign an image to this image
     IMAGE<Timage> operator= (IMAGE o){
-        this->vector_image() = o.vector_image();
+        // this->vector_image() = o.vector_image();
         this->H() = o.H();
         this->W() = o.W();
-        return o;        
+        return *this;
     }
 
-    /// @brief Assign an image to this image
+    /// @brief compare two image
     bool operator== (IMAGE o){
         return bool(
             this->H() == o.H() &&
@@ -281,6 +290,10 @@ public:
 
 /// @brief A canvas and some methods
 /// @tparam Tcanvas typef of canvasm default is uint16_t
+/// @note  X and y in this header file is different with  x and y in FontGlyph
+/// and tft-screen.
+/// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+/// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
 template<class Tcanvas = uint16_t>
 class CANVAS{
 private:
@@ -305,6 +318,9 @@ public:
     }
 
     /// @brief Show in screen
+    /// @note  X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
     void show(){
         // msg2ser("_show()");
         for(uint16_t r = 0; r < _canvas.H(); ++r){
@@ -313,8 +329,8 @@ public:
                 if(_canvas.pixel(r, c) == _canvas_old.pixel(r, c)) 
                     continue;
                 else{
-                    tft.drawPixel(r, c, _canvas.pixel(r, c));
-                    msg2ser("?", _canvas.pixel(r, c));
+                    tft.drawPixel(c, r, _canvas.pixel(r, c));
+                    // msg2ser("?", _canvas.pixel(r, c));
                 }
             }
         }
@@ -324,6 +340,9 @@ public:
     /// @brief Set pixel at <pos> on screen
     /// @param pos The position on the screen(unit: pixel) 
     /// @param color The color of the text (16bit-color) 
+    /// @note  X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
     void set_pixel(POINT<uint16_t> pos, uint16_t color){
         _canvas.set_pixel(point, color);
     }
@@ -339,9 +358,14 @@ public:
     }
 
     /// @brief Add text
-    /// @param pos The position on the screen(unit: pixel) 
+    /// @param pos The position on the screen (bottom-left, unit: pixel) 
     /// @param text The text to be inserted. 
     /// @param color The color of the text (16bit-color) 
+    /// @note - The text is being inserted from the top-left to bottom-right;
+    /// the current position (left-bottom).
+    /// @note  - X and y in this header file is different with  x and y in FontGlyph.
+    /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
+    /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
     void insert_text( POINT<uint16_t> pos, String text, uint16_t color = 0xFFFF){
         /// drawed bits
         uint8_t     dbits;
@@ -353,12 +377,15 @@ public:
         uint16_t    char_index;
 
         /// draw pointer (the index of draw-point in canvas, 
-        /// it starts from UL corner of the canvas)
+        /// it starts from UL (current position) corner of the canvas)
         POINT<uint16_t> draw_pos;
         /// process each character in ``text``
         rept(uint8_t, i, 0, text.length()-1){
             /// get the oder of character in FontGlyph 
-            char_index = text.charAt(i) - ' ';
+            if(text.charAt(i) > '~' || text.charAt(i) < ' ')
+                char_index = '?' - ' ';
+            else
+                char_index = text.charAt(i) - ' ';
             /// reset dbits to ZERO
             dbits  = 0;
             /// get bm_byte_pos 
@@ -367,29 +394,30 @@ public:
             bm_byte = FontBitmap[bm_byte_pos];
 
             /// Place character in canvas
-            rept(uint16_t, r, 0, FontGlyph[char_index].height){
-                rept(uint16_t, c, 0, FontGlyph[char_index].width){
+            rept(uint16_t, r, 0, FontGlyph[char_index].height-1){
+                rept(uint16_t, c, 0, FontGlyph[char_index].width-1){
                     /// update draw-pos
-                    draw_pos.X() = pos.X() + FontGlyph[char_index].xOffset + r;  
+                    draw_pos.X() = pos.X() + FontGlyph[char_index].yOffset + r;
                     draw_pos.Y() = pos.Y() + FontGlyph[char_index].xOffset + c;  
-                    /// if the pixel is not 
+                    /// if the pixel is display (bit displayed is not 0-bit) 
                     if( (bm_byte & 0x80) != 0 ){
                         _canvas.pixel(draw_pos) = color;
-                        ++dbits;
                     }
-
-                    if(dbits > 0 && dbits == 8){
-                        // after shifted-left 8bits, move to next byte!
-                        ++bm_byte_pos;
+                    /// increase the drawed bit
+                    ++dbits;
+                    /// next byte or bit?
+                    if(dbits > 0 && dbits%8 == 0){
+                        //// after shifted-left 8bits, move to next byte!
+                        bm_byte = FontBitmap[++bm_byte_pos];
+                        dbits = 0;
                     }else{
-                        /// shift-left to removed drawed bit
+                        /// self shift-left to removed drawed bit
                         (bm_byte) <<= 1;
                     }
                 }
             }
-
             /// move pointer to next position (for new character)
-            pos.X() += FontGlyph[char_index].xAdvance;
+            pos.Y() += FontGlyph[char_index].xAdvance;
             /// out of canvas :v
             if(_canvas.invalid_position(pos)) break;
         }
