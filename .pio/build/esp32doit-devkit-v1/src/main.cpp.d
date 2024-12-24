@@ -133,8 +133,9 @@
  /home/msnp/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- src/controller_utils.h src/serial_utils.h src/tft_utils.h \
- src/serial_utils.h \
+ src/controller_utils.h src/serial_utils.h src/sensor_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
+ src/wifi_utils.h src/tft_utils.h src/serial_utils.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/mod/TFT_22_ILI9225_MOD.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \

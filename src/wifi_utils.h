@@ -1,243 +1,382 @@
-#ifndef WIFI_UTILS_H
-#define WIFI_UTILS_H
-
-#include "Arduino.h"
-#include "WiFi.h"
-#include "console_utils.h"
 #include "controller_utils.h"
+#include "serial_utils.h"
+#include "tft_utils.h"
+#include "images.h"
+#include "WiFi.h"
 
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-template<class T> using vct = vector<T>;
-#ifndef rep
-#define rep(i,a,b) for(int i = (a); i <= (b); ++i)
-#endif
-#ifndef rev
-#define rev(i,a,b) for(int i = (b); i >= (a); --i)
-#endif
-
-class ACCESS_POINT{
-private:
-    /// @brief Service Set Identifier (Name of the Wi-Fi)
-    String _ssid;
-
-    /// @brief Password of the Wi-Fi 
-    String _password;
-
-    /// @brief Received Signal Strength Indicator (unit: dBm)
-    uint8_t _rssi;
-
-    /// @brief Encryption
-    uint8_t _encryption;
-
-public:
-
-    /// @brief Initializing a ACCESS_POINT object.
-    /// @param SSID     Service Set Identifier (Name of the Wi-Fi)
-    /// @param PASSWD   Password of the Wi-Fi
-    /// @param RSSI     Received Signal Strength Indicator of the Wi-Fi(unit: dBm)
-    /// @param ENCRYPT  Encryption of the Wi-Fi
-    ACCESS_POINT(String SSID = "", String PASSWD = "", uint8_t RSSI = 254, uint8_t ENCRYPT = true){
-        _ssid = SSID, _password = PASSWD, _rssi = RSSI, _encryption = ENCRYPT;
-    }
-
-    /// @return SSID of the Wi-Fi
-    String& SSID(){return _ssid;}
-
-    /// @return Password of the Wi-Fi
-    String& Password(){return _password;}
-
-    /// @return RSSI of the Wi-Fi
-    uint8_t& RSSI(){return _rssi;}
-
-    /// @return Encryption of the Wi-Fi (0- Openned AP).
-    /// @note Encryption type is defined in <enum wl_enc_type> 
-    uint8_t& Encryption(){return _encryption;}
-
-    /// @brief Compare two ACCESS_POINT based on RSSI.
-    bool operator <= (ACCESS_POINT o){
-        if(RSSI() == o.RSSI()){
-            return SSID() < o.SSID();
-        }
-        return RSSI() < o.RSSI();
-    }
-
-    /// @brief Compare two ACCESS_POINT based on RSSI.
-    ACCESS_POINT operator = (ACCESS_POINT o){
-        SSID() = o.SSID(); RSSI() = o.RSSI();
-        Password() = o.Password(); Encryption() = o.Encryption();
-        return o;
-    }
-
+const char keyboard[6][12] PROGMEM = {
+    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+'},
+    {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']'},
+    {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\"','\''},
+    {'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', ';', '/','\\'},
+    {'`', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(',')'},
+    {'{', '}', '|', '?', '<', '>', '_', '=', ' ', ' ', ' ', ' '}
 };
 
-/// @brief access point list
-vct<ACCESS_POINT> ap_list;
+uint8_t wifi_connect(uint8_t wifi_i = 0){
+    /// Position
+    uint8_t pw_box0 = 40, wifi_icon = 50, btn0 = 190, 
+            btn1 = btn0 + 30, net0 = 2, box_row, box_col, box_w, box_h,
+            keyboard_row0 = 90, keyboard_row1 = 108, keyboard_row2 = 126,
+            keyboard_row3 = 144, keyboard_row4 = 162, keyboard_row5 = 180;
+    uint8_t wf_ss_level = 0;
+    uint8_t sel = 0, prev_sel = 0xFF;
+    uint8_t sel_c = 0, prev_sel_c = 0xFF;
+    uint caps_lock = false;
+    String PASSWORD = "password";
+    start_draw_wifi_connect:
+    /// Clear canvas
+    canvas.clear();
+    /// Show WiFi SSID
+    if(WiFi.RSSI(wifi_i) >= -30) wf_ss_level = 0;
+    else if(WiFi.RSSI(wifi_i) >= -67) wf_ss_level = 1;
+    else if(WiFi.RSSI(wifi_i) >= -70) wf_ss_level = 2;
+    else wf_ss_level = 3;
+    canvas.insert_rectangle(POINT<>(net0-1, 1), 170, 27, 0x0, true, 0x08ab);
+    canvas.insert_bitmap_image(POINT<>(net0+2, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0xfecd);
+    canvas.insert_text(POINT<>(net0+18, 28), WiFi.SSID(wifi_i), 0xfecd);
+    /// Re-scan & Skip button
+    canvas.insert_bitmap_image(POINT<>(btn0, 15), _64x27_rounded_rectangle, 64, 27, 0xf2b2);
+    canvas.insert_text(POINT<>(btn0+18, 29), "Exit", 0xFFFF);
+    canvas.insert_bitmap_image(POINT<>(btn0, 93), _64x27_rounded_rectangle, 64, 27, 0x3d3b);
+    canvas.insert_text(POINT<>(btn0+18, 108), "Next", 0xFFFF);
+    /// Show password box 
+    canvas.insert_rectangle(POINT<>(pw_box0, 1), 170, 32, 0x8430);
+    canvas.insert_line(POINT<>(pw_box0, 10), POINT<>(pw_box0, 10+80), 0xFFFF);
+    canvas.insert_bitmap_image(POINT<>(pw_box0+9, 140), _22x15_delete_icon, 22, 15, 0x5aeb);
+    canvas.insert_text(POINT<>(pw_box0+3, 15), "password", 0x4a49);
+    /// show keyboard
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row0, 5 + c * 14), String(keyboard[0][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row1, 5 + c * 14), String(keyboard[1][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row2, 5 + c * 14), String(keyboard[2][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row3, 5 + c * 14), String(keyboard[3][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row4, 5 + c * 14), String(keyboard[4][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row5, 5 + c * 14), String(keyboard[5][c]), 0x5aeb);
+    canvas.insert_bitmap_image(POINT<>(keyboard_row5-10, 150), _10x13_capslock_icon, 10, 13, 0x5aeb);
 
-/// @brief Scan networks
-/// @param networks_lim Limit of # networks
-/// @return True: found some networks, false: not found any network!
-bool wifi_scan(uint8_t networks_lim = 7){
-    console_push_msg("Scanning Wi-Fi..."); console_show();
-    int8_t networks = WiFi.scanNetworks();
-    console_push_msg(
-        String("Scaned. Found " ) + 
-        String(networks) + 
-        String(" nets!")
-    ); console_show();
-    if( ap_list.empty() )
-        ap_list.resize(networks_lim);
-    if( networks < ap_list.size())
-        ap_list.resize(networks);
-    if(networks < 1 || ap_list.empty()) return false;
-    uint8_t i = 0;
-    for(ACCESS_POINT &ap:ap_list){
-        ap.SSID() = WiFi.SSID(i);
-        ap.RSSI() = WiFi.RSSI(i);
-        ap.Encryption() = WiFi.encryptionType(i);
-        if(++i == networks_lim) break;
-    }
-    sort(ap_list.begin(), ap_list.end(), [](ACCESS_POINT  ap0, ACCESS_POINT  ap1){
-        if(ap0.RSSI() == ap1.RSSI()){
-            return ap0.SSID() > ap1.SSID();
-        }
-        return ap0.RSSI() > ap1.RSSI();
-    });
-    return true;
-}
+    /// show all
+    canvas.show(true, true);
+    while(0x1){
+        /// show select box and password
+        if(sel != prev_sel || sel_c != prev_sel_c){
+            canvas.restore();
+            canvas.insert_text(POINT<>(pw_box0+18, 4), PASSWORD, (caps_lock)?0xfc07:0x0088);
 
-void wifi_show_net_list(){
-    console_push_msg("Networks:"); console_show();
-    for(int8_t i = 1; i <= ap_list.size(); ++i){
-        console_push_msg(
-            String(i) + String(" ")
-            + String(ap_list[i-1].SSID()) 
-            + String((ap_list[i-1].Encryption())?"*":"")
-        );
-    }
-}
-
-bool wifi_connect(ACCESS_POINT ap){
-    if(ap.SSID().isEmpty()) {
-        return false;
-    }
-
-    console_clear();
-    /*0*/console_push_msg(String("ESP --> ") + ap.SSID());
-    console_show();
-
-    if(ap.Encryption() == 0){
-        WiFi.begin(ap.SSID(), "");
-        
-        for(int8_t i = 5; i >= 0; --i){
-            if(WiFi.status() == WL_CONNECTED){
-                console_push_msg(String("Connected!"));
-                console_show();
+            switch (sel){
+                case 0: box_row = pw_box0+7; break;
+                case 1: box_row = keyboard_row0-14; break;
+                case 2: box_row = keyboard_row1-14; break;
+                case 3: box_row = keyboard_row2-14; break;
+                case 4: box_row = keyboard_row3-14; break;
+                case 5: box_row = keyboard_row4-14; break;
+                case 6: box_row = keyboard_row5-14; break;
+                case 7: box_row = btn0 - 1; break;
             }
-            if(i ==  0) return false;
-            console_push_msg(String("Failed! Re-try...!"));
-            console_show();
-            delay(1000);
-        }
-    }
-
-    /*1*/console_push_msg("Enter password for");
-    /*2*/console_push_msg(
-        String(" <") 
-        + ap.SSID()
-        + String("> :")
-    );
-    console_show();
-
-    bool reload_view = true;
-    char selected_char = 32;
-    int8_t selected_line = 4;
-
-    /*3*/console_push_msg(ap.Password());
-    /*4*/console_push_msg(
-        String("[>]  Enter [") 
-        + String(selected_char) 
-        + String("]")
-    ); 
-    /*5*/console_push_msg("[<]  Delete");
-    /*6*/console_push_msg("[v]  Connect ");
-    /*7*/console_push_msg("[x]  Cancel  ");
-    console_show();
-    while(1){
-        if(reload_view){
-            reload_view = false;
-            /*3*/console_set_line(3, ap.Password());
-            /*4*/console_set_line( 4,
-                String("[>]  Enter [") 
-                + String(selected_char) 
-                + String("]")
-            ); 
-            /*5*/console_set_line(5, "[<]  Delete");
-            /*6*/console_set_line(6, "[v]  Connect ");
-            /*7*/console_set_line(7, "[x]  Cancel  ");
-            line_ptr = 7;
-            console_show(false, selected_line);
-        }
-
-        if(selected_line == 4){
-            if( in_range(y_adc_value(), 0, 30) ) {
-                (selected_char>32)
-                ?(--selected_char):(selected_char=126);
-                reload_view = true;
+            if(sel == 0) {box_col = 137, box_w = 28, box_h = 20;}
+            if(sel >= 1 && sel <= 5){
+                box_col = 5 + sel_c * 14, box_w = 10, box_h = 20;
             }
-            if( in_range(y_adc_value(), 230, 255) ) {
-                (selected_char<126)
-                ?(++selected_char):(selected_char=32);
-                reload_view = true;
-            }
-        }
-        if( in_range(x_adc_value(), 230, 255) ){
-            (selected_line < 7)
-            ? (++selected_line)
-            : (selected_line = 4);
-            reload_view = true;
-        }
-        if( in_range(x_adc_value(), 0, 30) ) {
-            (selected_line > 4)
-            ? (--selected_line)
-            : (selected_line = 7);
-            reload_view = true;
-        }
-        if( sw_value() == 0){
-            switch (selected_line)
-            {
-            case 4:
-                ap.Password() += selected_char; break;
-            case 5:
-                ap.Password().remove(ap.Password().length()-1); break;
-            case 6:
-                WiFi.begin(ap.SSID(), ap.Password());
-                for(int8_t i = 5; i >= 0; --i){
-                    delay(1000);
-                    if(WiFi.status() == WL_CONNECTED){
-                        console_push_msg(String("Connected!"));
-                        console_show();
-                        return true;
-                    }
-                    if(i ==  0) return false;
-                    console_push_msg(String("Failed! Re-try...!"));
-                    console_show();
+            if(sel == 6){
+                if(sel_c <= 8){
+                    box_col = 5 + sel_c * 14, box_w = 10, box_h = 20;
+                }else{
+                    box_row += 2;
+                    box_col = 148, box_w = 14, box_h = 17;
                 }
-                return false;
-            case 7:
-                return false;
             }
-            reload_view = true;
+            if(sel == 7){
+                if(sel_c == 0){
+                    box_col = 14, box_w = 66, box_h = 29;
+                }
+                if(sel_c == 1){
+                    box_col = 92, box_w = 66, box_h = 29;
+                }
+            }
+            canvas.insert_rectangle(POINT<>(box_row, box_col), box_w, box_h, 0xe248);
+            canvas.show();
+            prev_sel = sel, prev_sel_c = sel_c;
+        }
+        /// control
+        if(in_range(x_adc_value(), 0, 30)){
+            sel = (sel+7)%8;
+            while(in_range(x_adc_value(), 0, 30));
+        }
+        if(in_range(x_adc_value(), 200, 255)){
+            sel = (sel+1)%8;
+            if(sel == 7) sel_c = 0;
+            while(in_range(x_adc_value(), 200, 255));
+        }
+        if(sel > 0 && in_range(y_adc_value(), 0, 30)){
+            if(sel == 7)
+                sel_c = (sel_c+1)%2;
+            else if(sel == 6)
+                sel_c = (sel_c+9)%10;
+            else
+                sel_c = (sel_c+11)%12;
+            while(in_range(y_adc_value(), 0, 30));
+        }
+        if(sel > 0 && in_range(y_adc_value(), 200, 255)){
+            if(sel == 7)
+                sel_c = (sel_c+1)%2;
+            else if(sel == 6)
+                sel_c = (sel_c+1)%10;
+            else
+                sel_c = (sel_c+1)%12;
+            while(in_range(y_adc_value(), 200, 255));
+        }
+        /// process when sw is pressed
+        while(sw_value() == LOW){
+            if( sel == 0 && !PASSWORD.isEmpty()){
+                PASSWORD.remove(PASSWORD.length()-1);
+                prev_sel = ~sel; /// for reload screen :v
+            }
+            if( sel == 7 && sel_c == 0) return 0x1; 
+            if( sel == 7 && sel_c == 1){
+                canvas.clear(true);
+                /// Show WiFi SSID
+                if(WiFi.RSSI(wifi_i) >= -30) wf_ss_level = 0;
+                else if(WiFi.RSSI(wifi_i) >= -67) wf_ss_level = 1;
+                else if(WiFi.RSSI(wifi_i) >= -70) wf_ss_level = 2;
+                else wf_ss_level = 3;
+                canvas.insert_rectangle(POINT<>(net0-1, 1), 170, 27, 0x0, true, 0x08ab);
+                canvas.insert_bitmap_image(POINT<>(net0+2, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0xfecd);
+                canvas.insert_text(POINT<>(net0+18, 28), WiFi.SSID(wifi_i), 0xfecd);
+                canvas.show(true, true);
+                /// Connect to Wi-Fi
+                WiFi.begin(WiFi.SSID(wifi_i), PASSWORD);
+                /// Wait for Wi-Fi util connect
+                uint8_t connecting_row = net0+40;
+                do{
+                    canvas.insert_text(POINT<>(connecting_row, 5), "Connecting...", 0x90dc);
+                    connecting_row += 18;
+                    canvas.show();
+                    delay(1000);
+                }while(connecting_row < 200 && WiFi.status() != WL_CONNECTED);
+                /// Return 
+                if(WiFi.status() == WL_CONNECTED){ 
+                    canvas.restore();
+                    canvas.insert_text(POINT<>(connecting_row, 5), "Connected!", 0x0407);
+                    canvas.show();
+                    delay(1000);
+                    return 0x0; // connect successfull
+                }
+                canvas.restore();
+                canvas.insert_text(POINT<>(connecting_row, 5), "Return to Wi-Fi scan...", 0xe843);
+                canvas.show();
+                delay(1000);
+                return 0x2; // failed to connect wifi
+            }
+            if( 1 <= sel && sel <=5 ){
+                PASSWORD += String(char(
+                    (caps_lock==true && 
+                    'a' <= keyboard[sel-1][sel_c] && 
+                    keyboard[sel-1][sel_c] <= 'z')
+                    ?(keyboard[sel-1][sel_c] - ('z'-'Z'))
+                    :keyboard[sel-1][sel_c]
+                ));
+                prev_sel = ~sel; /// for refresh screen :v
+            }
+            if( sel == 6 && sel_c < 9 ){
+                PASSWORD += String(char(
+                    (caps_lock==true && 
+                    'a' <= keyboard[sel-1][sel_c] && 
+                    keyboard[sel-1][sel_c] <= 'z')
+                    ?(keyboard[sel-1][sel_c] - ('z'-'Z'))
+                    :keyboard[sel-1][sel_c]
+                ));
+            }
+            if( sel == 6 && sel_c == 9 ){
+                caps_lock = !caps_lock;
+                prev_sel = sel; /// for reload screen :v
+            }
+            while(sw_value() == LOW);
+        }
+
+    } 
+    
+    
+    /// pause for debug
+    while(0x1);
+
+    /// normal connected to network
+    return 0x0;
+}
+
+void wifi_setup(){
+    uint8_t text0 = 1, wifi_icon = 50, btn0 = 130, btn1 = btn0 + 30,
+            net0 = 0, net1 = 0, net2 = 0, net3 = 0, net4 = 0;
+    uint8_t sel = false, prev_sel = true;
+    uint8_t wf_ss_level = 0;
+    canvas.restore();
+    canvas.clear(true);
+
+    /// Show skip or scan question?
+    canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x0, true, 0xf7be);
+    canvas.insert_text(POINT<>(text0+18, 35), "Set-up Wi-Fi?", 0x2945);
+    /// WiFi Icon
+    canvas.insert_bitmap_image(POINT<>(wifi_icon, 50), wifi_icon70x53, 70, 53, 0x0964);
+    /// WiFi btn0
+    canvas.insert_bitmap_image(POINT<>(btn0, 26), _119x27_rounded_rectangle, 119, 27, 0x3d3b);
+    canvas.insert_text(POINT<>(btn0+18, 56), "Scan [>]", 0xFFFF);
+    /// WiFi btn1
+    canvas.insert_bitmap_image(POINT<>(btn1, 26), _119x27_rounded_rectangle, 119, 27, 0xf2b2);
+    canvas.insert_text(POINT<>(btn1+18, 56), "Skip [>]", 0xFFFF);
+    /// Show
+    canvas.show(true);
+
+    while(0x1){
+        if(sel != prev_sel){
+            canvas.restore();
+            if(sel == 0)
+                canvas.insert_rectangle(POINT<>(btn0, 26) - POINT<>(1,2), 121, 29, 0x630c);
+            else
+                canvas.insert_rectangle(POINT<>(btn1, 26) - POINT<>(1,2), 121, 29, 0x630c);
+            canvas.show();
+            prev_sel = sel;
+        }
+        if(in_range(x_adc_value(), 0, 30)){
+            sel = (sel)?0:1;
+            while(in_range(x_adc_value(), 0, 30));
+        }
+
+        if(in_range(x_adc_value(), 200, 255)){
+            sel = (sel)?0:1;
+            while(in_range(x_adc_value(), 200, 255));
+        }
+
+        if(sw_value() == LOW){
+            if(sel == 1) 
+                return;
+            else
+                break;
+            while(sw_value() == LOW);
         }
     }
-    return true;
-}
+    prev_sel = ~sel;
+    /// move btn0 and 1
+    btn0 += 30; btn1 += 30;
+    while(0x1){
+        start_wifi_scanning:
+        canvas.restore();
+        canvas.clear();
+        canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x0, true, 0xf7be);
+        canvas.insert_text(POINT<>(text0+18, 21), "Scanning Wi-Fi...", 0x2945);
+        canvas.show();
 
-/// @brief Initializing wifi with STA mode.
-void wifi_init(){
-    WiFi.mode(WIFI_STA);
-}
+        uint8_t nets =  WiFi.scanNetworks();
+    
+        canvas.restore();
+        canvas.clear();
+        canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x08ab, true, 0x08ab);
+        canvas.insert_text(POINT<>(text0+18, 17), "Available Wi-Fi(s)", 0xFFFF);
+        /// select net0
+        sel = 0;
+        /// move net[0->4]
+        net0 = 32, net1 = net0 + 26, net2 = net1 + 26, net3 = net2 + 26, net4 = net3 + 26;
+        /// net 0
+        if(nets > 0){
+            if(WiFi.RSSI(0) >= -30) wf_ss_level = 0;
+            else if(WiFi.RSSI(0) >= -67) wf_ss_level = 1;
+            else if(WiFi.RSSI(0) >= -70) wf_ss_level = 2;
+            else wf_ss_level = 3;
+            canvas.insert_bitmap_image(POINT<>(net0, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0x1087);
+            canvas.insert_text(POINT<>(net0+15, 28), WiFi.SSID(0), 0x1087);
+        }
+        /// net 1
+        if(nets > 1){
+            if(WiFi.RSSI(1) >= -30) wf_ss_level = 0;
+            else if(WiFi.RSSI(1) >= -67) wf_ss_level = 1;
+            else if(WiFi.RSSI(1) >= -70) wf_ss_level = 2;
+            else wf_ss_level = 3;
+            canvas.insert_bitmap_image(POINT<>(net1, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0x1087);
+            canvas.insert_text(POINT<>(net1+15, 28), WiFi.SSID(1), 0x1087);
+        }
+        /// net 2
+        if(nets > 2){
+            if(WiFi.RSSI(2) >= -30) wf_ss_level = 0;
+            else if(WiFi.RSSI(2) >= -67) wf_ss_level = 1;
+            else if(WiFi.RSSI(2) >= -70) wf_ss_level = 2;
+            else wf_ss_level = 3;
+            canvas.insert_bitmap_image(POINT<>(net2, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0x1087);
+            canvas.insert_text(POINT<>(net2+15, 28), WiFi.SSID(2), 0x1087);
+        }
+        /// net 3
+        if(nets > 3){
+            if(WiFi.RSSI(3) >= -30) wf_ss_level = 0;
+            else if(WiFi.RSSI(3) >= -67) wf_ss_level = 1;
+            else if(WiFi.RSSI(3) >= -70) wf_ss_level = 2;
+            else wf_ss_level = 3;
+            canvas.insert_bitmap_image(POINT<>(net3, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0x1087);
+            canvas.insert_text(POINT<>(net3+15, 28), WiFi.SSID(3), 0x1087);
+        }
+        /// net 4
+        if(nets > 4 ){
+            if(WiFi.RSSI(4) >= -30) wf_ss_level = 0;
+            else if(WiFi.RSSI(4) >= -67) wf_ss_level = 1;
+            else if(WiFi.RSSI(4) >= -70) wf_ss_level = 2;
+            else wf_ss_level = 3;
+            canvas.insert_bitmap_image(POINT<>(net4, 3), sign_wifi_icon[wf_ss_level], 23, 17, 0x1087);
+            canvas.insert_text(POINT<>(net4+15, 28), WiFi.SSID(4), 0x1087);
+        }
+        /// rescan button
+        canvas.insert_bitmap_image(POINT<>(btn0, 26), _119x27_rounded_rectangle, 119, 27, 0x3d3b);
+        canvas.insert_text(POINT<>(btn0+18, 41), "Re-scan [>]", 0xFFFF);
+        /// skip button
+        canvas.insert_bitmap_image(POINT<>(btn1, 26), _119x27_rounded_rectangle, 119, 27, 0xf2b2);
+        canvas.insert_text(POINT<>(btn1+18, 41), "Skip      [>]", 0xFFFF);
+        canvas.show(true);
+        
+        uint8_t sel_row = 0;
+        while(0x1){
+            switch (sel){
+                case 0: sel_row = net0; break;
+                case 1: sel_row = net1; break;
+                case 2: sel_row = net2; break;
+                case 3: sel_row = net3; break;
+                case 4: sel_row = net4; break;
+                
+                case 5: sel_row = btn0; break;
+                case 6: sel_row = btn1; break;
+            }
+            if(prev_sel != sel){
+                canvas.restore();
+                if(sel < 5)
+                    canvas.insert_rectangle(POINT<>(sel_row-2, 1), 170, 25, 0xfaeb);
+                else
+                    canvas.insert_rectangle(POINT<>(sel_row-1, 24), 121, 29, 0x12ca);
+                canvas.show();
+                prev_sel = sel;
+            }
+            if(in_range(x_adc_value(), 0, 30)){
+                sel = (sel+6)%7;
+                while(in_range(x_adc_value(), 0, 30));
+            }
 
-#endif
+            if(in_range(x_adc_value(), 200, 255)){
+                sel = (sel+1)%7;
+                while(in_range(x_adc_value(), 200, 255));
+            }
+
+            if(sw_value() == LOW){
+                if(sel == 5) goto start_wifi_scanning;
+                if(sel == 6) return;
+                if(sel < 5){
+                    uint8_t return_code =  wifi_connect(sel);
+                    switch (return_code){
+                        case 0: return;
+                        case 1: goto start_wifi_scanning;
+                        case 2: goto start_wifi_scanning; /// failed to connect to Wi-Fi
+                    };
+                    return;
+                }
+                while(sw_value() == LOW);
+            }
+        }
+    }
+}

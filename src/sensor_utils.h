@@ -1,8 +1,6 @@
 #ifndef SENSOR_UTILS
 #define SENSOR_UTILS
 
-
-
 #define DHT_PIN 16
 #define DHT_TYPE DHT11
 #include <DHT.h>

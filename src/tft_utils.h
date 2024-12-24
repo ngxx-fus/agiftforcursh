@@ -2,6 +2,7 @@
 #define TFT_UTILS
 
 #include <vector>
+#include <algorithm>
 #include <Arduino.h>
 #include <serial_utils.h>
 #include <mod/TFT_22_ILI9225_MOD.h>
@@ -103,6 +104,19 @@ public:
         this->X() - another.X(),
         this->Y() - another.Y()
         );
+    }
+
+    void swap(POINT<Tpoint> &another){
+        Tpoint tmpX, tmpY;
+        
+        tmpX = this->X();
+        tmpY = this->Y();
+        
+        this->X() = another.X();
+        this->Y() = another.Y();
+
+        another.X() = tmpX;
+        another.Y() = tmpY;
     }
 };
 
@@ -372,7 +386,7 @@ public:
     /// @param  screen_restore  restore what's shown in screen
     /// @note   You only can restore 1 show-step.
     /// @note   Delay only applied to tft.
-    void restore(bool screen_restore = true, uint16_t delay_t = 0){
+    void restore(bool screen_restore = true){
         if(screen_restore){
             for(uint16_t r = 0; r < _canvas.H(); ++r){
                 for(uint16_t c = 0; c < _canvas.W(); ++c){
@@ -426,6 +440,12 @@ public:
             this->_canvas_old.fill(this->_background_color);
     }
 
+    void refill(uint16_t filled_color){
+        for(auto &p:_canvas.vector_image()) p = filled_color;
+        for(auto &p:_canvas_old.vector_image()) p = filled_color;
+    }
+
+
     // /// @brief Set pixel at <pos> on screen
     // /// @param pos The position on the screen(unit: pixel) 
     // /// @param color The color of the text (16bit-color) 
@@ -456,6 +476,8 @@ public:
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
     void insert_text(POINT<uint16_t> pos, String text, uint16_t color = 0xFFFF){
+        /// nothin' to insert
+        if(text.isEmpty()) return;
         /// drawed bits
         uint8_t     dbits;
         /// the bitmap byte of the character in FontBitmap
@@ -637,19 +659,21 @@ public:
     /// @param w The Height of the rectangle
     /// @param border_color The color of the rectangle border  (16bit-color) 
     /// @param fill TRUE: filled_color will be filled into the rectangle 
-    /// @param filled_color the color will be filled
+    /// @param filled_color The color will be filled
+    /// @param border_select Select the border will be drawed.
+    /// NOTE: 0x1 - top, 0x2 - right, 0x4 - bottom, 0x8 - left.
     /// @note - The shape is being inserted from the top-left to bottom-right;
     /// the current position (left-bottom).
     /// @note  - X and y in this header file is different with  x and y in FontGlyph.
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-
     void insert_rectangle(
         POINT<uint16_t> pos, 
         uint16_t w, uint16_t h, 
         uint16_t border_color = 0xFFFF,
         bool fill = false, 
-        uint16_t filled_color = 0x0
+        uint16_t filled_color = 0x0,
+        uint8_t border_select = 0xF
     ){
         if(fill == true){
             /// process all pixel in rectangle
@@ -660,21 +684,107 @@ public:
                 }
             }
         }
-        /// fill the left and right edge
-        rept(uint16_t, r, 0, h-1){
-            _canvas.pixel(pos.X() + r, pos.Y() + 0) = border_color;
-            _canvas.pixel(pos.X() + r, pos.Y() + w-1) = border_color;
-        }
-        /// fill the upper and lower edge
-        rept(uint16_t, c, 0, w-1){
-            _canvas.pixel(pos.X() + 0,      pos.Y() + c) = border_color;
-            _canvas.pixel(pos.X() + h-1,    pos.Y() + c) = border_color;
-        }
+        /// draw the left edge
+        if(border_select & 0x8)
+            rept(uint16_t, r, 0, h-1){
+                _canvas.pixel(pos.X() + r, pos.Y() + 0) = border_color;
+            }
+        /// draw the right edge
+        if(border_select & 0x2)
+            rept(uint16_t, r, 0, h-1){
+                _canvas.pixel(pos.X() + r, pos.Y() + w-1) = border_color;
+            }
+        /// draw the upper edge
+        if(border_select & 0x1)
+            rept(uint16_t, c, 0, w-1){
+                _canvas.pixel(pos.X() + 0,      pos.Y() + c) = border_color;
+            }
+        /// draw the lower edge
+        if(border_select & 0x3)
+            rept(uint16_t, c, 0, w-1){
+                _canvas.pixel(pos.X() + h-1,    pos.Y() + c) = border_color;
+            }
 
-}
+    }
+
+    /// @brief Add a line in canvas
+    /// @param A The position on the canvas (unit: pixel) 
+    /// @param B The position on the canvas (unit: pixel) 
+    void insert_line(POINT<uint16_t> A, POINT<uint16_t> B, uint16_t color = 0x0){
+        /// A === B
+        if(A.X() == B.X() && A.Y() == B.Y() ){
+            _canvas.pixel(A.X(), A.Y()) = color;
+            return;
+        }
+        /// horizonal and vertical line
+        if( A.X() == B.X() ){
+            if(A.Y() > B.Y()) swap(A.Y(), B.Y());
+            for(uint16_t c = A.Y(); c <= B.Y(); ++c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+                _canvas.pixel(A.X(), c) = color;
+            return;
+        }
+        if( A.Y() == B.Y() ){
+            if(A.X() > B.X()) swap(A.X(), B.X());
+            for(uint16_t r = A.X(); r <= B.X(); ++r)
+                _canvas.pixel(r, A.Y()) = color;
+            return;
+        }
+        /// positive slope line
+        if( 
+            (A.X() < B.X() && A.Y() < B.Y()) || 
+            (A.X() > B.X() && A.Y() > B.Y()) 
+        ){
+            if(A.X() > B.X() && A.Y() > B.Y()) { 
+                swap(A.X(), B.X()); swap(A.Y(), B.Y());
+            }
+            uint16_t row, col, prev_col = this->W();
+            for(row = A.X(); row <= B.X(); ++row){
+                col = A.Y() + ((B.Y()-A.Y())*(row-A.X()))/(B.X()-A.X());
+                while(prev_col < col)
+                    _canvas.pixel(row, prev_col++) = color;
+                _canvas.pixel(row, col) = color;
+                prev_col = col + 1;
+            }
+            return;
+        }
+        /// nagative slope line
+        if( 
+            (A.X() < B.X() && A.Y() > B.Y()) || 
+            (A.X() > B.X() && A.Y() < B.Y()) 
+        ){
+            if(A.X() > B.X() && A.Y() < B.Y()) { 
+                swap(A.X(), B.X()); swap(A.Y(), B.Y());
+            }
+            uint16_t row, col, prev_col = 0;
+            for(row = A.X(); row <= B.X(); ++row){
+                col = A.Y() - (A.Y()-B.Y())*(row-A.X())/(B.X()-A.X());
+                while(prev_col > col)
+                    _canvas.pixel(row, prev_col++) = color;
+                _canvas.pixel(row, col) = color;
+                prev_col = (col) ? col - 1 : 0;
+            }
+            return;
+        }
+    }
 
 };
 
 
+/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/// @brief The canvas object
+CANVAS<uint16_t> canvas;
 
 #endif
