@@ -3,7 +3,9 @@
 
 #include "Arduino.h"
 
+#ifndef LOG
 #define LOG true
+#endif
 
 template<class Tmsg>
 void msg2ser(Tmsg msg){

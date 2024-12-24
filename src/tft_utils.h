@@ -371,7 +371,8 @@ public:
     /// @brief  Restore current canvas to previous canvas
     /// @param  screen_restore  restore what's shown in screen
     /// @note   You only can restore 1 show-step.
-    void restore(bool screen_restore = true){
+    /// @note   Delay only applied to tft.
+    void restore(bool screen_restore = true, uint16_t delay_t = 0){
         if(screen_restore){
             for(uint16_t r = 0; r < _canvas.H(); ++r){
                 for(uint16_t c = 0; c < _canvas.W(); ++c){
@@ -411,7 +412,6 @@ public:
             }
         }
         if(store){
-            msg2ser("?");
             _canvas_old.vector_image()      = _canvas.vector_image();
             _canvas_old.H()                 = _canvas.H();
             _canvas_old.W()                 = _canvas.W();
@@ -484,10 +484,13 @@ public:
 
             /// Place character in canvas
             rept(uint16_t, r, 0, FontGlyph[char_index].height-1){
+                /// update draw-pos
+                draw_pos.X() = pos.X() + FontGlyph[char_index].yOffset + r;
+                if(_canvas.invalid_position(draw_pos)) break;
                 rept(uint16_t, c, 0, FontGlyph[char_index].width-1){
                     /// update draw-pos
-                    draw_pos.X() = pos.X() + FontGlyph[char_index].yOffset + r;
-                    draw_pos.Y() = pos.Y() + FontGlyph[char_index].xOffset + c;  
+                    draw_pos.Y() = pos.Y() + FontGlyph[char_index].xOffset + c; 
+                    if(_canvas.invalid_position(draw_pos)) break;
                     /// if the pixel is display (bit displayed is not 0-bit) 
                     if( (bm_byte & 0x80) != 0 ){
                         _canvas.pixel(draw_pos) = color;
