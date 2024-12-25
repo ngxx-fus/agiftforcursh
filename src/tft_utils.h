@@ -354,6 +354,7 @@ private:
 public:
     /// @brief Initializing a empty CANVAS object
     CANVAS(){
+        _background_color = 0x0;
     };
 
     /// @brief Resize a CANVAS object
