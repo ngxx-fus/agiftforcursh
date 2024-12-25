@@ -4,28 +4,29 @@
 #include "Arduino.h"
 
 #ifndef LOG
-#define LOG true
+    #define LOG false
 #endif
 
 template<class Tmsg>
 void msg2ser(Tmsg msg){
-#if defined(LOG) && LOG == true
-    Serial.println(String(msg));
-#endif
+    #if LOG == true
+        Serial.println(String(msg));
+    #endif
 }
 
 template<class Tmsg, class... Tmsgs>
 void msg2ser(Tmsg msg, Tmsgs... msgs){
-#if defined(LOG) && LOG == true
-    Serial.print(msg);
-    msg2ser(msgs...);
-#endif
+    #if LOG == true
+        Serial.print(msg);
+        msg2ser(msgs...);
+    #endif
 }
 
 void serial_init(){
-#if defined(LOG) && LOG == true
-    Serial.begin(115200);
-#endif
+    #if LOG == true
+        Serial.begin(115200);
+        msg2ser("\n\nHello!");
+    #endif
 }
 
 

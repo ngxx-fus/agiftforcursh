@@ -10,6 +10,7 @@
             "includePath": [
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
+                "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/TFT 22 ILI9225/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/DHT sensor library",
@@ -238,7 +239,6 @@
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
@@ -249,6 +249,7 @@
                 "path": [
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
+                    "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/TFT 22 ILI9225/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/DHT sensor library",
@@ -477,7 +478,6 @@
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                    "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     "/home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
@@ -505,7 +505,7 @@
                 ""
             ],
             "cStandard": "gnu99",
-            "cppStandard": "gnu++11",
+            "cppStandard": "gnu++17",
             "compilerPath": "/home/msnp/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc",
             "compilerArgs": [
                 "-mlongcalls",
