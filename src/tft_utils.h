@@ -787,5 +787,13 @@ public:
 /// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 /// @brief The canvas object
 CANVAS<uint16_t> canvas;
-
+void canvas_init(){
+    canvas.initialize(220, 172, 0, 0xFFFF);
+    canvas.show(true);
+    canvas.insert_text(POINT<>(90, 20), "~Hello!#  HAHA", 0xAAAA);
+    canvas.insert_text(POINT<>(120, 17), "from ngxxfus :>", 0xAAAA);
+    canvas.show();
+    canvas.clear(true);
+    canvas.show(true, true);
+}
 #endif

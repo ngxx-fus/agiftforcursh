@@ -3,13 +3,22 @@
 using namespace std;
 #define  elif else if
 
-#define LOG true
-#define SHOW_AFTER_CHANGED false
+#if CONTROLLER == true
+    #include "controller_utils.h"
+#endif
 
-#include "controller_utils.h"
-#include "serial_utils.h"
-#include "sensor_utils.h"
-#include "wifi_utils.h"
+#if USB_SERIAL == true
+    #include "serial_utils.h"
+#endif
+
 #include "tft_utils.h"
 #include "images.h"
+
+#if SENSORS == true
+    #include "sensor_utils.h"
+#endif
+
+#if WIFI_CONNECTION == true
+    #include "wifi_utils.h"
+#endif
 
