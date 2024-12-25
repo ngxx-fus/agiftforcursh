@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define TFT_SCREEN
+#define TFT_SCREEN true
 
 template<class T> using vct = vector<T>;
 #ifndef rep
@@ -148,7 +148,8 @@ public:
     /// @param filled_value The color will be filled in the image 
     /// default is black (0x0).
     IMAGE(uint16_t h, uint16_t w, Timage filled_value = 0){
-        this->resize(h, w, filled_value);
+        _w = w, _h = h;
+        _img.resize(_w * _h, filled_value);
     };
 
     /// @brief Initialize image from 1d-array
@@ -160,6 +161,7 @@ public:
     IMAGE(  Timage* color_array, uint16_t h = 172, uint16_t w = 220, 
             uint16_t filled_value = 0x0
     ){
+        _w = w, _h = h;
         this->resize(color_array, h, w, filled_value);
     };
 
@@ -349,8 +351,8 @@ template<class Tcanvas = uint16_t>
 class CANVAS{
 private:
     uint16_t _background_color;
-    IMAGE<Tcanvas> _canvas_old;
-    IMAGE<Tcanvas> _canvas;
+    IMAGE<Tcanvas> _canvas_prev, _canvas, _canvas_saved;
+    
 public:
     /// @brief Initializing a empty CANVAS object
     CANVAS(){
@@ -364,7 +366,7 @@ public:
     void resize(uint16_t h, uint16_t w, Tcanvas filled_value = 0)
     {
         _background_color = filled_value;
-        _canvas_old.resize(h, w);
+        _canvas_prev.resize(h, w, filled_value);
         _canvas.resize(h, w, filled_value);
     }
 
@@ -379,58 +381,30 @@ public:
     {
         tft.begin(orientation, filled_value);
         _background_color = filled_value;
-        _canvas_old.resize(h, w);
-        _canvas.resize(h, w, filled_value);
-    }
-
-    /// @brief  Restore current canvas to previous canvas
-    /// @param  screen_restore  restore what's shown in screen
-    /// @note   You only can restore 1 show-step.
-    /// @note   Delay only applied to tft.
-    void restore(bool screen_restore = true){
-        if(screen_restore){
-            for(uint16_t r = 0; r < _canvas.H(); ++r){
-                for(uint16_t c = 0; c < _canvas.W(); ++c){
-                    if((_canvas.pixel(r, c) == _canvas_old.pixel(r, c))) 
-                        continue;
-                    else{
-                        tft.drawPixel(c, r, _canvas_old.pixel(r, c));
-                    }
-                }
-            }
-        }
-        _canvas.vector_image()      = _canvas_old.vector_image();
-        _canvas.H()                 = _canvas_old.H();
-        _canvas.W()                 = _canvas_old.W();
+        resize(h, w, filled_value);
     }
 
     /// @brief Show in screen
-    /// @param store store curent canvas (for undo/restore);
     /// @param force_show force to show all pixel in canvas
     /// @note  X and y in this header file is different with  x and y in FontGlyph.
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-    void show(bool store = false, bool force_show = false){
-        // msg2ser("_show()");
-        for(uint16_t r = 0; r < _canvas.H(); ++r){
-            for(uint16_t c = 0; c < _canvas.W(); ++c){
-                // msg2ser("r: ", r, " c: ", c);
-                if(force_show){
-                    tft.drawPixel(c, r, _canvas.pixel(r, c));
-                    continue;
-                }
-                if((_canvas.pixel(r, c) == _canvas_old.pixel(r, c))) 
-                    continue;
-                else{
+    void show(bool force_show = false){
+        if(force_show)
+            for(uint16_t r = 0; r < _canvas.H(); ++r)
+                for(uint16_t c = 0; c < _canvas.W(); ++c){
+                    _canvas_prev.pixel(r, c) = _canvas.pixel(r, c);
                     tft.drawPixel(c, r, _canvas.pixel(r, c));
                 }
-            }
-        }
-        if(store){
-            _canvas_old.vector_image()      = _canvas.vector_image();
-            _canvas_old.H()                 = _canvas.H();
-            _canvas_old.W()                 = _canvas.W();
-        }
+        else
+            for(uint16_t r = 0; r < _canvas.H(); ++r)
+                for(uint16_t c = 0; c < _canvas.W(); ++c)
+                    if((_canvas.pixel(r, c) == _canvas_prev.pixel(r, c))) 
+                        continue;
+                    else{
+                        _canvas_prev.pixel(r, c) = _canvas.pixel(r, c);
+                        tft.drawPixel(c, r, _canvas.pixel(r, c));
+                    }
     }
 
     /// @brief Clear current canvas
@@ -438,14 +412,14 @@ public:
     void clear(bool clear_all = false){
         this->_canvas.fill(this->_background_color);
         if(clear_all)
-            this->_canvas_old.fill(this->_background_color);
+            this->_canvas_prev.fill(this->_background_color);
     }
 
+    /// @brief Refill the canvas
+    /// @param filled_color The color to be filled
     void refill(uint16_t filled_color){
         for(auto &p:_canvas.vector_image()) p = filled_color;
-        for(auto &p:_canvas_old.vector_image()) p = filled_color;
     }
-
 
     // /// @brief Set pixel at <pos> on screen
     // /// @param pos The position on the screen(unit: pixel) 
@@ -721,19 +695,6 @@ public:
         if( A.X() == B.X() ){
             if(A.Y() > B.Y()) swap(A.Y(), B.Y());
             for(uint16_t c = A.Y(); c <= B.Y(); ++c)
-
-
-
-
-
-
-
-
-
-
-
-
-
                 _canvas.pixel(A.X(), c) = color;
             return;
         }
@@ -785,15 +746,101 @@ public:
 
 
 /// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+enum enum_SCREEN_MODE { 
+    NORMAL_MODE , SETUP_WIFI_MODE, SHOW_ENVINFO_MODE,
+
+    ERROR_MODE  = 225
+};
+uint16_t screen_mode = NORMAL_MODE;
+
+/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 /// @brief The canvas object
 CANVAS<uint16_t> canvas;
 void canvas_init(){
+
+    msg2ser("call\tcanvas_init:");
+
     canvas.initialize(220, 172, 0, 0xFFFF);
-    canvas.show(true);
+
+    msg2ser("\t", "W: ", canvas.W(), " H: ", canvas.H());
+
     canvas.insert_text(POINT<>(90, 20), "~Hello!#  HAHA", 0xAAAA);
-    canvas.insert_text(POINT<>(120, 17), "from ngxxfus :>", 0xAAAA);
-    canvas.show();
+    canvas.insert_text(POINT<>(120, 19), "from ngxxfus :>", 0xAAAA);
+    canvas.show(true);
+
+    delay(1000);
+    
     canvas.clear(true);
-    canvas.show(true, true);
+    canvas.show(true);
 }
+
+/// >>>>>>>>>>>>>>>>> SOME UTIL FUNCS >>>>>>>>>>>>>>>>>>>>
+const char keyboard[6][12] PROGMEM = {
+    {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+'},
+    {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']'},
+    {'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\"','\''},
+    {'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', ';', '/','\\'},
+    {'`', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(',')'},
+    {'{', '}', '|', '?', '<', '>', '_', '=', ' ', ' ', ' ', ' '}
+};
+
+
+inline void show_keyboard(uint8_t keyboard_row){
+    uint8_t keyboard_row1 = keyboard_row + 18, keyboard_row2 = keyboard_row + 36,
+            keyboard_row3 = keyboard_row + 54, keyboard_row4 = keyboard_row + 72, 
+            keyboard_row5 = keyboard_row + 90;
+    /// show keyboard
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row, 5 + c * 14), String(keyboard[0][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row1, 5 + c * 14), String(keyboard[1][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row2, 5 + c * 14), String(keyboard[2][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row3, 5 + c * 14), String(keyboard[3][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row4, 5 + c * 14), String(keyboard[4][c]), 0x5aeb);
+    rept(uint16_t, c, 0, 11)
+        canvas.insert_text(POINT<>(keyboard_row5, 5 + c * 14), String(keyboard[5][c]), 0x5aeb);
+    canvas.insert_bitmap_image(POINT<>(keyboard_row5-10, 150), _10x13_capslock_icon, 10, 13, 0x5aeb);
+}
+
+inline void show_input_box(
+    uint8_t box_row, 
+    String title_text, String content, 
+    uint16_t border_color = 0x8430, uint16_t del_icon_color = 0x5aeb,
+    uint16_t title_color = 0x5aeb, uint16_t content_color = 0x0088
+){
+    if(title_text.length() > 8) title_text = title_text.substring(0, 8);
+
+    /// upper edge
+    canvas.insert_line(POINT<>(box_row,  2),  POINT<>(box_row,  10), border_color);
+    canvas.insert_line(POINT<>(box_row, 15 + title_text.length() * 8),  POINT<>(box_row, 170), border_color);
+    /// lower edge
+    canvas.insert_line(POINT<>(box_row+31, 2), POINT<>(box_row+32, 170), border_color);
+    /// left edge
+    canvas.insert_line(POINT<>(box_row,    2), POINT<>(box_row+31,    2), border_color);
+    /// right edge
+    canvas.insert_line(POINT<>(box_row,  170), POINT<>(box_row+31,  170), border_color);
+    /// show title text (max: 8 characters)
+    canvas.insert_text(POINT<>(box_row+3, 13), title_text, title_color);
+    /// show delete icon
+    canvas.insert_bitmap_image(POINT<>(box_row+9, 140), _22x15_delete_icon, 22, 15, del_icon_color);
+    /// show content on box (max: 10 characters)
+    canvas.insert_text(POINT<>(box_row+18, 5), content, content_color);
+}
+
+inline void show_2button_on_1line(
+    uint8_t btn_row, 
+    String text0, uint8_t col0, 
+    String text1, uint8_t col1,
+    uint16_t btn0_color = 0xf2b2, uint16_t btn1_color = 0x3d3b,
+    uint16_t txt0_color = 0xFFFF, uint16_t txt1_color = 0xFFFF
+){
+    canvas.insert_bitmap_image(POINT<>(btn_row, 15), _64x27_rounded_rectangle, 64, 27, btn0_color);
+    canvas.insert_text(POINT<>(btn_row+18, col0), text0, txt0_color);
+    canvas.insert_bitmap_image(POINT<>(btn_row, 93), _64x27_rounded_rectangle, 64, 27, btn1_color);
+    canvas.insert_text(POINT<>(btn_row+18, col1), text1, txt1_color);
+}
+
 #endif
