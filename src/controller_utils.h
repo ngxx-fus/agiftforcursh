@@ -21,27 +21,37 @@ using namespace std;
 #ifndef in_range
 #define in_range(x, a, b) (a<=x) && (x<=b)
 #endif
+namespace controller{
+    static unsigned long last_read = 0;
+    static unsigned long last_pressed = 0;
+    
+    function<void(void)> custom_isr_handler;
 
-static unsigned long last_used = 0;
-
+    void isr_handler(){
+        controller::last_pressed = millis();
+        if(controller::custom_isr_handler)
+            controller::custom_isr_handler();
+    }
+}
+           
 /// @brief read ADC value for ADC for X-Axis
 /// @return 8-bit ADC for X-Axis
 inline uint16_t x_adc_value(){
-    last_used = millis();
+    controller::last_read = millis();
     return analogRead(VR_X_PIN);
 }
 
 /// @brief read ADC value for ADC for Y-Axis
 /// @return 8-bit ADC for Y-Axis
 inline uint16_t y_adc_value(){
-    last_used = millis();
+    controller::last_read = millis();
     return analogRead(VR_Y_PIN);
 }
 
 /// @brief read logic value for switch
 /// @return bool value (FALSE: is pressed)
 inline bool sw_value(){
-    last_used = millis();
+    controller::last_read = millis();
     return digitalRead(SW_PIN);
 }
 
@@ -50,14 +60,17 @@ void toggle_led(){
     digitalWrite(26, ~digitalRead(26));
 }
 
+
 /// @brief Initital controller
-/// @param isr_handler A function, called when sw is pressed 
-void controller_init( void(&isr_handler)() ){
+/// @note you must manually set ```custom_isr_handler``` 
+/// beforce call this function!
+void controller_init(){
 
     msg2ser("call\tcontroller_init: ");
     msg2ser("\t", "analogReadResolution: ", 8);
     msg2ser("\t", "VR_X_PIN: ", VR_X_PIN);
     msg2ser("\t", "VR_Y_PIN: ", VR_Y_PIN);
+    msg2ser("\t", "SW_PIN: ", SW_PIN);
     msg2ser("\t", "SW_PIN: ", SW_PIN);
 
     analogReadResolution(8);
@@ -65,10 +78,15 @@ void controller_init( void(&isr_handler)() ){
     pinMode(VR_Y_PIN, INPUT);
     pinMode(SW_PIN, INPUT);
     pinMode(SW_PIN, PULLUP);
-    if(isr_handler){
+
+    if(controller::custom_isr_handler){
         msg2ser("\t", "isr_handler: set");
-        attachInterrupt(digitalPinToInterrupt(SW_PIN), isr_handler, FALLING);
     }
+    attachInterrupt(
+        digitalPinToInterrupt(SW_PIN), 
+        controller::isr_handler, 
+        FALLING
+    );
 }
 
 #endif

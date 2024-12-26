@@ -280,7 +280,7 @@ void wifi_setup(){
         msg2ser("\t", "Wi-Fi: Scanning AP...");
         WiFi.scanDelete();
         int16_t nets =  WiFi.scanNetworks();
-        if(millis() - t0 < 1000){
+        if(millis() - t0 <= 2000){
             msg2ser("\t", "Wi-Fi scanning is too fast!");
             screen_mode = enum_SCREEN_MODE::ERROR_MODE;
             return;

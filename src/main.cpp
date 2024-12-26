@@ -14,7 +14,8 @@ void setup(){
         serial_init();
     #endif
     #if CONTROLLER == true
-        controller_init(sw_isr_service);
+        controller::custom_isr_handler = sw_isr_service;
+        controller_init();
     #endif
     #if SENSORS == true
         sensor_init();
