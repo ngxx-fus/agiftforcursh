@@ -23,7 +23,7 @@ void setup(){
     #ifdef TFT_UTILS
         canvas_init();
     #endif
-    screen_mode = enum_SCREEN_MODE::SETUP_WIFI_MODE;
+    screen_mode = enum_SCREEN_MODE::SHOW_ENVINFO_MODE;
 }
 
 void loop(){
