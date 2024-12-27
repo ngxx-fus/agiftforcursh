@@ -33,6 +33,10 @@ using namespace std;
     #include "wifi_utils.h"
 #endif
 
+
+/// >>>>>>>>>>>>>>>>>>>> OTHERS DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
+
+/// @brief show error screen
 void error_mode(){
     canvas.refill(0xc0e5);
     uint16_t err_row = 18;
@@ -50,6 +54,7 @@ void error_mode(){
     canvas.show(true);
 }
 
+/// @brief custom isr service
 void sw_isr_service(void){
     msg2ser("call\t", "sw_isr_service <mode ",  screen_mode, ">");
     if(screen_mode == enum_SCREEN_MODE::SETUP_WIFI_MODE)
@@ -66,7 +71,4 @@ void sw_isr_service(void){
         msg2ser("\t", "screen_mode: ", screen_mode);
         return;
     }
-    // if(screen_mode == enum_SCREEN_MODE::);
-    // if(screen_mode == enum_SCREEN_MODE::);
-    // if(screen_mode == enum_SCREEN_MODE::);
 }

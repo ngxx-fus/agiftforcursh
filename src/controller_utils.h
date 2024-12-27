@@ -28,6 +28,7 @@ namespace controller{
     function<void(void)> custom_isr_handler;
 
     void isr_handler(){
+        digitalWrite(26, HIGH);
         controller::last_pressed = millis();
         if(controller::custom_isr_handler)
             controller::custom_isr_handler();
@@ -55,12 +56,6 @@ inline bool sw_value(){
     return digitalRead(SW_PIN);
 }
 
-void toggle_led(){
-    msg2ser("call\t", "toggle_led");
-    digitalWrite(26, ~digitalRead(26));
-}
-
-
 /// @brief Initital controller
 /// @note you must manually set ```custom_isr_handler``` 
 /// beforce call this function!
@@ -79,8 +74,13 @@ void controller_init(){
     pinMode(SW_PIN, INPUT);
     pinMode(SW_PIN, PULLUP);
 
+    pinMode(26, OUTPUT);
+
+
     if(controller::custom_isr_handler){
-        msg2ser("\t", "isr_handler: set");
+        msg2ser("\t", "custom_isr_handler: set");
+    }else{
+        msg2ser("\t", "custom_isr_handler: not set");
     }
     attachInterrupt(
         digitalPinToInterrupt(SW_PIN), 
