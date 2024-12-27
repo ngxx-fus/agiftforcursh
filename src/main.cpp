@@ -14,7 +14,7 @@ void setup(){
         serial_init();
     #endif
     #if CONTROLLER == true
-        controller_init(sw_isr_service);
+        controller_init();
     #endif
     #if SENSORS == true
         sensor_init();
@@ -22,7 +22,7 @@ void setup(){
     #ifdef TFT_UTILS
         canvas_init();
     #endif
-    screen_mode = enum_SCREEN_MODE::SETUP_WIFI_MODE;
+    screen_mode = enum_SCREEN_MODE::SHOW_ENVINFO_MODE;
 }
 
 void loop(){
@@ -30,7 +30,6 @@ void loop(){
     MAIN_LOOP: 
     /// routing screen to each mode
     msg2ser("enter\tmode: ", screen_mode);
-    
     switch (screen_mode){
         case enum_SCREEN_MODE::NORMAL_MODE:
             canvas.clear(); 

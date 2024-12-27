@@ -775,6 +775,8 @@ void canvas_init(){
 }
 
 /// >>>>>>>>>>>>>>>>> SOME UTIL FUNCS >>>>>>>>>>>>>>>>>>>>
+
+/// @brief keyboard character map (provides most of common character)
 const char keyboard[6][12] PROGMEM = {
     {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+'},
     {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']'},
@@ -784,27 +786,41 @@ const char keyboard[6][12] PROGMEM = {
     {'{', '}', '|', '?', '<', '>', '_', '=', ' ', ' ', ' ', ' '}
 };
 
-
-inline void show_keyboard(uint8_t keyboard_row){
+/// @brief ```pattern```: show keyboard
+/// @param keyboard_row Where? (0->219)
+/// @param keyboard_color The color will be set for the keyboard
+/// @note position.unit: pixel
+/// @note color.type: 16-bit color
+inline void show_keyboard(uint8_t keyboard_row, uint16_t keyboard_color = 0x5aeb){
     uint8_t keyboard_row1 = keyboard_row + 18, keyboard_row2 = keyboard_row + 36,
             keyboard_row3 = keyboard_row + 54, keyboard_row4 = keyboard_row + 72, 
             keyboard_row5 = keyboard_row + 90;
     /// show keyboard
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row, 5 + c * 14), String(keyboard[0][c]), 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row, 5 + c * 14), String(keyboard[0][c]), keyboard_color);
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row1, 5 + c * 14), String(keyboard[1][c]), 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row1, 5 + c * 14), String(keyboard[1][c]), keyboard_color);
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row2, 5 + c * 14), String(keyboard[2][c]), 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row2, 5 + c * 14), String(keyboard[2][c]), keyboard_color);
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row3, 5 + c * 14), String(keyboard[3][c]), 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row3, 5 + c * 14), String(keyboard[3][c]), keyboard_color);
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row4, 5 + c * 14), String(keyboard[4][c]), 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row4, 5 + c * 14), String(keyboard[4][c]), keyboard_color);
     rept(uint16_t, c, 0, 11)
-        canvas.insert_text(POINT<>(keyboard_row5, 5 + c * 14), String(keyboard[5][c]), 0x5aeb);
-    canvas.insert_bitmap_image(POINT<>(keyboard_row5-10, 150), _10x13_capslock_icon, 10, 13, 0x5aeb);
+        canvas.insert_text(POINT<>(keyboard_row5, 5 + c * 14), String(keyboard[5][c]), keyboard_color);
+    canvas.insert_bitmap_image(POINT<>(keyboard_row5-10, 150), _10x13_capslock_icon, 10, 13, keyboard_color);
 }
 
+/// @brief ```pattern```: insert show inputbox
+/// @param box_row Where? (0->219)
+/// @param title_text Short text for title (top), (```size```: 1->8 characters)
+/// @param content Short text for content inside the box, (```size```: 1->13 characters)
+/// @param border_color The color of 4 border (top/bot/left/rigt)
+/// @param del_icon_color The color of delete icon
+/// @param title_color The color of the title
+/// @param content_color The color of the text inside the box
+/// @note position.unit: pixel
+/// @note color.type: 16-bit color
 inline void show_input_box(
     uint8_t box_row, 
     String title_text, String content, 
@@ -830,6 +846,18 @@ inline void show_input_box(
     canvas.insert_text(POINT<>(box_row+18, 5), content, content_color);
 }
 
+/// @brief ```patern```: add two button on canvas 
+/// @param btn_row Where? (0->219)
+/// @param text0 Short_text for button 0 (left), (```size```: 1->6 characters)
+/// @param col0  Start from the left-edge of the canvas, where? (0->171)
+/// @param text1 Short_text for button 1 (right), (```size```: 1->6 characters)
+/// @param col1  Start from the left-edge of the canvas, where? (0->171)
+/// @param btn0_color The color for button 0
+/// @param btn1_color The color for button 1
+/// @param txt0_color The color for text button 0
+/// @param txt1_color The color for text button 1
+/// @note position.unit: pixel
+/// @note color.type: 16-bit color
 inline void show_2button_on_1line(
     uint8_t btn_row, 
     String text0, uint8_t col0, 
