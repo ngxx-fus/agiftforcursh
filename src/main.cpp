@@ -14,7 +14,6 @@ void setup(){
         serial_init();
     #endif
     #if CONTROLLER == true
-        controller::custom_isr_handler = sw_isr_service;
         controller_init();
     #endif
     #if SENSORS == true
@@ -31,7 +30,6 @@ void loop(){
     MAIN_LOOP: 
     /// routing screen to each mode
     msg2ser("enter\tmode: ", screen_mode);
-    
     switch (screen_mode){
         case enum_SCREEN_MODE::NORMAL_MODE:
             canvas.clear(); 
