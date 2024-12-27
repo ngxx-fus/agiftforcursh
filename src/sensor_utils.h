@@ -25,7 +25,7 @@
 #define hold_time_thres  500
 #define sampling_interval 2000          /// dht11 required at leaset 2s
 #define chart_interval   10000           /// dht11 required at leaset 2s
-
+#define max_history_size 25
 #include "tft_utils.h"
 #if SHOW_AUTHOR_MESSAGE == true
     #pragma error("Please include tft_utils.h (bcz it \
@@ -86,10 +86,10 @@ void sensor_init(){
 bool run_show_envinfo = true;
 
 /// @brief Show Humid and temp ultil show_envinfo==false
-/// @param history_size number of recorded values (max:15)
+/// @param history_size number of recorded values (max: max_history_size)
 /// @param column_distance distance between two pair of humid-temp chart
 /// @note - You can calc the ```col_d``` by quite right eq: 
-/// ```screen_width = col_d * (history_size-1) + 7 * history_size + 4```.
+/// ```col_d ~ screen_width / history_size```.
 /// 4 for padding 2 pixels at the left and right screen edge.
 /// 7 for each pair of humid-temp chart (3 for humid and temp, and 1 is distance 
 /// between them).
@@ -100,14 +100,20 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
 
     uint8_t title0 = 2, humid_row = title0 + 37, temp_row = humid_row + 20,
             btn0 = 185, chart_row = temp_row + 40;
-    static float humid[17], temp[17], latest_humid, latest_temp;
+    static float humid[max_history_size], temp[max_history_size], latest_humid, latest_temp;
     static uint16_t start_pos = 0, end_pos;
     uint16_t n_lines = history_size, col_d  = column_distance;
 
     uint64_t last_t = 0;
 
     while(run_show_envinfo){
-        
+
+        /// for waring user that they are at the leftmost part of the chart.
+        if(start_pos == max_history_size - 1 - n_lines-1) 
+            canvas.refill(0xfe9a);
+        else
+        /// clear screen
+            canvas.refill(sensors_color_0);
         /// for Bar spacing :v
         if( x_adc_value() < 30 ) {
             msg2ser("\t", "Bar spacing: +1");
@@ -122,7 +128,7 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
         /// for left-right shift
         if( y_adc_value() < 30 ) {
             msg2ser("\t", "Shifted: +1 left");
-            start_pos = (start_pos < 16 - n_lines-1) ? (start_pos+1) : start_pos;
+            start_pos = (start_pos < max_history_size - 1 - n_lines-1) ? (start_pos+1) : start_pos;
             last_t = millis(); while( y_adc_value() < 30 && millis() - last_t < hold_time_thres);
         }else 
             if ( y_adc_value() > 190 ) {
@@ -157,8 +163,6 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
                 
         }
 
-        /// clear screen
-        canvas.refill(sensors_color_0);
         /// show title
         canvas.insert_rectangle(POINT<>(title0-1, 1), 170, 35, 0x18c3, true, sensors_color_1);
         canvas.insert_bitmap_image(POINT<>(title0+1, 2), _32x32_env_icon, 32, 32, sensors_color_3);
@@ -205,8 +209,8 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
                 );
         }
         /// show legend (max value)
-        canvas.insert_text(POINT<>(chart_row - 2, 3), "100%", sensors_color_12);
-        canvas.insert_text(POINT<>(chart_row - 2, 125), "50oC", sensors_color_13);
+        canvas.insert_text(POINT<>(chart_row - 2, 3), "100", sensors_color_12);
+        canvas.insert_text(POINT<>(chart_row - 2, 146), "50", sensors_color_13);
         /// show changed
         canvas.show();
         /// wait for the joystick released
