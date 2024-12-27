@@ -108,7 +108,7 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
 
     while(run_show_envinfo){
 
-        /// for waring user that they are leftest of the chart.
+        /// for waring user that they are at the leftmost part of the chart.
         if(start_pos == max_history_size - 1 - n_lines-1) 
             canvas.refill(0xfe9a);
         else
