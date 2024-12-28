@@ -19,18 +19,20 @@ template<class Ttime>
 Ttime t_since(Ttime t_initial){
     if( is_unsigned<Ttime>() == false ){
         msg2ser("\t", "Ttime: signed type");
+        delay(1000);
+        ResetFunc ();
         return -1;
     }
     Ttime t_now = Ttime(millis());
     switch (sizeof(Ttime)){
-        case 64:
-            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 4294967296 ));
-        case 32:
-            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 65536      ));
-        case 16:
-            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 256        ));
         case 8:
-            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 16         ));
+            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 4294967296U ));
+        case 4:
+            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 65536U      ));
+        case 2:
+            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 256U        ));
+        case 1:
+            return ((t_now>t_initial)?(t_now-t_initial):(t_initial - t_now - 16U         ));
     }
     /// unsupport bit of type :v
     return -1;
