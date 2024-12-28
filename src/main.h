@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 #define  elif else if
+
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #define VR_X_PIN 35
@@ -11,6 +13,10 @@ using namespace std;
 
 #define DHT_TYPE DHT11
 #define DHT_PIN 16
+
+#define TFT_RST_PIN (int8_t) 2
+#define TFT_RS_PIN  (int8_t) 4
+#define SPI_BUS_TYPE HSPI
 
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
 #include "images.h"
@@ -24,6 +30,7 @@ using namespace std;
 #endif
 
 #include "tft_utils.h"
+#include "time_utils.h"
 
 #if SENSORS == true
     #include "sensor_utils.h"

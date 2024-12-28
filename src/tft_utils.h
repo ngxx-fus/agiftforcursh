@@ -33,12 +33,10 @@ const GFXglyph    *FontGlyph  = CUSTOM_FONT.glyph;
 
 #ifdef TFT_SCREEN
     /// >>>>>>>>>>>>>> initializing tft object >>>>>>>>>>>>>>
-    #define RST_PIN (int8_t) 2
-    #define RS_PIN  (int8_t) 4
     /// @brief The tft object for comunication with tft screen
     /// @note  Plase do NOT change <tft> object's name!
     /// @note  This object only work if you run <tft.begin()>. 
-    TFT_22_ILI9225_MOD tft(RST_PIN, RS_PIN);
+    TFT_22_ILI9225_MOD tft;
 
 #endif
 

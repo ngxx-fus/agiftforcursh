@@ -141,7 +141,7 @@
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
- src/sensor_utils.h \
+ src/time_utils.h src/sensor_utils.h \
  .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
  src/wifi_utils.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \

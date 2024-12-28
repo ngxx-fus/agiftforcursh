@@ -43,6 +43,7 @@
 
 
 #include <DHT.h>
+#include "time_utils.h"
 
 DHT dht(DHT_PIN, DHT_TYPE);
 namespace sensors{
@@ -103,10 +104,15 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
     static float humid[max_history_size], temp[max_history_size], latest_humid, latest_temp;
     static uint16_t start_pos = 0, end_pos;
     uint16_t n_lines = history_size, col_d  = column_distance;
+    uint32_t last_t = 0;
 
-    uint64_t last_t = 0;
+    uint16_t sel = 0;
 
     while(run_show_envinfo){
+
+        if(t_since(controller::last_pressed) < 3000){
+            msg2ser("\t", "last pressed -> now: ", t_since(controller::last_pressed) );
+        }
 
         /// for waring user that they are at the leftmost part of the chart.
         if(start_pos == max_history_size - 1 - n_lines-1) 
@@ -143,14 +149,16 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
             col_d = column_distance;
 
         /// 4sec between two measure
-        if(  millis() - sensors::last_read >= sampling_interval ){
+        if( t_since(sensors::last_read) >= sampling_interval ){
             /// read temp
+            controller::toggle_iled_sate(); 
             latest_humid = sensors::read_humid(0),
+            controller::toggle_iled_sate();
             latest_temp  = sensors::read_temp(0);
         }
 
         /// 4sec between two measure
-        if(  millis() - sensors::last_update_chart >= chart_interval ){
+        if(  t_since(sensors::last_update_chart) >= chart_interval ){
             sensors::last_update_chart = millis();
             /// sync to usb serial
             msg2ser("\t", "Humid: ", latest_humid); 
@@ -213,7 +221,6 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
         canvas.insert_text(POINT<>(chart_row - 2, 146), "50", sensors_color_13);
         /// show changed
         canvas.show();
-        /// wait for the joystick released
     }
 }
 #endif
