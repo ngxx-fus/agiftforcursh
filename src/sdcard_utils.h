@@ -41,6 +41,8 @@ void sdcard_init(){
 /// @param levels  the levels to go into the directory
 vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
+    msg2ser("call\t", "sdcard_list_dir");
+
     vector<String> res;
 
     File root = fs.open(dirname);
@@ -50,12 +52,12 @@ vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
     File file = root.openNextFile();
     while (file){
         if (file.isDirectory()){
-            res.push_back(concatenate("d-", file.name()));
+            res.push_back(file.name());
             if (levels)
                 sdcard_list_dir(fs, file.name(), levels - 1);
         }
         else
-            res.push_back(concatenate("f-", file.name()));
+            res.push_back(file.name());
         file = root.openNextFile();
     }
     return res;
@@ -73,7 +75,8 @@ vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
 template<class Tdest = char*>
 void sdcard_readbytes_file(
     fs::FS &fs, const char *src, 
-    Tdest dest, uint64_t dest_size, uint64_t offset = 0
+    Tdest dest, uint64_t dest_size, uint64_t offset = 0,
+    bool readall = false
 ){
     File file = fs.open(src);
     if (!file){
@@ -85,12 +88,41 @@ void sdcard_readbytes_file(
         return;
     }
     while(offset){file.read(); --offset;}
-    while (dest_size){
-        *dest = file.read();
-        --file.read();
-    }
+    if(readall == false)
+        while (--dest_size) *(dest++) = file.read();
+    else
+        while(file.available()) *(dest++) = file.read();
     file.close();
 }
+
+/// @brief read bytes from a file stored in SDcard
+/// @param fs SD card file system object (usually: ```SD```)
+/// @param src path to path stored in SD card
+/// @param read_size a number of bytes will be read
+/// @param byte_process the process will process with each read byte
+/// @param offset where the read process starts
+void sdcard_readbytes_file(
+    fs::FS &fs, const char *src,
+    uint64_t read_size,
+    function<void(int)> byte_process,
+    uint64_t offset = 0
+){
+    File file = fs.open(src);
+    if (!file){
+        msg2ser("\t", "SDCard: Read: Can NOT open ", src);
+        return;
+    }
+    if(file.isDirectory() == true){
+        msg2ser("\t", "SDCard: Read: Err: isDirectory ");
+        return;
+    }
+    
+    while(offset--)     file.read();
+    while (read_size--) byte_process(file.read());
+    
+    file.close();
+}
+
 
 /// @brief Writes byte data to a file on the file system.
 /// @param fs Reference to the file system object (e.g., SD, SPIFFS, LittleFS).
@@ -120,18 +152,59 @@ void sdcard_writebytes_file(
     }
 
     if (raw) {
-        // Write raw byte-by-byte data for binary content
+        /// Write raw byte-by-byte data for binary content
         rept(uint64_t, i, 0, size_t-1) {
-            file.write(bytes[i]);  // Writing raw byte
+            file.write(bytes[i]);  /// Writing raw byte
         }
     } else {
-        // Write byte-by-byte data as text
+        /// Write byte-by-byte data as text
         rept(uint64_t, i, 0, size_t-1) {
-            file.print(bytes[i]);  // Writing byte as text
+            file.print(bytes[i]);  /// Writing byte as text
         }
     }
 
     file.close();
+}
+
+/// @brief Reads a 565-format image from a binary file and stores it in a provided buffer.
+/// @param fs Reference to the file system object (e.g., SD, SPIFFS, LittleFS).
+/// @param img_path Path to the binary file containing the 565-format image.
+/// @param img Pointer to a buffer where the image pixels will be stored. The buffer must have enough space for the specified size.
+/// @param size The number of pixels to read from the file.
+/// @param offset The number of pixels to skip before starting to read. Defaults to 0.
+/// @note The 565-format is a 16-bit RGB format where:
+///       - 5 bits are for red.
+///       - 6 bits are for green.
+///       - 5 bits are for blue.
+///       Each pixel is stored as two bytes (little-endian format, LSB first).
+///       Ensure the file exists, and the buffer provided has sufficient space for `size` pixels.
+///       The function reads the image pixel by pixel and combines the two bytes to form each 16-bit pixel.
+template<class Tdest = uint16_t*>
+void read_and_show_565format_image(
+    fs::FS &fs, const char *img_path,
+    POINT<uint16_t> pos, uint16_t w, uint16_t h
+){
+    msg2ser("call\t", "read_565format_image");
+    File file = fs.open(img_path, FILE_READ);
+    if (!file) {
+        msg2ser("\t", "SDCard: Read 565f img: Failed to open");
+        return;
+    }
+
+    uint8_t  buf16[2];
+    uint16_t r, c;
+    POINT<uint16_t> ins_pos;
+
+    rept(uint16_t, i, 0, w*h-1){
+        file.read(buf16, 2);
+        uint16_t pixel =  ((uint16_t(buf16[0])&0xFF) << 8) | (uint16_t(buf16[1])&0xFF);
+        r = uint16_t(i/w), c = uint16_t(i%w); 
+        ins_pos.X() = pos.X() + r;
+        ins_pos.Y() = pos.Y() + c;
+        canvas.set_pixel(ins_pos, pixel);
+    }
+
+    file.close();  /// Close the file after reading
 }
 
 /// @brief remove a file in SD card
@@ -154,12 +227,12 @@ inline void sdcard_remove_dir(fs::FS &fs, const char *path){
 /// @brief Make a directory
 /// @param fs SD card file system object (usually: ```SD```)
 /// @param path path to the new directory
-inline void sdcard_remove_dir(fs::FS &fs, const char *path){
+inline void sdcard_make_dir(fs::FS &fs, const char *path){
     if (!fs.mkdir(path))
         msg2ser("\t", "SDCard: Make dir: failed");
 }
 
-// @brief Renames a file on the SD card.
+/// @brief Renames a file on the SD card.
 /// @param fs Reference to the SD card file system object (e.g., SD).
 /// @param path_old Path to the existing file to be renamed.
 /// @param path_new Path with the new name for the file.

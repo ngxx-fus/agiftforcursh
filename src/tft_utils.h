@@ -349,7 +349,7 @@ template<class Tcanvas = uint16_t>
 class CANVAS{
 private:
     uint16_t _background_color;
-    IMAGE<Tcanvas> _canvas_prev, _canvas, _canvas_saved;
+    IMAGE<Tcanvas> _canvas_prev, _canvas;
     
 public:
     /// @brief Initializing a empty CANVAS object
@@ -437,6 +437,15 @@ public:
     /// @return the widht of the canvas
     uint16_t W(){
         return _canvas.W();
+    }
+
+    /// @brief Sets the color of a pixel in the canvas.
+    /// @param pos A `POINT` object that specifies the position of the pixel in the canvas.
+    /// @param color The color to be set to the pixel. Default is `0xFFFF` (white).
+    /// @note The `POINT` object should contain `x` and `y` values, representing the pixel's position in the canvas.
+    /// If no color is provided, the default color will be white (`0xFFFF`).
+    void set_pixel(POINT<uint16_t> pos, uint16_t color = 0xFFFF){
+        this->_canvas.pixel(pos) = color;
     }
 
     /// @brief Add text
