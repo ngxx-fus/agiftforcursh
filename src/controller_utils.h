@@ -24,14 +24,29 @@ using namespace std;
 namespace controller{
     static unsigned long last_read = 0;
     static unsigned long last_pressed = 0;
-    
+    static bool iled_state = false;
+
     function<void(void)> custom_isr_handler;
 
+    void toggle_iled_sate(){
+        iled_state = !iled_state;
+        digitalWrite(26, iled_state);
+    }
+
+    void iled_blinky(uint16_t times, uint32_t period = 585){
+        while(times--){
+            digitalWrite(26, LOW); delay(period*49/100);
+            digitalWrite(26, HIGH); delay(period*2/100);
+            digitalWrite(26, LOW); delay(period*49/100);
+        }
+    }
+
     void isr_handler(){
-        digitalWrite(26, HIGH);
+        toggle_iled_sate();
         controller::last_pressed = millis();
         if(controller::custom_isr_handler)
             controller::custom_isr_handler();
+        toggle_iled_sate();
     }
 }
            
@@ -73,6 +88,8 @@ void controller_init(){
     pinMode(VR_Y_PIN, INPUT);
     pinMode(SW_PIN, INPUT);
     pinMode(SW_PIN, PULLUP);
+    pinMode(VR_Y_PIN, PULLDOWN);
+    pinMode(VR_X_PIN, PULLDOWN);
 
     pinMode(26, OUTPUT);
 

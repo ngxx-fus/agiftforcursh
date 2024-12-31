@@ -21,11 +21,14 @@
 #define sensors_color_18 0x14f2         /// humid chart
 #define sensors_color_19 0xcb4d         /// temp chart
 #define sensors_color_20 0xc618         /// grid line
+#define sensors_color_21 0xfed3         /// selected box
 #define chart_padding    0x4            /// left x-axis <---d---> 1st chart
-#define hold_time_thres  500
+#define max_history_size 25             /// N/A
+#define hold_time_thres  500            /// N/A
+#define hold_for_select  2000U          /// N/A
+#define chart_interval   10000          /// dht11 required at leaset 2s
 #define sampling_interval 2000          /// dht11 required at leaset 2s
-#define chart_interval   10000           /// dht11 required at leaset 2s
-#define max_history_size 25
+
 #include "tft_utils.h"
 #if SHOW_AUTHOR_MESSAGE == true
     #pragma error("Please include tft_utils.h (bcz it \
@@ -43,6 +46,7 @@
 
 
 #include <DHT.h>
+#include "general_utils.h"
 
 DHT dht(DHT_PIN, DHT_TYPE);
 namespace sensors{
@@ -83,8 +87,6 @@ void sensor_init(){
     dht.begin();
 }
 
-bool run_show_envinfo = true;
-
 /// @brief Show Humid and temp ultil show_envinfo==false
 /// @param history_size number of recorded values (max: max_history_size)
 /// @param column_distance distance between two pair of humid-temp chart
@@ -103,17 +105,13 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
     static float humid[max_history_size], temp[max_history_size], latest_humid, latest_temp;
     static uint16_t start_pos = 0, end_pos;
     uint16_t n_lines = history_size, col_d  = column_distance;
+    uint32_t last_t = 0;
+    uint16_t sel = 0, selectedBox_W = 68, selectedBox_H = 31;
+    bool selected = false;
 
-    uint64_t last_t = 0;
+    while(0x1){
 
-    while(run_show_envinfo){
 
-        /// for waring user that they are at the leftmost part of the chart.
-        if(start_pos == max_history_size - 1 - n_lines-1) 
-            canvas.refill(0xfe9a);
-        else
-        /// clear screen
-            canvas.refill(sensors_color_0);
         /// for Bar spacing :v
         if( x_adc_value() < 30 ) {
             msg2ser("\t", "Bar spacing: +1");
@@ -136,6 +134,7 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
                 start_pos = (start_pos > 0) ? (start_pos-1) : start_pos;
                 last_t = millis(); while( y_adc_value() > 190 && millis() - last_t < hold_time_thres);
             }
+        
         /// re-calc col_d
         if(n_lines < history_size)
             col_d = 150 / n_lines;
@@ -143,14 +142,15 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
             col_d = column_distance;
 
         /// 4sec between two measure
-        if(  millis() - sensors::last_read >= sampling_interval ){
+        if( t_since(sensors::last_read) >= sampling_interval ){
             /// read temp
+            controller::iled_blinky(1); 
             latest_humid = sensors::read_humid(0),
             latest_temp  = sensors::read_temp(0);
         }
 
         /// 4sec between two measure
-        if(  millis() - sensors::last_update_chart >= chart_interval ){
+        if(  t_since(sensors::last_update_chart) >= chart_interval ){
             sensors::last_update_chart = millis();
             /// sync to usb serial
             msg2ser("\t", "Humid: ", latest_humid); 
@@ -162,6 +162,14 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
             *humid = latest_humid, *temp  = latest_temp;
                 
         }
+
+        /// for waring user that they are at the leftmost part of the chart.
+        if(start_pos == max_history_size - 1 - n_lines-1) 
+            canvas.refill(0xfe9a);
+        else
+        /// clear screen
+            canvas.refill(sensors_color_0);
+        
 
         /// show title
         canvas.insert_rectangle(POINT<>(title0-1, 1), 170, 35, 0x18c3, true, sensors_color_1);
@@ -188,6 +196,7 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
         /// show temp, humid;
         canvas.insert_text(POINT<>(humid_row+15, 29), String("Humid: ")+String(latest_humid)+String(" oC"), sensors_color_9);
         canvas.insert_text(POINT<>(temp_row+15, 29), String("Temp:   ")+String(latest_temp)+String(" %"), sensors_color_11);
+
         /// show chart
         uint16_t h; 
         rept(uint16_t, i, 0, n_lines-1){
@@ -208,12 +217,62 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
                     sensors_color_19
                 );
         }
+
         /// show legend (max value)
         canvas.insert_text(POINT<>(chart_row - 2, 3), "100", sensors_color_12);
         canvas.insert_text(POINT<>(chart_row - 2, 146), "50", sensors_color_13);
+
+        /// process sw_value() for selected box
+        if(sw_value() == false){
+            msg2ser("\t", "sw_value():", "is pressed");
+            unsigned long start_t = millis();
+            /// delay 100ms for stable
+            delay(100);
+            while ( sw_value() == false ){
+                if(t_since(start_t) > hold_for_select){
+                    selected = true;
+                    break;
+                }
+            }
+            msg2ser("\t", "selected: ", selected);
+            
+            if(selected){
+                /// clear selected flag
+                selected = false;
+                /// process corresponding mode :v 
+                switch (sel){
+                    case 2:
+                        msg2ser("\t", "process ```exit``` button", "!");
+                        /// exit button
+                        screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
+                        return;
+                    case 1:
+                        msg2ser("\t", "process ```mode``` button", "!");
+                        /// reserve feature
+                        screen_mode = enum_SCREEN_MODE::RESERVED_FEATURE_MODE;
+                        return;
+                }
+            }else{
+                /// increase sel
+                sel = (sel < 2)?(sel+1):(0);
+            }
+        }
+
+        /// insert selected box based on ```sel```
+        switch (sel){
+            /// case 0: just do nothin' and hide selected box
+            case 1:
+                /// show selected box
+                canvas.insert_rectangle(POINT<>(btn0-2, 13), selectedBox_W, selectedBox_H, sensors_color_21);
+                break;
+            case 2:
+                /// show selected box
+                canvas.insert_rectangle(POINT<>(btn0-2, 91), selectedBox_W, selectedBox_H, sensors_color_21);
+                break;
+        }
+
         /// show changed
         canvas.show();
-        /// wait for the joystick released
     }
 }
 #endif
