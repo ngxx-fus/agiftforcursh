@@ -66,4 +66,37 @@ uint16_t rgb_to_565(TcolorR r, TcolorG g, TcolorB b) {
     return ((uint16_t(r) & 0xF8) << 8) | ((uint16_t(g) & 0xFC) << 3) | (uint16_t(b) >> 3);
 }
 
+/// @brief Converts an integer to a hexadecimal string representation.
+/// @param number The integer to be converted to a hexadecimal string.
+/// @return A String object containing the hexadecimal representation of the input integer.
+/// @note The output string will be in uppercase by default due to the `toUpperCase()` method. 
+/// If lowercase is preferred, remove the `toUpperCase()` call.
+/// - This function uses Arduino's `String` class with the `HEX` argument to handle the conversion.
+/// - For negative integers, the result will be the two's complement hexadecimal representation.
+String intToHexString(int number) {
+    String hexString = String(number, HEX);
+    hexString.toUpperCase();
+    return hexString;
+}
+
+/// @brief Reverses the bits of a given number.
+/// @param num The number whose bits are to be reversed.
+/// @return The number with its bits reversed.
+template<class T>
+unsigned int reverse_bit_order(T num) {
+    T reversed = 0;  ///< Variable to store the reversed bits.
+    
+    int numBits = sizeof(num) * 8;  ///< Calculate the number of bits in the input number.
+    
+    // Loop through each bit of the input number.
+    for (int i = 0; i < numBits; i++) {
+        reversed <<= 1;  ///< Shift the reversed number to the left by one bit to make space for the next bit.
+        
+        reversed |= (num & 1);  ///< Extract the least significant bit (LSB) from num and add it to reversed.
+        
+        num >>= 1;  ///< Shift num to the right by one bit to process the next bit.
+    }
+    
+    return reversed;  ///< Return the final reversed number.
+}
 #endif

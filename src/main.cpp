@@ -30,7 +30,7 @@ void setup(){
     #if SDCARD_RW == true
         sdcard_init();
     #endif
-    screen_mode = enum_SCREEN_MODE::TEST_MODE_BLANK;
+    screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
 }
 
 void loop(){
