@@ -141,9 +141,7 @@
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
- src/time_utils.h src/sensor_utils.h \
- .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
- src/wifi_utils.h \
+ src/general_utils.h src/wifi_utils.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
@@ -203,4 +201,10 @@
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Server.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
- /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h
+ /home/msnp/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
+ src/sensor_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
+ src/sdcard_utils.h \
+ /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
+ /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SD/src/SD.h \
+ /home/msnp/.platformio/packages/framework-arduinoespressif32/libraries/SD/src/sd_defines.h

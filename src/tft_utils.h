@@ -745,9 +745,10 @@ public:
 
 /// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 enum enum_SCREEN_MODE { 
-    NORMAL_MODE , SETUP_WIFI_MODE, SHOW_ENVINFO_MODE,
+    NORMAL_MODE = 0 , SETUP_WIFI_MODE  = 1, SHOW_ENVINFO_MODE  = 2,
 
-    ERROR_MODE  = 225
+    TEST_MODE_SCREEN      = 252, TEST_MODE_BLANK = 253,
+    RESERVED_FEATURE_MODE = 254, ERROR_MODE      = 255
 };
 uint16_t screen_mode = NORMAL_MODE;
 

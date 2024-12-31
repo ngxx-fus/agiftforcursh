@@ -33,6 +33,14 @@ namespace controller{
         digitalWrite(26, iled_state);
     }
 
+    void iled_blinky(uint16_t times, uint32_t period = 585){
+        while(times--){
+            digitalWrite(26, LOW); delay(period*49/100);
+            digitalWrite(26, HIGH); delay(period*2/100);
+            digitalWrite(26, LOW); delay(period*49/100);
+        }
+    }
+
     void isr_handler(){
         toggle_iled_sate();
         controller::last_pressed = millis();
