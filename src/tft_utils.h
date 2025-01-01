@@ -22,7 +22,7 @@ template<class T> using vct = vector<T>;
 #define rept(type, i,a,b) for(type i = (a); i <= (b); ++i)
 #endif
 #ifndef revt
-#define revt(type, i,a,b) for(type i = (b); i >= (a); --i)
+#define revt(type, i,b, a) for(type i = (b); i >= (a); --i)
 #endif
 
 /// >>>>>>>>>>> initializing font properties >>>>>>>>>>>>
