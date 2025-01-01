@@ -16,6 +16,7 @@ using namespace std;
 #endif
 
 void sdcard_init(){
+    SPI.setFrequency(UINT32_MAX);
     msg2ser("call\t", "sdcard_init");
     if(!SD.begin(SDCARD_SPI_CS_PIN)){
         msg2ser("\t", "SDcard: failed to mount");
@@ -39,6 +40,7 @@ void sdcard_init(){
 /// @param fs  the main directory’s name
 /// @param dirname directory name, corresponds to the microSD card root directory
 /// @param levels  the levels to go into the directory
+/// @note  only return file/dir on same levels
 vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
     msg2ser("call\t", "sdcard_list_dir");
@@ -52,12 +54,12 @@ vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
     File file = root.openNextFile();
     while (file){
         if (file.isDirectory()){
-            res.push_back(file.name());
+            if(!levels == 0) res.push_back(file.name());
             if (levels)
                 sdcard_list_dir(fs, file.name(), levels - 1);
         }
         else
-            res.push_back(file.name());
+            if(levels == 0) res.push_back(file.name());
         file = root.openNextFile();
     }
     return res;
@@ -179,12 +181,11 @@ void sdcard_writebytes_file(
 ///       Each pixel is stored as two bytes (little-endian format, LSB first).
 ///       Ensure the file exists, and the buffer provided has sufficient space for `size` pixels.
 ///       The function reads the image pixel by pixel and combines the two bytes to form each 16-bit pixel.
-template<class Tdest = uint16_t*>
-void read_and_show_565format_image(
-    fs::FS &fs, const char *img_path,
+void read_and_insert_565format_image(
+    fs::FS &fs, String img_path,
     POINT<uint16_t> pos, uint16_t w, uint16_t h
 ){
-    msg2ser("call\t", "read_565format_image");
+    msg2ser("call\t", "read_and_insert_565format_image");
     File file = fs.open(img_path, FILE_READ);
     if (!file) {
         msg2ser("\t", "SDCard: Read 565f img: Failed to open");

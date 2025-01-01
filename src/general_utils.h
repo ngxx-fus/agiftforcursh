@@ -100,69 +100,103 @@ unsigned int reverse_bit_order(T num) {
     return reversed;  ///< Return the final reversed number.
 }
 
-/// @brief  A class to manage a time delay and execute an action after a specified interval.
-/// The class tracks the time elapsed since the `initial time` and compares it with the `interval`.
-/// If the time difference exceeds or equals the `interval`, the `action` is executed.
-class delay_t{
+/// @brief A class that manages time-based delays and executes an action after a specified interval.
+/// This class keeps track of the time elapsed since the `initial time` (stored in `last_t`), 
+/// and compares it with a user-defined `interval`. If the time difference exceeds or equals 
+/// the `interval`, the `action` function is executed.
+class DELAY_CTL {
     uint32_t last_t, interval;   ///< The last time the action was executed or the initial time.
-    function<void(void)> action; ///< The action to be executed after the interval.
 
 public:
-    /// @brief  Default constructor, initializes with current time and interval as 0.
-    delay_t(){
-        last_t = millis();  ///< Initializes `last_t` with current time.
+    /// @brief Default constructor that initializes with the current time and sets the interval to 0.
+    /// This constructor sets the `last_t` to the current time (via `millis()`) and sets the `interval` to 0.
+    DELAY_CTL(){
+        last_t = millis();  ///< Sets `last_t` to the current time.
         interval = 0;        ///< Sets `interval` to 0 by default.
     }
 
-    /// @brief  Constructor with custom interval and action.
+    /// @brief Constructor with a custom interval, initializes action to `nullptr`.
+    /// This constructor sets the `last_t` to the current time (via `millis()`) and assigns a user-defined `interval`.
     /// @param interval   The interval time (in milliseconds) to compare with the current time.
-    /// @param action     The action to be executed when the interval has elapsed.
-    delay_t(uint32_t interval, function<void(void)> action){
+    DELAY_CTL(uint32_t interval){
         this->last_t = millis();  ///< Sets the initial time to the current time.
-        this->interval = interval; ///< Sets the interval to the specified value.
-        this->action = action;     ///< Sets the action to be executed.
+        this->interval = interval; ///< Sets the interval to the provided value.
     }
 
-    /// @brief  Sets a new interval time.
+    /// @brief Sets a new interval time.
+    /// This function updates the `interval` to a new value.
     /// @param t   The new interval time (in milliseconds) to set.
     void set_interval(uint32_t t){
-        interval = t; ///< Sets the interval to the specified value.
+        interval = t; ///< Updates `interval` to the new value.
     }
 
-    /// @brief  Sets a new initial time.
-    /// @param t   The new initial time (in milliseconds).
+    /// @brief Sets a new initial time for `last_t`.
+    /// This method updates the `last_t` variable to a specified time, representing the last action execution time.
+    /// @param t   The new initial time (in milliseconds) to set.
     void set_initial_time(uint32_t t){
-        last_t = t; ///< Updates the `last_t` to the specified time.
+        last_t = t; ///< Updates `last_t` to the specified time.
     }
 
-    /// @brief  Updates the initial time to the current time.
+    /// @brief Updates the initial time to the current time.
+    /// This method resets `last_t` to the current time (via `millis()`), effectively marking the moment of the last action.
     void update_initial_time(){
-        last_t = millis(); ///< Resets the `last_t` to the current time.
+        last_t = millis(); ///< Resets `last_t` to the current time.
     }
 
-    /// @brief  Checks if the specified interval has passed and runs the action if needed.
-    /// @return `true` if the action was executed, `false` otherwise.
-    bool run(){
+    /// @brief Checks if the specified interval has passed and optionally updates the initial time.
+    /// This method compares the elapsed time since the last action and checks if it has exceeded the interval.
+    /// If so, it resets `last_t` to the current time.
+    /// @param update   A boolean flag to indicate if `last_t` should be updated after the action is run (default is `true`).
+    /// @return `true` if the interval has passed, `false` otherwise.
+    bool is_able_to_run(bool update = true){
         if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
-            if(action)  ///< If an action is defined.
-                action(); ///< Executes the action.
-            return true; ///< Indicates that the action was performed.
+            if(update) last_t = millis(); ///< Optionally updates `last_t` to the current time after the check.
+            return true; ///< Indicates the action can be run as the interval has passed.
         }
-        return false; ///< If the interval hasn't passed yet, return `false`.
+        return false; ///< If the interval hasn't passed, returns `false`.
     }
 
-    /// @brief  Updates the initial time and runs the action if the interval has passed.
+    /// @brief Checks if the specified interval has passed, runs the action, and optionally resets `last_t`.
+    /// This method checks if the interval has passed, then runs the specified action and optionally updates `last_t`.
+    /// If no action is provided, it defaults to an empty lambda function (`[]() -> void {}`).
+    /// @param action   The function to execute if the interval has passed (defaults to an empty lambda).
+    /// @param update   A boolean flag to decide whether to update `last_t` after running the action (default is `true`).
     /// @return `true` if the action was executed and the initial time was updated, `false` otherwise.
-    bool update_and_run(){
+    template<class... Targs>
+    bool run(std::function<void(Targs...)> action = []() -> void {}, bool update = true){
         if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
-            if(action)  ///< If an action is defined.
-                action(); ///< Executes the action.
-            last_t = millis(); ///< Resets `last_t` to the current time after running the action.
-            return true; ///< Indicates that the action was performed and the initial time updated.
+            if(action)  ///< If an action is provided, execute it.
+                action(); ///< Runs the action with the provided arguments.
+            if(update) last_t = millis(); ///< Optionally updates `last_t` to the current time after running the action.
+            return true; ///< Indicates the action was performed and the time updated.
         }
-        return false; ///< If the interval hasn't passed yet, return `false`.
+        return false; ///< If the interval hasn't passed yet, returns `false`.
     }
+
+    /// @brief Retrieves the current interval time.
+    /// This method returns the current interval time in milliseconds.
+    /// @return The current interval time in milliseconds.
+    uint32_t get_interval() { return this->interval; }
+
+    /// @brief Retrieves the last time the action was executed (the initial time).
+    /// This method returns the last time the action was executed, stored in `last_t`.
+    /// @return The last time the action was executed (in milliseconds).
+    uint32_t get_last_t() { return this->last_t; }
 };
+
+
+String filename_get_extension(String filename){
+    String res = "";
+    uint8_t dot = 0;
+    if(filename.isEmpty()) return res;
+    revt(uint8_t, i, filename.length()-1, 0)
+        if(filename.charAt(i) != '.'){
+            res.concat(filename.charAt(i));
+        }else{
+            break;
+        }
+    return res;
+}
 
 
 #endif

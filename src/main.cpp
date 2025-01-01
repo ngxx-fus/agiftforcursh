@@ -15,7 +15,7 @@ void setup(){
         serial_init();
     #endif
     #if CONTROLLER == true
-        controller::custom_isr_handler = sw_isr_service;
+        // controller::custom_isr_handler = sw_isr_service;
         controller_init();
     #endif
     #if SENSORS == true
@@ -53,6 +53,7 @@ void loop(){
         
         case enum_SCREEN_MODE::RESERVED_FEATURE_MODE:
             reserved_feature_mode();
+            goto MAIN_LOOP;
         
         case enum_SCREEN_MODE::TEST_MODE_SCREEN:
             test_mode_screen();

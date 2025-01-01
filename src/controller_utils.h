@@ -35,9 +35,9 @@ namespace controller{
 
     void iled_blinky(uint16_t times, uint32_t period = 585){
         while(times--){
-            digitalWrite(26, LOW); delay(period*49/100);
-            digitalWrite(26, HIGH); delay(period*2/100);
-            digitalWrite(26, LOW); delay(period*49/100);
+            digitalWrite(26, LOW); delay(period*494/1000);
+            digitalWrite(26, HIGH); delay(1);
+            digitalWrite(26, LOW); delay(period*494/1000);
         }
     }
 

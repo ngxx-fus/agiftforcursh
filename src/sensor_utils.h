@@ -102,8 +102,8 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
 
     uint8_t title0 = 2, humid_row = title0 + 37, temp_row = humid_row + 20,
             btn0 = 185, chart_row = temp_row + 40;
-    static float humid[max_history_size], temp[max_history_size], latest_humid, latest_temp;
-    static uint16_t start_pos = 0, end_pos;
+    float humid[max_history_size], temp[max_history_size], latest_humid, latest_temp;
+    uint16_t start_pos = 0, end_pos;
     uint16_t n_lines = history_size, col_d  = column_distance;
     uint32_t last_t = 0;
     uint16_t sel = 0, selectedBox_W = 68, selectedBox_H = 31;
@@ -245,11 +245,13 @@ void run_env_info(uint16_t const history_size = 15, uint16_t const column_distan
                         msg2ser("\t", "process ```exit``` button", "!");
                         /// exit button
                         screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
+                        while(sw_value() == false) controller::iled_blinky(1);
                         return;
                     case 1:
                         msg2ser("\t", "process ```mode``` button", "!");
                         /// reserve feature
                         screen_mode = enum_SCREEN_MODE::RESERVED_FEATURE_MODE;
+                        while(sw_value() == false) controller::iled_blinky(1);
                         return;
                 }
             }else{
