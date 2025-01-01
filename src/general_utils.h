@@ -99,4 +99,70 @@ unsigned int reverse_bit_order(T num) {
     
     return reversed;  ///< Return the final reversed number.
 }
+
+/// @brief  A class to manage a time delay and execute an action after a specified interval.
+/// The class tracks the time elapsed since the `initial time` and compares it with the `interval`.
+/// If the time difference exceeds or equals the `interval`, the `action` is executed.
+class delay_t{
+    uint32_t last_t, interval;   ///< The last time the action was executed or the initial time.
+    function<void(void)> action; ///< The action to be executed after the interval.
+
+public:
+    /// @brief  Default constructor, initializes with current time and interval as 0.
+    delay_t(){
+        last_t = millis();  ///< Initializes `last_t` with current time.
+        interval = 0;        ///< Sets `interval` to 0 by default.
+    }
+
+    /// @brief  Constructor with custom interval and action.
+    /// @param interval   The interval time (in milliseconds) to compare with the current time.
+    /// @param action     The action to be executed when the interval has elapsed.
+    delay_t(uint32_t interval, function<void(void)> action){
+        this->last_t = millis();  ///< Sets the initial time to the current time.
+        this->interval = interval; ///< Sets the interval to the specified value.
+        this->action = action;     ///< Sets the action to be executed.
+    }
+
+    /// @brief  Sets a new interval time.
+    /// @param t   The new interval time (in milliseconds) to set.
+    void set_interval(uint32_t t){
+        interval = t; ///< Sets the interval to the specified value.
+    }
+
+    /// @brief  Sets a new initial time.
+    /// @param t   The new initial time (in milliseconds).
+    void set_initial_time(uint32_t t){
+        last_t = t; ///< Updates the `last_t` to the specified time.
+    }
+
+    /// @brief  Updates the initial time to the current time.
+    void update_initial_time(){
+        last_t = millis(); ///< Resets the `last_t` to the current time.
+    }
+
+    /// @brief  Checks if the specified interval has passed and runs the action if needed.
+    /// @return `true` if the action was executed, `false` otherwise.
+    bool run(){
+        if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
+            if(action)  ///< If an action is defined.
+                action(); ///< Executes the action.
+            return true; ///< Indicates that the action was performed.
+        }
+        return false; ///< If the interval hasn't passed yet, return `false`.
+    }
+
+    /// @brief  Updates the initial time and runs the action if the interval has passed.
+    /// @return `true` if the action was executed and the initial time was updated, `false` otherwise.
+    bool update_and_run(){
+        if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
+            if(action)  ///< If an action is defined.
+                action(); ///< Executes the action.
+            last_t = millis(); ///< Resets `last_t` to the current time after running the action.
+            return true; ///< Indicates that the action was performed and the initial time updated.
+        }
+        return false; ///< If the interval hasn't passed yet, return `false`.
+    }
+};
+
+
 #endif
