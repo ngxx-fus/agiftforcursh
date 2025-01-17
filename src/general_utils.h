@@ -1,8 +1,20 @@
-#ifndef TIME_UTILS_H
-#define TIME_UTILS_H
+#ifndef GENERAL_UTILS_H
+#define GENERAL_UTILS_H
 #include <Arduino.h>
 #include <serial_utils.h>
 
+#ifndef rep
+#define rep(i,a,b) for(int i = (a); i <= (b); ++i)
+#endif
+#ifndef rev
+#define rev(i,a,b) for(int i = (b); i >= (a); --i)
+#endif
+#ifndef revt
+#define rept(type, i,a,b) for(type i = (a); i <= (b); ++i)
+#endif
+#ifndef revt
+#define revt(type, i,b, a) for(type i = (b); i >= (a); --i)
+#endif
 
 /// >>>>>>>>>>>>>>>>>>>>> TIME UTILS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #define delta64_time(t_final, t_initial) ((t_final>t_initial)?(t_final-t_initial):(t_initial - t_final - 4294967296))
@@ -148,7 +160,7 @@ public:
     /// If so, it resets `last_t` to the current time.
     /// @param update   A boolean flag to indicate if `last_t` should be updated after the action is run (default is `true`).
     /// @return `true` if the interval has passed, `false` otherwise.
-    bool is_able_to_run(bool update = true){
+    bool time_to_run(bool update = true){
         if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
             if(update) last_t = millis(); ///< Optionally updates `last_t` to the current time after the check.
             return true; ///< Indicates the action can be run as the interval has passed.

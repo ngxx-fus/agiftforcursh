@@ -22,12 +22,26 @@ void msg2ser(Tmsg msg, Tmsgs... msgs){
     #endif
 }
 
+template<class... Tmsgs>
+void log2ser(Tmsgs... msgs){
+    msg2ser("[", millis(), "] ", "log\t", msgs...);
+}
+
+template<class... Tmsgs>
+void info(Tmsgs... msgs){
+    msg2ser("[", millis(), "] ", "info\t",msgs...);
+}
+
+template<class... Tmsgs>
+void call(Tmsgs... msgs){
+    msg2ser("[", millis(), "] ", "call\t",msgs...);
+}
+
 void serial_init(){
     #if LOG == true
         Serial.begin(115200);
         msg2ser("\n\nHello!");
     #endif
 }
-
 
 #endif

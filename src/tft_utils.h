@@ -9,7 +9,9 @@
 
 using namespace std;
 
-#define TFT_SCREEN true
+#ifndef TFT_SCREEN
+    #define TFT_SCREEN true
+#endif
 
 template<class T> using vct = vector<T>;
 #ifndef rep

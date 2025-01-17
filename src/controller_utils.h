@@ -7,15 +7,15 @@ using namespace std;
 #include <Arduino.h>
 
 #ifndef VR_X_PIN
-#define VR_X_PIN 35
+#define VR_X_PIN 0
 #endif
 
 #ifndef VR_Y_PIN
-#define VR_Y_PIN 34
+#define VR_Y_PIN 0
 #endif
 
 #ifndef SW_PIN
-#define SW_PIN 17
+#define SW_PIN 0
 #endif
 
 #ifndef in_range
@@ -28,7 +28,7 @@ namespace controller{
 
     function<void(void)> custom_isr_handler;
 
-    void toggle_iled_sate(){
+    void toggle_iled_state(){
         iled_state = !iled_state;
         digitalWrite(26, iled_state);
     }
@@ -42,11 +42,11 @@ namespace controller{
     }
 
     void isr_handler(){
-        toggle_iled_sate();
+        toggle_iled_state();
         controller::last_pressed = millis();
         if(controller::custom_isr_handler)
             controller::custom_isr_handler();
-        toggle_iled_sate();
+        toggle_iled_state();
     }
 }
            
@@ -91,7 +91,7 @@ void controller_init(){
     pinMode(VR_Y_PIN, PULLDOWN);
     pinMode(VR_X_PIN, PULLDOWN);
 
-    pinMode(26, OUTPUT);
+    pinMode(0, OUTPUT);
 
 
     if(controller::custom_isr_handler){
