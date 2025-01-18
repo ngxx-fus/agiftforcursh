@@ -125,7 +125,7 @@ public:
     /// This constructor sets the `last_t` to the current time (via `millis()`) and sets the `interval` to 0.
     DELAY_CTL(){
         _forced_stop = false;
-        last_t = millis();  ///< Sets `last_t` to the current time.
+        last_t = 0;  ///< Sets `last_t` to the current time.
         interval = 0;        ///< Sets `interval` to 0 by default.
     }
 
@@ -134,7 +134,7 @@ public:
     /// @param interval   The interval time (in milliseconds) to compare with the current time.
     DELAY_CTL(uint32_t interval){
         _forced_stop = false;
-        this->last_t = millis();  ///< Sets the initial time to the current time.
+        this->last_t = 0;  ///< Sets the initial time to the current time.
         this->interval = interval; ///< Sets the interval to the provided value.
     }
 
@@ -168,6 +168,7 @@ public:
     /// @return `true` if the interval has passed, `false` otherwise.
     bool time_to_run(bool update = true){
         if( _forced_stop == true ) return false;
+        if(last_t == 0) {last_t = 1; return true;}
         if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
             if(update) last_t = millis(); ///< Optionally updates `last_t` to the current time after the check.
             return true; ///< Indicates the action can be run as the interval has passed.

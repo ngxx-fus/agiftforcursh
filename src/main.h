@@ -59,10 +59,16 @@ using namespace std;
     #include "sdcard_utils.h"
 #endif
 
-/// >>>>>>>>>>>>>>>>>>>> OTHERS DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
-vector<String>  imgs_list;
-DELAY_CTL       delay0(60000U);
-DELAY_CTL       delay1(30000U);
+/// >>>>>>>>>>>>>>>>>>>> OTHERS DEFINITIONS >>>>>>>>>>>>1>>>>>>>>>>>>
+#define                     GUIDE_COLOR                 0xef7d
+#define                     SELECTED_BOX                0x9e1d
+
+vector<String>              imgs_list;
+DELAY_CTL                   delay0(60000U);
+DELAY_CTL                   delay1(30000U);
+float                       humid = 0.0, temp = 0.0;
+static uint8_t              btn_pressed = 0x0; 
+static bool                 show_env_info = true;
 
 /// @brief show error screen
 void error_mode(){
@@ -126,12 +132,26 @@ uint32_t update_imgs_list(){
     return imgs_list.size();
 }
 
+void show_humid_temp_box(POINT<> pos, uint16_t background_color = 0x0, uint16_t text_color = 0xFFFF){
+    /// insert background
+    canvas.insert_rectangle(pos, 120, 43, background_color, true, background_color);
+    /// insert humid/
+    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+5), "Humid: ", text_color);
+    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+70), String(humid), text_color);
+    /// insert temp
+    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+5), "Temp: ", text_color);
+    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+70), String(temp), text_color);
+}
+
 void get_and_show_image(
     uint16_t& i, bool auto_update = true, 
-    bool increase = true, bool show_before_update = true
+    bool increase = true, bool show_before_update = true,
+    bool temporary_hide_humid_temp_box = false
 ){
     call( "get_and_show_image");
 
+    if(!sdcard_is_available) return;
+    
     basic_io::led0_blinky(2, 23,35);
 
     #if SDCARD_RW == true
@@ -155,42 +175,112 @@ void get_and_show_image(
                 POINT<>(0,0), 172, 220
             );
     #endif
+    if(!temporary_hide_humid_temp_box && show_env_info){
+        show_humid_temp_box(POINT<>(174, 2), 0x18c3, 0x94b2);
+    }
 }
 
+static void slideshow_btn3_isr(){
+    #if LOG == true
+        call( "slideshow_btn3_isr");
+    #endif
+    btn_pressed |= 0x1;
+    delay(500);
+}
+
+static void slideshow_btn2_isr(){
+    #if LOG == true
+        call( "slideshow_btn2_isr");
+    #endif
+    btn_pressed |= 0x2;
+}
+
+static void slideshow_btn1_isr(){
+    #if LOG == true
+        call( "slideshow_btn1_isr");
+    #endif
+    btn_pressed |= 0x4;
+}
+
+static void slideshow_btn0_isr(){
+    #if LOG == true
+        call( "slideshow_btn0_isr");
+    #endif
+    btn_pressed |= 0x8;
+}
 
 void slideshow_menuconfig_mode(){
+    /// [3] UP 
+    /// [2] DOWN
+    /// [1] OKE
+    /// [0] QUIT
+
     call("slideshow_menuconfig_mode");
     #if TFT_SCREEN == true
+        btn_pressed = 0x0;
 
         while(basic_io::btn1_val() == false) basic_io::led0_blinky(5);
 
         uint8_t     title0 = 2;
-        uint16_t    selectedBox_W = 68, selectedBox_H = 31, btn0 = 190,
-                    sel = 0, prev_sel = 2;
+        uint16_t    btn_pressedBox_W = 68, btn_pressedBox_H = 31, btn0 = 190,
+                    sel = 0, prev_sel = 2, 
+                    x_option0 = title0+65, x_option1 = title0+90, 
+                    x_option2 = title0+115;
         const uint16_t  max_sel = 3;
         uint32_t        last_t = 0;
 
         while (0x1){
 
             /// UP
-            if( sel == 0 && basic_io::btn3_val() == false ) {
-                sel = (sel + 1) % max_sel;
-                delay(50); while(basic_io::btn2_val() == false);
+            if( btn_pressed & 0x1 ){
+                btn_pressed = btn_pressed & 0xFE;
+                sel = (sel == 0)?(max_sel-1):(sel-1);
             }
             /// DOWN
-            if( sel == 0 &&  basic_io::btn2_val() == false){ 
-                sel = (sel == max_sel-1)?(0):(sel-1);
-                delay(50); while(basic_io::btn2_val() == false);
+            if( btn_pressed & 0x2){ 
+                btn_pressed = btn_pressed & 0xFD;
+                sel = (sel + 1) % max_sel;
             }
-            /// OK
-            if( sel != 0 &&   basic_io::btn1_val() == false){
-                /// waiting for released from user
-                delay(50); while(basic_io::btn2_val() == false);
+            /// CH
+            if( btn_pressed & 0x4 ){
+                btn_pressed = btn_pressed & 0xFB;
+                switch (sel){
+                    case 0:
+                        delay0.get_interval();
+                        delay0.set_interval(
+                            (delay0.get_interval())%600000U + 10000
+                        );
+                        delay(100);
+                        while(!basic_io::btn1_val()){
+                            delay0.set_interval(
+                                (delay0.get_interval())%600000U + 10000
+                            );
+                            delay(200);
+                        }
+                        break;
+                    case 1:
+                        delay(300);
+                        show_env_info = ! show_env_info;
+                        break;
+                    case 2:
+                        delay1.get_interval();
+                        delay1.set_interval(
+                            (delay1.get_interval())%600000U + 10000
+                        );
+                        delay(100);
+                        while(!basic_io::btn1_val()){
+                            delay1.set_interval(
+                                (delay1.get_interval())%600000U + 10000
+                            );
+                            delay(200);
+                        }
+                        break;
+                }
             }
-            /// exit
-            if(basic_io::btn0_val() == false){
-                delay(50); while(basic_io::btn2_val() == false);
-                return;
+            /// OKE
+            if( btn_pressed & 0x8 ){
+                btn_pressed = btn_pressed & 0xFB;
+                goto MENUCONFIG_SLIDESHOW_SAFE_EXIT;
             }
 
             /// clear canvas
@@ -199,24 +289,40 @@ void slideshow_menuconfig_mode(){
             canvas.insert_rectangle(POINT<>(title0-1, 1), 170, 35, 0x18c3, true, sensors_color_1);
             canvas.insert_text(POINT<>(title0+22, 45), "menuconfig", sensors_color_2);
             /// show guide
-            canvas.insert_text(POINT<>(70, 145),    "UP", 0xe73c);
-            canvas.insert_text(POINT<>(70+30, 145), "DN", 0xe73c);
-            canvas.insert_text(POINT<>(70+60, 145), "OK", 0xe73c);
-            canvas.insert_text(POINT<>(70+90, 145), "Q*", 0xe73c);
+            canvas.insert_text(POINT<>(85, 145),    "UP", GUIDE_COLOR);
+            canvas.insert_text(POINT<>(85+30, 145), "DN", GUIDE_COLOR);
+            canvas.insert_text(POINT<>(85+60, 145), "CH", GUIDE_COLOR);
+            canvas.insert_text(POINT<>(85+90, 145), "OK", GUIDE_COLOR);
             /// show option - slideshow duration
-            canvas.insert_text(POINT<>(title0+65, 5), "Img duration:", 0x10a9);
-            canvas.insert_text(POINT<>(title0+65, 105), String(delay0.get_interval()/1000), 0x19ec);
+            canvas.insert_text(POINT<>(x_option0, 5), "Img duration:", 0x10a9);
+            canvas.insert_text(POINT<>(x_option0, 105), String(delay0.get_interval()/1000), 0x19ec);
             /// show option - show temp,humid
-            canvas.insert_text(POINT<>(title0+90, 5),  "Env info:", 0x10a9);
-            canvas.insert_text(POINT<>(title0+90, 105), String(delay1.forced_stop()?"N":"Y"), 0x19ec);
-            canvas.insert_text(POINT<>(title0+115, 5), "Env interval:", 0x10a9);
-            canvas.insert_text(POINT<>(title0+115, 105), String(delay1.get_interval()/1000), 0x19ec);
+            canvas.insert_text(POINT<>(x_option1, 5),  "Env info:", 0x10a9);
+            canvas.insert_text(POINT<>(x_option1, 105), String(show_env_info?"Y":"N"), 0x19ec);
+            canvas.insert_text(POINT<>(x_option2, 5), "Env interval:", 0x10a9);
+            canvas.insert_text(POINT<>(x_option2, 105), String(delay1.get_interval()/1000), 0x19ec);
             
+            /// show current selection
+            switch(sel){
+                case 0:
+                    canvas.insert_rectangle(POINT<>(x_option0-17, 2), 138, 25, SELECTED_BOX);
+                    break;
+                case 1:
+                    canvas.insert_rectangle(POINT<>(x_option1-17, 2), 138, 25, SELECTED_BOX);
+                    break;
+                case 2:
+                    canvas.insert_rectangle(POINT<>(x_option2-17, 2), 138, 25, SELECTED_BOX);
+                    break;
+            }
 
             SHOW_CHANGED:
             canvas.show();
         }
     #endif
+    return;
+    MENUCONFIG_SLIDESHOW_SAFE_EXIT:
+    btn_pressed = 0x0;
+    return;
 }
 
 /// @brief slide show mode
@@ -228,43 +334,48 @@ void slideshow_mode(){
 
     call( "slideshow_mode");
 
+    basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
+    basic_io::btn2_attach_interrupt(slideshow_btn2_isr);
+    basic_io::btn1_attach_interrupt(slideshow_btn1_isr);
+    basic_io::btn0_attach_interrupt(slideshow_btn0_isr);
+
     #if TFT_SCREEN == true
         update_imgs_list();
 
         while(basic_io::btn1_val() == false) basic_io::led0_blinky(5);
 
-        bool        selected = false;
         uint8_t     title0 = 2;
-        uint16_t    selectedBox_W = 68, selectedBox_H = 31, btn0 = 190,
+        uint16_t    btn_pressedBox_W = 68, btn_pressedBox_H = 31, btn0 = 190,
                     img_pos = 0, sel = 0, prev_sel = 2;
-        uint32_t    last_t = 0;
 
         get_and_show_image(img_pos, false);
 
         while(0x1){
             SLIDESHOW:
             
-            // basic_io::toggle_led1_state();
-            // log2ser(
-            //     "btn0: ", basic_io::btn0_recent_pressed,
-            //     " btn1: ", basic_io::btn1_recent_pressed,
-            //     " btn2: ", basic_io::btn2_recent_pressed,
-            //     " btn3: ", basic_io::btn2_recent_pressed
-            // );
-
             /// @brief for slideshow image control :v
-            if( t_since(basic_io::btn3_last_pressed) < 1000 ){
+            /// @brief -> next
+            if( btn_pressed & 0x1 ){
+                btn_pressed = btn_pressed & 0xFE;
                 get_and_show_image(img_pos, true, true, false);
+                goto SHOW_CHANGED;
             }
-            if( t_since(basic_io::btn2_last_pressed) < 1000 ){ 
+
+            /// @brief -> previous
+            if( btn_pressed & 0x2 ){ 
+                btn_pressed = btn_pressed & 0xFD;
                 get_and_show_image(img_pos, true, false, false);
+                goto SHOW_CHANGED;
             }
 
             /// @brief enter selection
-            if( t_since(basic_io::btn1_last_pressed) < 1000 ){
+            if( btn_pressed & 0x4 ){
+                btn_pressed = btn_pressed & 0xFB;
                 if(sel == 1){
+                    /// goto menuconfig mode
                     slideshow_menuconfig_mode();
                     /// re-draw img
+                    sel = 0; prev_sel = sel-1;
                     get_and_show_image(img_pos, false); 
                     goto SHOW_CHANGED;
                 }
@@ -275,54 +386,52 @@ void slideshow_mode(){
             }
 
             /// @brief for bounding box, other controls
-            if( t_since(basic_io::btn0_last_pressed) < 1000 ){
+            if( btn_pressed & 0x8 ){
+                btn_pressed = btn_pressed & 0xF7;
                 sel = (sel+1) % 3;
                 if(sel == 0){
-                    prev_sel = sel;
+                    /// show image
                     get_and_show_image(img_pos, false); 
                     goto SHOW_CHANGED;
                 }
             }
 
-            /// periody update image
-            if( delay0.time_to_run(true) == true )
-                get_and_show_image(img_pos, true);
-
-            /// update temp&humid
-            if( delay1.time_to_run() == true){
-                basic_io::led0_blinky(1, 5, 5);
-                canvas.insert_rectangle(POINT<>(174, 2), 124, 43, 0x18c3, true, 0x18c3);
-                /// insert humid
-                canvas.insert_text(POINT<>(190, 5), "Humid: ", 0x94b2);
-                canvas.insert_text(POINT<>(190, 70), String(sensors::read_humid()), 0x94b2);
-                /// insert temp
-                canvas.insert_text(POINT<>(210, 5), "Temp: ", 0x94b2);
-                canvas.insert_text(POINT<>(210, 70), String(sensors::read_temp()), 0x94b2);
-                basic_io::led0_val(LOW);
+            /// periody update env info
+            if(delay1.time_to_run()){
+                humid = sensors::read_humid(0);
+                temp = sensors::read_temp(0);
             }
+
+            /// periody update image
+            if( delay0.time_to_run(true)){
+                SHOW_IMAGE:
+                get_and_show_image(img_pos, true);
+                goto SHOW_CHANGED;
+            }
+            
 
             /// draw guide
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
                 /// show image 
-                get_and_show_image(img_pos, false); 
+                get_and_show_image(img_pos, false, true, true, true); 
                 /// show title
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
                 /// show guide
-                canvas.insert_text(POINT<>(65, 145),    "N", 0xad55);
-                canvas.insert_text(POINT<>(65+30, 145), "P", 0xad55);
-                canvas.insert_text(POINT<>(65+60, 145), "O", 0xad55);
-                canvas.insert_text(POINT<>(65+90, 145), "M", 0xad55);
+                canvas.insert_text(POINT<>(65, 145),    "N", GUIDE_COLOR);
+                canvas.insert_text(POINT<>(65+30, 145), "P", GUIDE_COLOR);
+                canvas.insert_text(POINT<>(65+60, 145), "O", GUIDE_COLOR);
+                canvas.insert_text(POINT<>(65+90, 145), "M", GUIDE_COLOR);
                 /// show next/mode button
                 show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
-                /// show selected box based on ```sel```
+                /// show btn_pressed box based on ```sel```
                 switch (sel){
                     case 1:
-                        canvas.insert_rectangle(POINT<>(btn0-2, 13), selectedBox_W, selectedBox_H, sensors_color_21);
+                        canvas.insert_rectangle(POINT<>(btn0-2, 13), btn_pressedBox_W, btn_pressedBox_H, sensors_color_21);
                         break;
                     case 2:
-                        canvas.insert_rectangle(POINT<>(btn0-2, 91), selectedBox_W, selectedBox_H, sensors_color_21);
+                        canvas.insert_rectangle(POINT<>(btn0-2, 91), btn_pressedBox_W, btn_pressedBox_H, sensors_color_21);
                         break;
                 }
                 prev_sel = sel;                                                       
@@ -331,6 +440,13 @@ void slideshow_mode(){
             canvas.show();
         }
     #endif
+    SLIDESHOW_SAFE_EXIT:
+    btn_pressed = 0x0;
+    basic_io::btn3_detach_interrupt();
+    basic_io::btn2_detach_interrupt();
+    basic_io::btn1_detach_interrupt();
+    basic_io::btn0_detach_interrupt();
+    return;
 }
 
 /// @brief test screen color

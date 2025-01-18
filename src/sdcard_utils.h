@@ -15,6 +15,8 @@ using namespace std;
     #define SDCARD_SPI_CS_PIN 5
 #endif
 
+bool sdcard_is_available = true;
+
 void sdcard_init(){
     #if LOG == true
         call("sdcard_init: ");
@@ -25,8 +27,14 @@ void sdcard_init(){
         log2ser( "SDcard: failed to mount");
         controller::iled_blinky(10);
         if(SD.cardType() == CARD_NONE){
+            sdcard_is_available = false;
             log2ser( "SDcard: No SDcard");
-            controller::iled_blinky(10);
+            #if BASIC_IO == true
+                basic_io::led0_blinky(5, 15, 30);
+            #endif
+            #if CONTROLLER == true
+                controller::iled_blinky(10);
+            #endif
         }
     }else{
         log2ser( "SDcard: mounted");

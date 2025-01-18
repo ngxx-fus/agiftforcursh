@@ -40,8 +40,12 @@ using namespace std;
     #define ISR_WAIT_FOR_STABLE delay(200);
 #endif
 
+#ifndef ISR_HANDLER
+    #define ISR_HANDLER false
+#endif
+
 #ifndef CUSTOM_ISR_HANDLER
-#define CUSTOM_ISR_HANDLER true
+    #define CUSTOM_ISR_HANDLER true
 #endif
 
 namespace basic_io{
@@ -63,6 +67,78 @@ namespace basic_io{
                                 btn3_isr_handler;
     #endif
 
+    void btn3_detach_interrupt(){
+        #if LOG == true
+            call( "btn3_detach_interrupt");
+        #endif
+        detachInterrupt(digitalPinToInterrupt(BTN3_PIN));
+    }
+    void btn2_detach_interrupt(){
+        #if LOG == true
+            call( "btn2_detach_interrupt");
+        #endif
+        detachInterrupt(digitalPinToInterrupt(BTN2_PIN));
+    }
+    void btn1_detach_interrupt(){
+        #if LOG == true
+            call( "btn1_detach_interrupt");
+        #endif
+        detachInterrupt(digitalPinToInterrupt(BTN1_PIN));
+    }
+    void btn0_detach_interrupt(){
+        #if LOG == true
+            call( "btn0_detach_interrupt");
+        #endif
+        detachInterrupt(digitalPinToInterrupt(BTN0_PIN));
+    }
+
+    template<class Tfunc>
+    void btn3_attach_interrupt(Tfunc &isr_func){
+        #if LOG == true
+            call( "btn3_attach_interrupt");
+        #endif
+        attachInterrupt(
+            digitalPinToInterrupt(BTN3_PIN), 
+            isr_func, 
+            FALLING
+        );
+    }
+
+    template<class Tfunc>
+    void btn2_attach_interrupt(Tfunc &isr_func){
+        #if LOG == true
+            call( "btn2_attach_interrupt");
+        #endif
+        attachInterrupt(
+            digitalPinToInterrupt(BTN2_PIN), 
+            isr_func, 
+            FALLING
+        );
+    }
+
+    template<class Tfunc>
+    void btn1_attach_interrupt(Tfunc &isr_func){
+        #if LOG == true
+            call( "btn1_attach_interrupt");
+        #endif
+        attachInterrupt(
+            digitalPinToInterrupt(BTN1_PIN), 
+            isr_func, 
+            FALLING
+        );
+    }
+
+    template<class Tfunc>
+    void btn0_attach_interrupt(Tfunc &isr_func){
+        #if LOG == true
+            call( "btn0_attach_interrupt");
+        #endif
+        attachInterrupt(
+            digitalPinToInterrupt(BTN0_PIN), 
+            isr_func, 
+            FALLING
+        );
+    }
 
     void toggle_led0_state(){
         led0_state = !led0_state;
@@ -100,57 +176,59 @@ namespace basic_io{
         }
     }
 
-    void isr3(){
-        ISR_WAIT_FOR_STABLE;
-        #if SAVE_LAST_PRESSED == true
-            btn3_last_pressed   = millis(); 
-        #endif
-        #if CUSTOM_ISR_HANDLER == true
-            if(btn3_isr_handler) btn3_isr_handler();
-        #endif
-        #if LOG == true
-            log2ser("isr3");
-        #endif
-    }
+    #if ISR_HANDLER == true
+        void isr3(){
+            ISR_WAIT_FOR_STABLE;
+            #if SAVE_LAST_PRESSED == true
+                btn3_last_pressed   = millis(); 
+            #endif
+            #if CUSTOM_ISR_HANDLER == true
+                if(btn3_isr_handler) btn3_isr_handler();
+            #endif
+            #if LOG == true
+                log2ser("isr3");
+            #endif
+        }
 
-    void isr2(){
-        ISR_WAIT_FOR_STABLE;
-        #if SAVE_LAST_PRESSED == true
-            btn2_last_pressed   = millis();
-        #endif
-        #if CUSTOM_ISR_HANDLER == true
-            if(btn2_isr_handler) btn2_isr_handler();
-        #endif
-        #if LOG == true
-            log2ser("isr2");
-        #endif
-    }
+        void isr2(){
+            ISR_WAIT_FOR_STABLE;
+            #if SAVE_LAST_PRESSED == true
+                btn2_last_pressed   = millis();
+            #endif
+            #if CUSTOM_ISR_HANDLER == true
+                if(btn2_isr_handler) btn2_isr_handler();
+            #endif
+            #if LOG == true
+                log2ser("isr2");
+            #endif
+        }
 
-    void isr1(){
-        ISR_WAIT_FOR_STABLE;
-        #if SAVE_LAST_PRESSED == true
-            btn1_last_pressed   = millis(); 
-        #endif
-        #if CUSTOM_ISR_HANDLER == true
-            if(btn1_isr_handler) btn1_isr_handler();
-        #endif
-        #if LOG == true
-        log2ser("isr1");
-        #endif
-    }
+        void isr1(){
+            ISR_WAIT_FOR_STABLE;
+            #if SAVE_LAST_PRESSED == true
+                btn1_last_pressed   = millis(); 
+            #endif
+            #if CUSTOM_ISR_HANDLER == true
+                if(btn1_isr_handler) btn1_isr_handler();
+            #endif
+            #if LOG == true
+            log2ser("isr1");
+            #endif
+        }
 
-    void isr0(){
-        ISR_WAIT_FOR_STABLE;
-        #if SAVE_LAST_PRESSED == true
-            btn0_last_pressed   = millis();
-        #endif
-        #if CUSTOM_ISR_HANDLER == true
-            if(btn0_isr_handler) btn0_isr_handler();
-        #endif
-        #if LOG == true
-            log2ser("isr0");
-        #endif
-    }
+        void isr0(){
+            ISR_WAIT_FOR_STABLE;
+            #if SAVE_LAST_PRESSED == true
+                btn0_last_pressed   = millis();
+            #endif
+            #if CUSTOM_ISR_HANDLER == true
+                if(btn0_isr_handler) btn0_isr_handler();
+            #endif
+            #if LOG == true
+                log2ser("isr0");
+            #endif
+        }
+    #endif
 
 };
 
@@ -164,13 +242,14 @@ void basic_io_init(){
             info("enable: btn0: input_pullup");
         #endif
         pinMode(BTN0_PIN, INPUT_PULLUP);
-        attachInterrupt(
-            digitalPinToInterrupt(BTN0_PIN), 
-            basic_io::isr0, 
-            FALLING
-        );
-
-        #if CUSTOM_ISR_HANDLER == true
+        #if ISR_HANDLER == true
+            attachInterrupt(
+                digitalPinToInterrupt(BTN0_PIN), 
+                basic_io::isr0, 
+                FALLING
+            );
+        #endif
+        #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
             if(basic_io::btn0_isr_handler)
                 #if LOG == true
                     info("atteched isr at btn0");
@@ -183,12 +262,14 @@ void basic_io_init(){
             info("enable: btn1: input/pullup");
         #endif
         pinMode(BTN1_PIN, INPUT_PULLUP);
-        attachInterrupt(
-            digitalPinToInterrupt(BTN1_PIN), 
-            basic_io::isr1, 
-            FALLING
-        );
-        #if CUSTOM_ISR_HANDLER == true
+        #if ISRHANDLER == true
+            attachInterrupt(
+                digitalPinToInterrupt(BTN1_PIN), 
+                basic_io::isr1, 
+                FALLING
+            );
+        #endif
+        #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
             if(basic_io::btn1_isr_handler)
                 #if LOG == true
                     info("atteched isr at btn1");
@@ -201,12 +282,14 @@ void basic_io_init(){
             info("enable: btn2: input/pullup");
         #endif
         pinMode(BTN2_PIN, INPUT_PULLUP);
+        #if ISRHANDLER == true
         attachInterrupt(
             digitalPinToInterrupt(BTN2_PIN), 
             basic_io::isr2, 
             FALLING
         );
-        #if CUSTOM_ISR_HANDLER == true
+        #endif
+        #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
             if(basic_io::btn2_isr_handler)
                 #if LOG == true
                     info("atteched isr at btn2");
@@ -219,12 +302,14 @@ void basic_io_init(){
             info("enable: btn3: input/pullup");
         #endif
         pinMode(BTN3_PIN, INPUT_PULLUP);
-        attachInterrupt(
-            digitalPinToInterrupt(BTN3_PIN), 
-            basic_io::isr3, 
-            FALLING
-        );
-        #if CUSTOM_ISR_HANDLER == true
+        #if ISRHANDLER == true
+            attachInterrupt(
+                digitalPinToInterrupt(BTN3_PIN), 
+                basic_io::isr3, 
+                FALLING
+            );
+        #endif
+        #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
             if(basic_io::btn3_isr_handler)
                 #if LOG == true
                     info("atteched isr at btn3");
