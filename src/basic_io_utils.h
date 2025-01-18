@@ -1,6 +1,7 @@
 #ifndef BASIC_IO_UTILS_H
 #define BASIC_IO_UTILS_H
 
+
 #include <algorithm>
 #include <functional>
 using namespace std;
@@ -34,52 +35,41 @@ using namespace std;
 #define LED1_PIN 0
 #endif
 
-
+#define WAIT_WAIT_200MS delay(200);
 
 namespace basic_io{
 
-    bool led0_state = false,
-                led1_state = false;
+    bool                    led0_state = false,
+                            led1_state = false,
+                            btn0_locked = false,
+                            btn1_locked = false,
+                            btn2_locked = false,
+                            btn3_locked = false,
+                            btn0_recent_pressed = false,
+                            btn1_recent_pressed = false,
+                            btn2_recent_pressed = false,
+                            btn3_recent_pressed = false;
 
-    unsigned long   btn0_last_pressed = 0,
-                    btn1_last_pressed = 0,
-                    btn2_last_pressed = 0,
-                    btn3_last_pressed = 0;
+    unsigned long           btn0_last_pressed = 0,
+                            btn1_last_pressed = 0,
+                            btn2_last_pressed = 0,
+                            btn3_last_pressed = 0;
 
     function<void(void)>    btn0_isr_handler,
                             btn1_isr_handler,
                             btn2_isr_handler,
                             btn3_isr_handler;
 
-    void isr0(){
-        btn0_last_pressed= millis(); 
-        if(btn0_isr_handler) btn0_isr_handler();
-    }
-
-    void isr1(){
-        btn1_last_pressed = millis(); 
-        if(btn1_isr_handler) btn1_isr_handler();
-    }
-
-    void isr2(){
-        btn2_last_pressed = millis(); 
-        if(btn2_isr_handler) btn2_isr_handler();
-    }
-
-    void isr3(){
-        btn3_last_pressed = millis(); 
-        if(btn3_isr_handler) btn3_isr_handler();
-    }
 
     void toggle_led0_state(){
         led0_state = !led0_state;
         digitalWrite(LED0_PIN, led0_state);
     }
+
     void toggle_led1_state(){
         led1_state = !led1_state;
         digitalWrite(LED1_PIN, led1_state);
     }
-
 
     bool btn0_val(){return digitalRead(BTN0_PIN);}
     bool btn1_val(){return digitalRead(BTN1_PIN);}
@@ -91,7 +81,7 @@ namespace basic_io{
     void led0_val(bool state){led0_state = state; digitalWrite(LED0_PIN, state);}
     void led1_val(bool state){led1_state = state; digitalWrite(LED1_PIN, state);}
 
-    void led1_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
+    void led0_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
         while(times--){
             digitalWrite(LED0_PIN, LOW); delay(t_off);
             digitalWrite(LED0_PIN, HIGH); delay(t_on);
@@ -99,12 +89,80 @@ namespace basic_io{
         }
     }
 
-    void led0_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
+    void led1_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
         while(times--){
             digitalWrite(LED1_PIN, LOW); delay(t_off);
             digitalWrite(LED1_PIN, HIGH); delay(t_on);
             digitalWrite(LED1_PIN, LOW);
         }
+    }
+
+    bool btn0_is_recent_pressed(){
+        btn0_locked = true;
+        bool tmp = btn0_recent_pressed; 
+        btn0_recent_pressed = false;
+        btn0_locked = false;
+        return tmp;
+    }
+
+    bool btn1_is_recent_pressed(){
+        btn1_locked = true;
+        bool tmp = btn1_recent_pressed; 
+        btn1_recent_pressed     = false; 
+        btn1_locked = false;
+        return tmp;
+    }
+
+    bool btn2_is_recent_pressed(){
+        btn2_locked = true;
+        bool tmp = btn2_recent_pressed; 
+        btn2_recent_pressed     = false; 
+        btn2_locked = false;
+        return tmp;
+    }
+
+    bool btn3_is_recent_pressed(){
+        btn3_locked = true;
+        bool tmp = btn3_recent_pressed; 
+        btn3_recent_pressed = false; 
+        btn3_locked = false;
+        return tmp;
+    }
+
+    void isr3(){
+        WAIT_WAIT_200MS;
+        if(btn3_locked) return; 
+        btn3_last_pressed   = millis(); 
+        btn3_recent_pressed = true;
+        if(btn3_isr_handler) btn3_isr_handler();
+        log2ser("isr3");
+    }
+
+    void isr2(){
+        WAIT_WAIT_200MS;
+        if(btn2_locked) return; 
+        btn2_last_pressed   = millis();
+        btn2_recent_pressed = true;
+        if(btn2_isr_handler) btn2_isr_handler();
+        log2ser("isr2");
+    }
+
+    void isr1(){
+        WAIT_WAIT_200MS;
+        if(btn1_locked) return; 
+        btn1_last_pressed   = millis(); 
+        btn1_recent_pressed = true;
+        if(btn1_isr_handler) btn1_isr_handler();
+        log2ser("isr1");
+    }
+
+    void isr0(){
+        log2ser("isr0");
+        WAIT_WAIT_200MS;
+        if(btn0_locked) return; 
+        btn0_last_pressed   = millis();
+        btn0_recent_pressed = true;
+        if(btn0_isr_handler) btn0_isr_handler();
     }
 
 };

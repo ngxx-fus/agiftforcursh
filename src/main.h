@@ -25,7 +25,6 @@ using namespace std;
 #define LED1_PIN                27
  
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
-#include "images.h"
 
 #if USB_SERIAL == true
     #include "serial_utils.h"
@@ -34,12 +33,15 @@ using namespace std;
 #if BASIC_IO == true
     #include "basic_io_utils.h"
 #endif
+
+#include "images.h"
+#include "tft_utils.h"
+#include "general_utils.h"
+
+
 #if CONTROLLER == true
     #include "controller_utils.h"
 #endif
-
-#include "tft_utils.h"
-#include "general_utils.h"
 
 #if WIFI_CONNECTION == true
     #include "wifi_utils.h"
@@ -59,7 +61,8 @@ using namespace std;
 
 /// >>>>>>>>>>>>>>>>>>>> OTHERS DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
 vector<String>  imgs_list;
-
+DELAY_CTL       delay0(60000U);
+DELAY_CTL       delay1(30000U);
 
 /// @brief show error screen
 void error_mode(){
@@ -81,7 +84,7 @@ void error_mode(){
     #endif
     #if BASIC_IO == true
         basic_io::led0_val(1);
-        basic_io::led1_blinky(10000, 19, 253);
+        basic_io::led0_blinky(10000, 19, 253);
     #endif
     #if CONTROLLER == true
         while(0x1)  controller::iled_blinky(1);
@@ -108,7 +111,7 @@ void reserved_feature_mode(){
     #endif
     #if BASIC_IO == true
         basic_io::led0_val(1);
-        basic_io::led1_blinky(10000, 17, 329);
+        basic_io::led0_blinky(10, 17, 329);
     #endif
     #if CONTROLLER == true
         controller::iled_blinky(10, 1000);
@@ -129,7 +132,7 @@ void get_and_show_image(
 ){
     call( "get_and_show_image");
 
-    basic_io::led1_blinky(2, 23,35);
+    basic_io::led0_blinky(2, 23,35);
 
     #if SDCARD_RW == true
         if(imgs_list.empty()) return;
@@ -154,6 +157,68 @@ void get_and_show_image(
     #endif
 }
 
+
+void slideshow_menuconfig_mode(){
+    call("slideshow_menuconfig_mode");
+    #if TFT_SCREEN == true
+
+        while(basic_io::btn1_val() == false) basic_io::led0_blinky(5);
+
+        uint8_t     title0 = 2;
+        uint16_t    selectedBox_W = 68, selectedBox_H = 31, btn0 = 190,
+                    sel = 0, prev_sel = 2;
+        const uint16_t  max_sel = 3;
+        uint32_t        last_t = 0;
+
+        while (0x1){
+
+            /// UP
+            if( sel == 0 && basic_io::btn3_val() == false ) {
+                sel = (sel + 1) % max_sel;
+                delay(50); while(basic_io::btn2_val() == false);
+            }
+            /// DOWN
+            if( sel == 0 &&  basic_io::btn2_val() == false){ 
+                sel = (sel == max_sel-1)?(0):(sel-1);
+                delay(50); while(basic_io::btn2_val() == false);
+            }
+            /// OK
+            if( sel != 0 &&   basic_io::btn1_val() == false){
+                /// waiting for released from user
+                delay(50); while(basic_io::btn2_val() == false);
+            }
+            /// exit
+            if(basic_io::btn0_val() == false){
+                delay(50); while(basic_io::btn2_val() == false);
+                return;
+            }
+
+            /// clear canvas
+            canvas.refill(0xFFFF);
+            /// show title
+            canvas.insert_rectangle(POINT<>(title0-1, 1), 170, 35, 0x18c3, true, sensors_color_1);
+            canvas.insert_text(POINT<>(title0+22, 45), "menuconfig", sensors_color_2);
+            /// show guide
+            canvas.insert_text(POINT<>(70, 145),    "UP", 0xe73c);
+            canvas.insert_text(POINT<>(70+30, 145), "DN", 0xe73c);
+            canvas.insert_text(POINT<>(70+60, 145), "OK", 0xe73c);
+            canvas.insert_text(POINT<>(70+90, 145), "Q*", 0xe73c);
+            /// show option - slideshow duration
+            canvas.insert_text(POINT<>(title0+65, 5), "Img duration:", 0x10a9);
+            canvas.insert_text(POINT<>(title0+65, 105), String(delay0.get_interval()/1000), 0x19ec);
+            /// show option - show temp,humid
+            canvas.insert_text(POINT<>(title0+90, 5),  "Env info:", 0x10a9);
+            canvas.insert_text(POINT<>(title0+90, 105), String(delay1.forced_stop()?"N":"Y"), 0x19ec);
+            canvas.insert_text(POINT<>(title0+115, 5), "Env interval:", 0x10a9);
+            canvas.insert_text(POINT<>(title0+115, 105), String(delay1.get_interval()/1000), 0x19ec);
+            
+
+            SHOW_CHANGED:
+            canvas.show();
+        }
+    #endif
+}
+
 /// @brief slide show mode
 void slideshow_mode(){
     /// [3] : next image
@@ -173,68 +238,84 @@ void slideshow_mode(){
         uint16_t    selectedBox_W = 68, selectedBox_H = 31, btn0 = 190,
                     img_pos = 0, sel = 0, prev_sel = 2;
         uint32_t    last_t = 0;
-        DELAY_CTL   delay0(60000U);
 
         get_and_show_image(img_pos, false);
 
         while(0x1){
-            /// for slideshow image control :v
-            if( sel == 0 && basic_io::btn3_val() == false ) {
+            SLIDESHOW:
+            
+            // basic_io::toggle_led1_state();
+            // log2ser(
+            //     "btn0: ", basic_io::btn0_recent_pressed,
+            //     " btn1: ", basic_io::btn1_recent_pressed,
+            //     " btn2: ", basic_io::btn2_recent_pressed,
+            //     " btn3: ", basic_io::btn2_recent_pressed
+            // );
+
+            /// @brief for slideshow image control :v
+            if( basic_io::btn3_is_recent_pressed() == true ){
                 get_and_show_image(img_pos, true, true, false);
-                delay(50);
-                while(basic_io::btn3_val() == false); 
             }
-            if( sel == 0 &&  basic_io::btn2_val() == false){ 
+            if( basic_io::btn2_is_recent_pressed() == true ){ 
                 get_and_show_image(img_pos, true, false, false);
-                delay(50);
-                while(basic_io::btn2_val() == false);
             }
-            /// enter selection
-            /// for bounding box, other controls
-            if( sel != 0 &&   basic_io::btn1_val() == false){
-                /// waiting for released from user
-                delay(50);
-                while( basic_io::btn1_val() == false);
+
+            /// @brief enter selection
+            if( basic_io::btn1_is_recent_pressed() == true ){
                 if(sel == 1){
-                    screen_mode = enum_SCREEN_MODE::RESERVED_FEATURE_MODE;
-                    while(0x1) reserved_feature_mode();
-                    break;
+                    slideshow_menuconfig_mode();
+                    /// re-draw img
+                    get_and_show_image(img_pos, false); 
+                    goto SHOW_CHANGED;
                 }
                 if(sel == 2){
                     screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
                     break;
                 }
-                
             }
-            /// for bounding box, other controls
-            if(basic_io::btn0_val() == false){
-                /// waiting for released from user
-                delay(50);
-                while( basic_io::btn0_val() == false);
+
+            /// @brief for bounding box, other controls
+            if( basic_io::btn0_is_recent_pressed() == true ){
                 sel = (sel+1) % 3;
                 if(sel == 0){
-                    /// show image
                     prev_sel = sel;
                     get_and_show_image(img_pos, false); 
                     goto SHOW_CHANGED;
                 }
-                
             }
 
             /// periody update image
             if( delay0.time_to_run(true) == true )
                 get_and_show_image(img_pos, true);
 
-            /// re-draw image
+            /// update temp&humid
+            if( delay1.time_to_run() == true){
+                basic_io::led0_blinky(1, 5, 5);
+                canvas.insert_rectangle(POINT<>(174, 2), 124, 43, 0x18c3, true, 0x18c3);
+                /// insert humid
+                canvas.insert_text(POINT<>(190, 5), "Humid: ", 0x94b2);
+                canvas.insert_text(POINT<>(190, 70), String(sensors::read_humid()), 0x94b2);
+                /// insert temp
+                canvas.insert_text(POINT<>(210, 5), "Temp: ", 0x94b2);
+                canvas.insert_text(POINT<>(210, 70), String(sensors::read_temp()), 0x94b2);
+                basic_io::led0_val(LOW);
+            }
+
+            /// draw guide
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
-                /// show image icon
+                /// show image 
                 get_and_show_image(img_pos, false); 
                 /// show title
-                canvas.insert_rectangle(POINT<>(title0-1, 1), 170, 35, 0x18c3, true, sensors_color_1);
+                canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
+                /// show guide
+                canvas.insert_text(POINT<>(65, 145),    "N", 0xad55);
+                canvas.insert_text(POINT<>(65+30, 145), "P", 0xad55);
+                canvas.insert_text(POINT<>(65+60, 145), "O", 0xad55);
+                canvas.insert_text(POINT<>(65+90, 145), "M", 0xad55);
                 /// show next/mode button
-                show_2button_on_1line( btn0, "Setup", 25, "Exit", 105, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
+                show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
                 /// show selected box based on ```sel```
                 switch (sel){
                     case 1:
@@ -297,17 +378,7 @@ void test_mode_blank(){
     #endif
 }
 
-/// @brief custom isr service
-void sw_isr_service(void){
-    call( "sw_isr_service <mode ",  screen_mode, ">");
-    if(screen_mode == enum_SCREEN_MODE::TEST_MODE_BLANK){
-        screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
-    }
-    if(screen_mode == enum_SCREEN_MODE::NORMAL_MODE){
-        // sel = (sel < 2)?(sel+1):(0);
-    }
-}
-
+/// >>>>>>>>>>>>>>>>>>>> TEST FN DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
 #if HARDWARE_TEST == true
     void btn0_isr(){
         msg2ser("log2ser\t", "btn0 is pressed!");

@@ -40,7 +40,7 @@ void call(Tmsgs... msgs){
 void serial_init(){
     #if LOG == true
         Serial.begin(115200);
-        msg2ser("\n\nHello!");
+        log2ser("Hello from ngxxfus (aka hg.xnb)");
     #endif
 }
 

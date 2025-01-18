@@ -81,9 +81,9 @@ namespace sensors{
 /// @brief Initializing DHT11 sensor
 void sensor_init(){
     #if LOG == true
-        msg2ser("call\tsensor_init:");
-        msg2ser("\t", "DHT_PIN: ", DHT_PIN);
-        msg2ser("\t", "DHT_TYPE: ", DHT_TYPE);
+        call("sensor_init:");
+        log2ser("\t", "DHT_PIN: ", DHT_PIN);
+        log2ser("\t", "DHT_TYPE: ", DHT_TYPE);
     #endif
     dht.begin();
 }

@@ -17,8 +17,7 @@ void setup(){
     #if USB_SERIAL == true
         serial_init();
     #endif
-    #if BASIC_IO == true \
-        && HARDWARE_TEST == false
+    #if BASIC_IO == true && HARDWARE_TEST == false
         basic_io_init();
     #endif
     #if CONTROLLER == true

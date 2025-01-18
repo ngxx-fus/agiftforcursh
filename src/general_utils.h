@@ -117,12 +117,14 @@ unsigned int reverse_bit_order(T num) {
 /// and compares it with a user-defined `interval`. If the time difference exceeds or equals 
 /// the `interval`, the `action` function is executed.
 class DELAY_CTL {
+    bool _forced_stop;
     uint32_t last_t, interval;   ///< The last time the action was executed or the initial time.
 
 public:
     /// @brief Default constructor that initializes with the current time and sets the interval to 0.
     /// This constructor sets the `last_t` to the current time (via `millis()`) and sets the `interval` to 0.
     DELAY_CTL(){
+        _forced_stop = false;
         last_t = millis();  ///< Sets `last_t` to the current time.
         interval = 0;        ///< Sets `interval` to 0 by default.
     }
@@ -131,9 +133,13 @@ public:
     /// This constructor sets the `last_t` to the current time (via `millis()`) and assigns a user-defined `interval`.
     /// @param interval   The interval time (in milliseconds) to compare with the current time.
     DELAY_CTL(uint32_t interval){
+        _forced_stop = false;
         this->last_t = millis();  ///< Sets the initial time to the current time.
         this->interval = interval; ///< Sets the interval to the provided value.
     }
+
+    void forced_stop(bool val){this->_forced_stop = val;}
+    bool forced_stop(){return this->_forced_stop;}
 
     /// @brief Sets a new interval time.
     /// This function updates the `interval` to a new value.
@@ -161,6 +167,7 @@ public:
     /// @param update   A boolean flag to indicate if `last_t` should be updated after the action is run (default is `true`).
     /// @return `true` if the interval has passed, `false` otherwise.
     bool time_to_run(bool update = true){
+        if( _forced_stop == true ) return false;
         if(t_since(last_t) >= interval) {  ///< Checks if the time since the last action exceeds the interval.
             if(update) last_t = millis(); ///< Optionally updates `last_t` to the current time after the check.
             return true; ///< Indicates the action can be run as the interval has passed.
@@ -210,5 +217,12 @@ String filename_get_extension(String filename){
     return res;
 }
 
+
+bool logic_or(bool in){return in;}
+
+template<class...T>
+bool logic_or(bool in0, T... inN){
+    return (in0) | logic_or(inN...);
+}
 
 #endif
