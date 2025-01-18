@@ -1,10 +1,3 @@
-#include <Arduino.h>
-#include <algorithm>
-#include <limits>
-using namespace std;
-
-#define  elif else if
-
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #define DHT_TYPE                DHT11
@@ -23,8 +16,15 @@ using namespace std;
 
 #define LED0_PIN                26
 #define LED1_PIN                27
+
+/// >>>>>>>>>>>>>>>>>>>>> COLOR DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
+
+#define                     GUIDE_COLOR                 0xef7d
+#define                     SELECTED_BOX                0x9e1d
  
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+#include <Arduino.h>
 
 #if USB_SERIAL == true
     #include "serial_utils.h"
@@ -34,40 +34,44 @@ using namespace std;
     #include "basic_io_utils.h"
 #endif
 
+#if FIREBASE_RTDB == true
+    #include "firebase_utils.h"
+#endif
+
+#define  elif else if
+
 #include "images.h"
 #include "tft_utils.h"
 #include "general_utils.h"
 
+#if WIFI_CONNECTION == true
+    #include "wifi_utils.h"
+#endif
 
 #if CONTROLLER == true
     #include "controller_utils.h"
-#endif
-
-#if WIFI_CONNECTION == true
-    #include "wifi_utils.h"
 #endif
 
 #if SENSORS == true
     #include "sensor_utils.h"
 #endif
 
-#if FIREBASE_RTDB == true
-    #include "firebase_utils.h"
-#endif
 
 #if SDCARD_RW == true
     #include "sdcard_utils.h"
 #endif
 
 /// >>>>>>>>>>>>>>>>>>>> OTHERS DEFINITIONS >>>>>>>>>>>>1>>>>>>>>>>>>
-#define                     GUIDE_COLOR                 0xef7d
-#define                     SELECTED_BOX                0x9e1d
+
+#ifndef BTN_PRESSED
+    #define BTN_PRESSED
+    static uint8_t btn_pressed = 0x0;
+#endif
 
 vector<String>              imgs_list;
 DELAY_CTL                   delay0(60000U);
 DELAY_CTL                   delay1(30000U);
 float                       humid = 0.0, temp = 0.0;
-static uint8_t              btn_pressed = 0x0; 
 static bool                 show_env_info = true;
 
 /// @brief show error screen

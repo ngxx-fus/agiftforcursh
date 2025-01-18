@@ -133,15 +133,7 @@
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- src/serial_utils.h src/basic_io_utils.h src/general_utils.h \
- src/serial_utils.h src/images.h src/tft_utils.h \
- .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/mod/TFT_22_ILI9225_MOD.h \
- /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
- /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
- .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
- .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
- .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
- src/wifi_utils.h src/controller_utils.h \
+ src/serial_utils.h src/basic_io_utils.h src/firebase_utils.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
@@ -202,9 +194,95 @@
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
- src/sensor_utils.h \
- .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
- src/sdcard_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/FirebaseESP32.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/Firebase.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./core/Firebase_Client_Version.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./mbfs/MB_MCU.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FirebaseFS.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/SD/src/SD.h \
- /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/SD/src/sd_defines.h
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/SD/src/sd_defines.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/././core/Firebase_Build_Options.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Const.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/././FB_Network.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src/ETH.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/././mbfs/MB_FS.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/././mbfs/MB_FS_Interfaces.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/json/FirebaseJson.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/json/MB_List.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/json/MB_String.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/json/MB_JSON/MB_JSON.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Update/src/Update.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/MD5Builder.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_rom/include/esp_rom_md5.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Error.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/FB_Utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/client/FB_TCP_Client.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Error.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Const.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./mbfs/MB_FS.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/ESP_SSLClient.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/ESP_SSLClient_FS.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/ESP_SSLClient_Const.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/BSSL_TCP_Client.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../ESP_SSLClient_Const.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/BSSL_SSL_Client.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/BSSL_Helper.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_hash.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_hmac.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_kdf.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_rand.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_block.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_prf.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_aead.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_rsa.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_ec.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_ssl.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_x509.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/../bssl/bearssl_pem.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/SSLClient/client/BSSL_CertStore.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./FB_Network.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/sockets.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include/sys/poll.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/netif.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/pbuf.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/stats.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/mem.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/memp.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/priv/memp_std.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/priv/memp_priv.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/priv/mem_priv.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/inet.h \
+ /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/errno.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/client/WiFiClientImpl.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/core/FirebaseCore.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./client/FB_TCP_Client.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/session/FB_Session.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./core/FirebaseCore.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/stream/FB_Stream.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/stream/FB_MP_Stream.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/stream/FB_Stream.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/QueueInfo.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/QueryFilter.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/QueueManager.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./rtdb/QueueInfo.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./message/LFCM.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/FB_RTDB.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/./session/FB_Session.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/QueueInfo.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/./stream/FB_MP_Stream.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/./stream/FB_Stream.h \
+ .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/message/FCM.h \
+ src/images.h src/tft_utils.h src/serial_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/mod/TFT_22_ILI9225_MOD.h \
+ .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
+ .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
+ .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
+ src/general_utils.h src/wifi_utils.h src/sensor_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
+ src/sdcard_utils.h

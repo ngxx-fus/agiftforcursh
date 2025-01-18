@@ -1,7 +1,11 @@
 #ifndef GENERAL_UTILS_H
 #define GENERAL_UTILS_H
+
 #include <Arduino.h>
 #include <serial_utils.h>
+#include <algorithm>
+#include <limits>
+using namespace std;
 
 #ifndef rep
 #define rep(i,a,b) for(int i = (a); i <= (b); ++i)

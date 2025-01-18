@@ -1,5 +1,6 @@
-SPI
 mobizt/Firebase ESP32 Client@^4.4.14
+mathworks/ThingSpeak@^2.0.0
 adafruit/Adafruit Unified Sensor@^1.1.14
+SPI
 nkawu/TFT 22 ILI9225@^1.4.5
 adafruit/DHT sensor library@^1.4.6
