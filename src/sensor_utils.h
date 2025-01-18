@@ -81,9 +81,9 @@ namespace sensors{
 /// @brief Initializing DHT11 sensor
 void sensor_init(){
     #if LOG == true
-        msg2ser("call\tsensor_init:");
-        msg2ser("\t", "DHT_PIN: ", DHT_PIN);
-        msg2ser("\t", "DHT_TYPE: ", DHT_TYPE);
+        call("sensor_init:");
+        log2ser("\t", "DHT_PIN: ", DHT_PIN);
+        log2ser("\t", "DHT_TYPE: ", DHT_TYPE);
     #endif
     dht.begin();
 }
@@ -99,7 +99,9 @@ void sensor_init(){
 /// @note - Maximum of history_size and col_d (column distance) is 15px and 10px.
 void run_env_info(uint16_t const history_size = 15, uint16_t const column_distance = 10){
 
-    call( "run_env_info");
+    #if LOG == true
+        call( "run_env_info");
+    #endif
 
     uint8_t title0 = 2, humid_row = title0 + 37, temp_row = humid_row + 20,
             btn0 = 185, chart_row = temp_row + 40;

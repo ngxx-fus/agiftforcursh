@@ -768,11 +768,13 @@ uint16_t screen_mode = NORMAL_MODE;
 CANVAS<uint16_t> canvas;
 void canvas_init(){
 
-    msg2ser("call\tcanvas_init:");
-
+    #if LOG == true
+        call("canvas_init:");
+    #endif
     canvas.initialize(220, 172, 0, 0xFFFF);
-
-    msg2ser("\t", "W: ", canvas.W(), " H: ", canvas.H());
+    #if LOG == true
+        log2ser("\t", "W: ", canvas.W(), " H: ", canvas.H());
+    #endif
 
     canvas.insert_text(POINT<>(90, 20), "~Hello!#  HAHA", 0xAAAA);
     canvas.insert_text(POINT<>(120, 19), "from ngxxfus :>", 0xAAAA);
