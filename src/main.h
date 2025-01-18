@@ -253,15 +253,15 @@ void slideshow_mode(){
             // );
 
             /// @brief for slideshow image control :v
-            if( basic_io::btn3_is_recent_pressed() == true ){
+            if( t_since(basic_io::btn3_last_pressed) < 1000 ){
                 get_and_show_image(img_pos, true, true, false);
             }
-            if( basic_io::btn2_is_recent_pressed() == true ){ 
+            if( t_since(basic_io::btn2_last_pressed) < 1000 ){ 
                 get_and_show_image(img_pos, true, false, false);
             }
 
             /// @brief enter selection
-            if( basic_io::btn1_is_recent_pressed() == true ){
+            if( t_since(basic_io::btn1_last_pressed) < 1000 ){
                 if(sel == 1){
                     slideshow_menuconfig_mode();
                     /// re-draw img
@@ -275,7 +275,7 @@ void slideshow_mode(){
             }
 
             /// @brief for bounding box, other controls
-            if( basic_io::btn0_is_recent_pressed() == true ){
+            if( t_since(basic_io::btn0_last_pressed) < 1000 ){
                 sel = (sel+1) % 3;
                 if(sel == 0){
                     prev_sel = sel;

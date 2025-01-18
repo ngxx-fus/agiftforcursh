@@ -7,6 +7,8 @@
 #define FIREBASE_RTDB           false
 #define SDCARD_RW               true
 #define LOG                     true
+#define SAVE_LAST_PRESSED       true
+#define CUSTOM_ISR_HANDLER      false
 #define SOFTWARE_TEST           true
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
