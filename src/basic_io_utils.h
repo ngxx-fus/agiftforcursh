@@ -1,13 +1,14 @@
 #ifndef BASIC_IO_UTILS_H
 #define BASIC_IO_UTILS_H
 
-
-#include <algorithm>
-#include <functional>
 #include <Arduino.h>
-#include "general_utils.h"
 
-using namespace std;
+#include "serial_utils.h"
+
+#if CUSTOM_ISR_HANDLER == true
+    #include <functional>
+    using namespace std;
+#endif
 
 #ifndef LOG
     #define LOG false

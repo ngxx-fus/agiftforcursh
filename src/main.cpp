@@ -1,15 +1,14 @@
+#define LOG                     true
 #define SHOW_AUTHOR_MESSAGE     false
 #define WIFI_CONNECTION         true
-#define SENSORS                 true
-#define CONTROLLER              false
 #define USB_SERIAL              true
 #define TFT_SCREEN              true
-#define FIREBASE_RTDB           false
+#define SENSORS                 true
+#define FIREBASE_RTDB           true
 #define SDCARD_RW               true
-#define LOG                     true
 #define SAVE_LAST_PRESSED       true
 #define CUSTOM_ISR_HANDLER      false
-#define SOFTWARE_TEST           true
+#define SOFTWARE_TEST           false
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
 
@@ -22,15 +21,8 @@ void setup(){
     #if BASIC_IO == true && HARDWARE_TEST == false
         basic_io_init();
     #endif
-    #if CONTROLLER == true
-        // controller::custom_isr_handler = sw_isr_service;
-        controller_init();
-    #endif
     #if SENSORS == true
         sensor_init();
-    #endif
-    #if FIREBASE_RTDB == true
-        firebase_init();
     #endif
     #if TFT_SCREEN == true
         canvas_init();
@@ -38,16 +30,13 @@ void setup(){
     #if SDCARD_RW == true
         sdcard_init();
     #endif
-    #if HARDWARE_TEST == true
-        basic_io::btn0_isr_handler = btn0_isr;
-        basic_io::btn1_isr_handler = btn1_isr;
-        basic_io::btn2_isr_handler = btn2_isr;
-        basic_io::btn3_isr_handler = btn3_isr;
-        basic_io_init();
-        screen_mode = enum_SCREEN_MODE::TEST_MODE_SCREEN;
-    #else
-        screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
+    #if WIFI_CONNECTION == true
+        wifi_setup();
     #endif
+    #if FIREBASE_RTDB == true
+        firebase_init();
+    #endif
+
 }
 
 void loop(){
@@ -56,7 +45,7 @@ void loop(){
         /// for emergency return to main loop
         MAIN_LOOP: 
         /// routing screen to each mode
-        msg2ser("enter\t", "mode: ", screen_mode);
+        log2ser("switched mode: ", screen_mode);
         switch (screen_mode){
             case enum_SCREEN_MODE::NORMAL_MODE:
                 slideshow_mode();
@@ -109,8 +98,13 @@ void loop(){
 
 
 
+// #include "firebase_utils.h"
+// void setup(){
 
+// }
+// void loop(){
 
+// }
 
 
 
