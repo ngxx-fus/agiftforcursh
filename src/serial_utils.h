@@ -4,7 +4,7 @@
 #include "Arduino.h"
 
 #ifndef LOG
-    #define LOG false
+    #define LOG true
 #endif
 
 template<class Tmsg>
@@ -24,17 +24,23 @@ void msg2ser(Tmsg msg, Tmsgs... msgs){
 
 template<class... Tmsgs>
 void log2ser(Tmsgs... msgs){
-    msg2ser("[", millis(), "] ", "log\t", msgs...);
+    #if LOG == true
+        msg2ser("[", millis(), "] ", "log\t", msgs...);
+    #endif
 }
 
 template<class... Tmsgs>
 void info(Tmsgs... msgs){
-    msg2ser("[", millis(), "] ", "info\t",msgs...);
+    #if LOG == true
+        msg2ser("[", millis(), "] ", "info\t",msgs...);
+    #endif
 }
 
 template<class... Tmsgs>
 void call(Tmsgs... msgs){
-    msg2ser("[", millis(), "] ", "call\t",msgs...);
+    #if LOG == true
+        msg2ser("[", millis(), "] ", "call\t",msgs...);
+    #endif
 }
 
 void serial_init(){

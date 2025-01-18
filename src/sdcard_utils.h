@@ -22,13 +22,18 @@ void sdcard_init(){
         call("sdcard_init: ");
     #endif
     SPI.setFrequency(UINT32_MAX);
-    call( "sdcard_init");
     if(!SD.begin(SDCARD_SPI_CS_PIN)){
-        log2ser( "SDcard: failed to mount");
-        controller::iled_blinky(10);
+        #if LOG == true
+            log2ser( "SDcard: failed to mount");
+        #endif
+        #if CONTROLLER == true
+            controller::iled_blinky(10);
+        #endif
         if(SD.cardType() == CARD_NONE){
             sdcard_is_available = false;
-            log2ser( "SDcard: No SDcard");
+            #if LOG == true
+                log2ser( "SDcard: No SDcard");
+            #endif
             #if BASIC_IO == true
                 basic_io::led0_blinky(5, 15, 30);
             #endif
@@ -37,13 +42,15 @@ void sdcard_init(){
             #endif
         }
     }else{
+        #if LOG == true
         log2ser( "SDcard: mounted");
-        switch(SD.cardType()){
-            case CARD_MMC: log2ser( "SDcard: Type: MMC"); break;
-            case CARD_SD: log2ser( "SDcard: Type: SDSC"); break;
-            case CARD_SDHC: log2ser( "SDcard: Type: SDHC"); break;
-            default: log2ser( "SDcard: Type: ?");
-        }
+            switch(SD.cardType()){
+                case CARD_MMC: log2ser( "SDcard: Type: MMC"); break;
+                case CARD_SD: log2ser( "SDcard: Type: SDSC"); break;
+                case CARD_SDHC: log2ser( "SDcard: Type: SDHC"); break;
+                default: log2ser( "SDcard: Type: ?");
+            }
+        #endif
     }
 }
 
@@ -95,11 +102,15 @@ void sdcard_readbytes_file(
 ){
     File file = fs.open(src);
     if (!file){
-        log2ser( "SDCard: Read: Can NOT open ", src);
+        #if LOG == true
+            log2ser( "SDCard: Read: Can NOT open ", src);
+        #endif
         return;
     }
     if(file.isDirectory() == true){
-        log2ser( "SDCard: Read: Err: isDirectory ");
+        #if LOG == true
+            log2ser( "SDCard: Read: Err: isDirectory ");
+        #endif
         return;
     }
     while(offset){file.read(); --offset;}
@@ -124,11 +135,15 @@ void sdcard_readbytes_file(
 ){
     File file = fs.open(src);
     if (!file){
-        log2ser( "SDCard: Read: Can NOT open ", src);
+        #if LOG == true
+            log2ser( "SDCard: Read: Can NOT open ", src);
+        #endif
         return;
     }
     if(file.isDirectory() == true){
-        log2ser( "SDCard: Read: Err: isDirectory ");
+        #if LOG == true
+            log2ser( "SDCard: Read: Err: isDirectory ");
+        #endif
         return;
     }
     
@@ -162,7 +177,9 @@ void sdcard_writebytes_file(
 ){
     File file = fs.open(path, FILE_WRITE);
     if (!file) {
-        log2ser( "SDCard: Write file: Failed to open");
+        #if LOG == true
+            log2ser( "SDCard: Write file: Failed to open");
+        #endif
         return;
     }
 
@@ -198,10 +215,14 @@ void read_and_insert_565format_image(
     fs::FS &fs, String img_path,
     POINT<uint16_t> pos, uint16_t w, uint16_t h
 ){
-    call( "read_and_insert_565format_image");
+    #if LOG == true
+        call( "read_and_insert_565format_image");
+    #endif
     File file = fs.open(img_path, FILE_READ);
     if (!file) {
-        log2ser( "SDCard: Read 565f img: Failed to open");
+        #if LOG == true
+            log2ser( "SDCard: Read 565f img: Failed to open");
+        #endif
         return;
     }
 
@@ -226,7 +247,10 @@ void read_and_insert_565format_image(
 /// @param path path to file to be removed
 inline void sdcard_remove_file(fs::FS &fs, const char *path){
     if (!fs.remove(path))
-        log2ser( "SDCard: Remove dir: failed");
+        #if LOG == true
+            log2ser( "SDCard: Remove dir: failed");
+        #endif
+    ;
 }
 
 /// @brief remove directory
@@ -234,7 +258,10 @@ inline void sdcard_remove_file(fs::FS &fs, const char *path){
 /// @param path path to being removed dir
 inline void sdcard_remove_dir(fs::FS &fs, const char *path){
     if (!fs.rmdir(path))
-        log2ser( "SDCard: Remove dir: failed");
+        #if LOG == true
+            log2ser( "SDCard: Remove dir: failed");
+        #endif
+    ;
 }
 
 
@@ -243,7 +270,10 @@ inline void sdcard_remove_dir(fs::FS &fs, const char *path){
 /// @param path path to the new directory
 inline void sdcard_make_dir(fs::FS &fs, const char *path){
     if (!fs.mkdir(path))
-        log2ser( "SDCard: Make dir: failed");
+        #if LOG == true
+            log2ser( "SDCard: Make dir: failed");
+        #endif
+    ;
 }
 
 /// @brief Renames a file on the SD card.
@@ -253,7 +283,10 @@ inline void sdcard_make_dir(fs::FS &fs, const char *path){
 /// @note If the renaming fails, an error message is sent to the serial monitor.
 inline void sdcard_rename_file(fs::FS &fs, const char *path_old, const char *path_new){
     if(fs.rename(path_old, path_new))
-        log2ser( "SDCard: Rename ", path_old, " failed");
+        #if LOG == true
+            log2ser( "SDCard: Rename ", path_old, " failed");
+        #endif
+    ;
 }
 
 #endif

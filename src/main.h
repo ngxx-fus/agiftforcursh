@@ -126,7 +126,9 @@ void reserved_feature_mode(){
 
 uint32_t update_imgs_list(){
     #if SDCARD_RW == true
-        call("update_imgs_list");
+        #if LOG == true
+            call("update_imgs_list");
+        #endif
         imgs_list = sdcard_list_dir(SD, "/imgs", 0);
     #endif
     return imgs_list.size();
@@ -215,7 +217,9 @@ void slideshow_menuconfig_mode(){
     /// [1] OKE
     /// [0] QUIT
 
-    call("slideshow_menuconfig_mode");
+    #if LOG == true
+        call("slideshow_menuconfig_mode");
+    #endif
     #if TFT_SCREEN == true
         btn_pressed = 0x0;
 
@@ -332,8 +336,10 @@ void slideshow_mode(){
     /// [1] : next mode (aka OKE)
     /// [0] : menu mode 
 
-    call( "slideshow_mode");
-
+    #if LOG == true
+        call( "slideshow_mode");
+    #endif
+    
     basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
     basic_io::btn2_attach_interrupt(slideshow_btn2_isr);
     basic_io::btn1_attach_interrupt(slideshow_btn1_isr);
