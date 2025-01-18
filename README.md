@@ -36,4 +36,4 @@ p/s: I have modified ```TFT 22 ILI9225``` lib of **nkawu** to add a function for
 ## Product Preview
 |    |    |    |
 |:--:|:--:|:--:|
-|<img src="https://github.com/user-attachments/assets/c5ccf7fb-b355-42e7-ac97-4338d27a062b" alt="preview0" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2b1f1c54-aa25-4484-b9b0-69b92d5a4b47" alt="preview0" style="width: 150px;"/>|  --  |
+|<img src="https://github.com/user-attachments/assets/c5ccf7fb-b355-42e7-ac97-4338d27a062b" alt="preview0" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2b1f1c54-aa25-4484-b9b0-69b92d5a4b47" alt="preview0" style="width: 150px;"/>|  <img src="https://github.com/user-attachments/assets/3d31c5d9-b428-46c1-9e01-d384613b1570" alt="preview0" style="width: 150px;"/>  |
