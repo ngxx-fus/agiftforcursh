@@ -157,9 +157,9 @@ namespace basic_io{
     bool btn3_val(){return digitalRead(BTN3_PIN);}
 
     bool led0_val(){return led0_state;}
-    bool led1_val(){return led1_state;}
+    bool led1_state_value(){return led1_state;}
     void led0_val(bool state){led0_state = state; digitalWrite(LED0_PIN, state);}
-    void led1_val(bool state){led1_state = state; digitalWrite(LED1_PIN, state);}
+    void led1_state_value(bool state){led1_state = state; digitalWrite(LED1_PIN, state);}
 
     void led0_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
         while(times--){

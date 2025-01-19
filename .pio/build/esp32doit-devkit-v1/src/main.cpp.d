@@ -133,7 +133,7 @@
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- src/serial_utils.h src/basic_io_utils.h src/firebase_utils.h \
+ .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  /home/ngxxfus/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
@@ -278,11 +278,11 @@
  .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/./stream/FB_MP_Stream.h \
  .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/rtdb/./stream/FB_Stream.h \
  .pio/libdeps/esp32doit-devkit-v1/Firebase\ ESP32\ Client/src/message/FCM.h \
- src/images.h src/tft_utils.h src/serial_utils.h \
+ src/serial_utils.h src/basic_io_utils.h src/images.h src/tft_utils.h \
+ src/serial_utils.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/mod/TFT_22_ILI9225_MOD.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/TFT_22_ILI9225.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/gfxfont.h \
  .pio/libdeps/esp32doit-devkit-v1/TFT\ 22\ ILI9225/src/../fonts/FreeSerif9pt7b.h \
  src/general_utils.h src/wifi_utils.h src/sensor_utils.h \
- .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
  src/sdcard_utils.h

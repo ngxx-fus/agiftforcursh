@@ -23,8 +23,18 @@
 #define                     SELECTED_BOX                0x9e1d
  
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
+#define  elif else if
 
 #include <Arduino.h>
+
+#if SENSORS == true
+    #include "DHT.h"
+#endif
+
+#if WIFI_CONNECTION == true
+    #include "WiFi.h"
+    #include "FirebaseESP32.h"
+#endif
 
 #if USB_SERIAL == true
     #include "serial_utils.h"
@@ -37,8 +47,6 @@
 #if FIREBASE_RTDB == true
     #include "firebase_utils.h"
 #endif
-
-#define  elif else if
 
 #include "images.h"
 #include "tft_utils.h"
@@ -73,6 +81,7 @@ DELAY_CTL                   delay0(60000U);
 DELAY_CTL                   delay1(30000U);
 float                       humid = 0.0, temp = 0.0;
 static bool                 show_env_info = true;
+static bool                 turn_on_bedroom_light = true;
 
 /// @brief show error screen
 void error_mode(){
@@ -191,23 +200,19 @@ static void slideshow_btn3_isr(){
         call( "slideshow_btn3_isr");
     #endif
     btn_pressed |= 0x1;
-    delay(500);
 }
-
 static void slideshow_btn2_isr(){
     #if LOG == true
         call( "slideshow_btn2_isr");
     #endif
     btn_pressed |= 0x2;
 }
-
 static void slideshow_btn1_isr(){
     #if LOG == true
         call( "slideshow_btn1_isr");
     #endif
     btn_pressed |= 0x4;
 }
-
 static void slideshow_btn0_isr(){
     #if LOG == true
         call( "slideshow_btn0_isr");
@@ -218,7 +223,7 @@ static void slideshow_btn0_isr(){
 void slideshow_menuconfig_mode(){
     /// [3] UP 
     /// [2] DOWN
-    /// [1] OKE
+    /// [1] CH
     /// [0] QUIT
 
     #if LOG == true
@@ -233,28 +238,16 @@ void slideshow_menuconfig_mode(){
         uint16_t    btn_pressedBox_W = 68, btn_pressedBox_H = 31, btn0 = 190,
                     sel = 0, prev_sel = 2, 
                     x_option0 = title0+65, x_option1 = title0+90, 
-                    x_option2 = title0+115;
-        const uint16_t  max_sel = 3;
+                    x_option2 = title0+115, x_option3 = title0+140;
+        const uint16_t  max_sel = 4;
         uint32_t        last_t = 0;
 
         while (0x1){
 
             /// UP
             if( btn_pressed & 0x1 ){
-                btn_pressed = btn_pressed & 0xFE;
-                sel = (sel == 0)?(max_sel-1):(sel-1);
-            }
-            /// DOWN
-            if( btn_pressed & 0x2){ 
-                btn_pressed = btn_pressed & 0xFD;
-                sel = (sel + 1) % max_sel;
-            }
-            /// CH
-            if( btn_pressed & 0x4 ){
-                btn_pressed = btn_pressed & 0xFB;
                 switch (sel){
                     case 0:
-                        delay0.get_interval();
                         delay0.set_interval(
                             (delay0.get_interval())%600000U + 10000
                         );
@@ -271,7 +264,6 @@ void slideshow_menuconfig_mode(){
                         show_env_info = ! show_env_info;
                         break;
                     case 2:
-                        delay1.get_interval();
                         delay1.set_interval(
                             (delay1.get_interval())%600000U + 10000
                         );
@@ -283,7 +275,56 @@ void slideshow_menuconfig_mode(){
                             delay(200);
                         }
                         break;
+                    case 3:
+                        delay(300);
+                        turn_on_bedroom_light = ! turn_on_bedroom_light;
+                        break;
                 }
+                btn_pressed = btn_pressed & 0xFE;
+            }
+            /// DOWN
+            if( btn_pressed & 0x2){ 
+                switch (sel){
+                    case 0:
+                        delay0.set_interval(
+                            (delay0.get_interval())?(delay0.get_interval()-10000):(600000U)
+                        );
+                        delay(100);
+                        while(!basic_io::btn1_val()){
+                            delay0.set_interval(
+                                (delay0.get_interval())?(delay0.get_interval()-10000):(600000U)
+                            );
+                            delay(200);
+                        }
+                        break;
+                    case 1:
+                        delay(300);
+                        show_env_info = ! show_env_info;
+                        break;
+                    case 2:
+                        delay1.set_interval(
+                            (delay1.get_interval())?(delay1.get_interval()-10000):(600000U)
+                        );
+                        delay(100);
+                        while(!basic_io::btn1_val()){
+                            delay1.set_interval(
+                                (delay1.get_interval())?(delay1.get_interval()-10000):(600000U)
+                            );
+                            delay(200);
+                        }
+                        break;
+                    case 3:
+                        delay(300);
+                        turn_on_bedroom_light = ! turn_on_bedroom_light;
+                        break;
+                }
+                btn_pressed = btn_pressed & 0xFD;
+            }
+            /// CH
+            if( btn_pressed & 0x4 ){
+                sel = (sel+1)%max_sel;
+                delay(200);
+                btn_pressed = btn_pressed & 0xFB;
             }
             /// OKE
             if( btn_pressed & 0x8 ){
@@ -303,12 +344,15 @@ void slideshow_menuconfig_mode(){
             canvas.insert_text(POINT<>(85+90, 145), "OK", GUIDE_COLOR);
             /// show option - slideshow duration
             canvas.insert_text(POINT<>(x_option0, 5), "Img duration:", 0x10a9);
-            canvas.insert_text(POINT<>(x_option0, 105), String(delay0.get_interval()/1000), 0x19ec);
+            canvas.insert_text(POINT<>(x_option0, 110), String(delay0.get_interval()/1000), 0x19ec);
             /// show option - show temp,humid
             canvas.insert_text(POINT<>(x_option1, 5),  "Env info:", 0x10a9);
-            canvas.insert_text(POINT<>(x_option1, 105), String(show_env_info?"Y":"N"), 0x19ec);
+            canvas.insert_text(POINT<>(x_option1, 110), String(show_env_info?"Y":"N"), 0x19ec);
             canvas.insert_text(POINT<>(x_option2, 5), "Env interval:", 0x10a9);
-            canvas.insert_text(POINT<>(x_option2, 105), String(delay1.get_interval()/1000), 0x19ec);
+            canvas.insert_text(POINT<>(x_option2, 110), String(delay1.get_interval()/1000), 0x19ec);
+            /// show option - show bedroom led light
+            canvas.insert_text(POINT<>(x_option3, 5), "Bedroom Light:", 0x10a9);
+            canvas.insert_text(POINT<>(x_option3, 110), String(turn_on_bedroom_light?"Y":"N"), 0x19ec);
             
             /// show current selection
             switch(sel){
@@ -320,6 +364,9 @@ void slideshow_menuconfig_mode(){
                     break;
                 case 2:
                     canvas.insert_rectangle(POINT<>(x_option2-17, 2), 138, 25, SELECTED_BOX);
+                    break;
+                case 3:
+                    canvas.insert_rectangle(POINT<>(x_option3-17, 2), 138, 25, SELECTED_BOX);
                     break;
             }
 
@@ -363,6 +410,11 @@ void slideshow_mode(){
         while(0x1){
             SLIDESHOW:
             
+            /// set bedroom led light
+            #if BASIC_IO == true
+                basic_io::led1_state_value(turn_on_bedroom_light);
+            #endif
+
             /// @brief for slideshow image control :v
             /// @brief -> next
             if( btn_pressed & 0x1 ){

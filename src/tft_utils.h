@@ -773,17 +773,21 @@ void canvas_init(){
     #endif
     canvas.initialize(220, 172, 0, 0xFFFF);
     #if LOG == true
-        log2ser("\t", "W: ", canvas.W(), " H: ", canvas.H());
+        log2ser("Resolution: " "W: ", canvas.W(), " H: ", canvas.H());
     #endif
-
     canvas.insert_text(POINT<>(90, 20), "~Hello!#  HAHA", 0xAAAA);
     canvas.insert_text(POINT<>(120, 19), "from ngxxfus :>", 0xAAAA);
     canvas.show(true);
-
-    delay(1000);
     
+    #if BASIC_IO == true
+        basic_io::led1_blinky(3, 10, 40);
+        basic_io::led1_blinky(2, 100, 100);
+        basic_io::led1_blinky(1, 3000, 0);
+    #endif
+                                                                             
     canvas.clear(true);
     canvas.show(true);
+
 }
 
 /// >>>>>>>>>>>>>>>>> SOME UTIL FUNCS >>>>>>>>>>>>>>>>>>>>

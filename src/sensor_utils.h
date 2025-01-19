@@ -45,7 +45,7 @@
 #endif
 
 
-#include <DHT.h>
+#include "DHT.h"
 #include "general_utils.h"
 
 DHT dht(DHT_PIN, DHT_TYPE);

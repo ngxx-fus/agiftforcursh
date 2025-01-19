@@ -4,7 +4,7 @@
 #define USB_SERIAL              true
 #define TFT_SCREEN              true
 #define SENSORS                 true
-#define FIREBASE_RTDB           true
+#define FIREBASE_RTDB           false
 #define SDCARD_RW               true
 #define SAVE_LAST_PRESSED       true
 #define CUSTOM_ISR_HANDLER      false
@@ -27,11 +27,11 @@ void setup(){
     #if TFT_SCREEN == true
         canvas_init();
     #endif
-    #if SDCARD_RW == true
-        sdcard_init();
-    #endif
     #if WIFI_CONNECTION == true
         wifi_setup();
+    #endif
+    #if SDCARD_RW == true
+        sdcard_init();
     #endif
     #if FIREBASE_RTDB == true
         firebase_init();
