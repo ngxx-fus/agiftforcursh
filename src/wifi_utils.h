@@ -62,6 +62,46 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
     canvas.insert_text(POINT<>(85+90, 145), g0, GUIDE_COLOR);
 }
 
+bool connect_to_rtdb_firebase(){
+    #if LOG == true
+        call("connect_to_rtdb_firebase");
+        log2ser( "Connecting to Firebase...");
+    #endif
+    config.api_key = (String) API_KEY;
+    config.database_url = (String) DATABASE_URL;
+    auth.user.email = String(EMAIL);
+    auth.user.password = (String) PASSWORD;
+    firebaseData.setBSSLBufferSize(512, 512);
+    firebaseData.setResponseSize(512);
+    firebaseData.setCert(NULL);
+    // firebaseData.setReadTimeout(firebaseData, 5000);
+    for(uint8_t i = 0; i < 5; ++i) {
+        #if BASIC_IO == true
+            basic_io::led0_blinky(2);
+        #endif
+        #if LOG == true
+            log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+        #endif
+        Firebase.begin(&config, &auth);
+        #if LOG == true
+            log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+        #endif
+        if(Firebase.ready()) {
+            Firebase.reconnectWiFi(true);
+            #if BASIC_IO == true
+                basic_io::led1_blinky(2);
+            #endif
+            #if LOG == true
+                msg2ser(  "Connected to Firebase!");
+            #endif
+            return true;
+        }
+    }
+    #if LOG == true
+        msg2ser(  "Can't connect to Firebase!");
+    #endif
+    return false;
+}
 
 uint8_t wifi_connect(uint8_t wifi_i = 0){
 
@@ -276,47 +316,49 @@ void wifi_setup(){
         #endif
         WiFi.begin(mSSID, mPW);
         delay(1000);
-        if(WiFi.status() == WL_CONNECTED) {
-            #if BASIC_IO == true
-                basic_io::led1_blinky(2);
-            #endif
-            #if LOG == true
-                log2ser("Succesful!");
-            #endif
-            /// START CONNECT FIREBASE
-            #if LOG == true
-                log2ser( "Firebase: ", "Connecting to Firebase...");
-            #endif
-            config.api_key = (String) API_KEY;
-            config.database_url = (String) DATABASE_URL;
-            auth.user.email = String(EMAIL);
-            auth.user.password = (String) PASSWORD;
-            firebaseData.setBSSLBufferSize(512, 512);
-            firebaseData.setResponseSize(512);
-            firebaseData.setCert(NULL);
-            // firebaseData.setReadTimeout(firebaseData, 5000);
-            for(uint8_t i = 0; i < 5; ++i) {
-                #if BASIC_IO == true
-                    basic_io::led0_blinky(2);
-                #endif
-                #if LOG == true
-                    log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
-                #endif
-                Firebase.begin(&config, &auth);
-                #if LOG == true
-                    log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
-                #endif
-                if(Firebase.ready()) break;
-            }
-            Firebase.reconnectWiFi(true);
-            #if BASIC_IO == true
-                basic_io::led1_blinky(2);
-            #endif
-            #if LOG == true
-                msg2ser(  "Connected to Firebase!");
-            #endif
-            return;
-        }
+        connect_to_rtdb_firebase();
+        // if(WiFi.status() == WL_CONNECTED) {
+        //     #if BASIC_IO == true
+        //         basic_io::led1_blinky(2);
+        //     #endif
+        //     #if LOG == true
+        //         log2ser("Succesful!");
+        //     #endif
+        //     /// START CONNECT FIREBASE
+        //     #if LOG == true
+        //         log2ser( "Firebase: ", "Connecting to Firebase...");
+        //     #endif
+        //     config.api_key = (String) API_KEY;
+        //     config.database_url = (String) DATABASE_URL;
+        //     auth.user.email = String(EMAIL);
+        //     auth.user.password = (String) PASSWORD;
+        //     firebaseData.setBSSLBufferSize(512, 512);
+        //     firebaseData.setResponseSize(512);
+        //     firebaseData.setCert(NULL);
+        //     // firebaseData.setReadTimeout(firebaseData, 5000);
+        //     for(uint8_t i = 0; i < 5; ++i) {
+        //         #if BASIC_IO == true
+        //             basic_io::led0_blinky(2);
+        //         #endif
+        //         #if LOG == true
+        //             log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+        //         #endif
+        //         Firebase.begin(&config, &auth);
+        //         #if LOG == true
+        //             log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+        //         #endif
+        //         if(Firebase.ready()) break;
+        //     }
+        //     Firebase.reconnectWiFi(true);
+        //     #if BASIC_IO == true
+        //         basic_io::led1_blinky(2);
+        //     #endif
+        //     #if LOG == true
+        //         msg2ser(  "Connected to Firebase!");
+        //     #endif
+        //     return;
+        // }
+    
     }
 
     #if LOG == true
