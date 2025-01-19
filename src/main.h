@@ -27,12 +27,15 @@
 
 #include <Arduino.h>
 
-#if SENSORS == true
-    #include "DHT.h"
-#endif
+// #if SENSORS == true
+    // #include "DHT.h"
+// #endif
 
 #if WIFI_CONNECTION == true
     #include "WiFi.h"
+#endif
+
+#if FIREBASE_RTDB == true
     #include "FirebaseESP32.h"
 #endif
 
@@ -44,20 +47,12 @@
     #include "basic_io_utils.h"
 #endif
 
-#if FIREBASE_RTDB == true
-    #include "firebase_utils.h"
-#endif
-
 #include "images.h"
 #include "tft_utils.h"
 #include "general_utils.h"
 
 #if WIFI_CONNECTION == true
     #include "wifi_utils.h"
-#endif
-
-#if CONTROLLER == true
-    #include "controller_utils.h"
 #endif
 
 #if SENSORS == true

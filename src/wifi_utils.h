@@ -1,25 +1,33 @@
 #ifndef WIFI_UTILS_H
 #define WIFI_UTILS_H
 
-#include "WiFi.h"
-#include "FirebaseESP32.h"
+#define elif else if
 
+#include "WiFi.h"
+#if FIREBASE_RTDB == true
+    #include "FirebaseESP32.h"
+#endif
 
 #include "basic_io_utils.h"
 #include "serial_utils.h"
 #include "tft_utils.h"
 #include "images.h"
 
-const char PROGMEM  DATABASE_URL[] =    "https://agiftforcrush-default-rtdb.firebaseio.com/";
-const char PROGMEM  API_KEY[]      =    "AIzaSyD2KF4BJw4Ye3aDAzs8P4K9Bj7D_dOevWM";
-const char PROGMEM EMAIL[]         =    "prototype-account@agiftforcrush.iam.gserviceaccount.com";
-const char PROGMEM PASSWORD[]      =    "prototype@pw3204";
+#if FIREBASE_RTDB == true
+    const char PROGMEM  DATABASE_URL[] =    "https://agiftforcrush-default-rtdb.firebaseio.com/";
+    const char PROGMEM  API_KEY[]      =    "AIzaSyD2KF4BJw4Ye3aDAzs8P4K9Bj7D_dOevWM";
+    const char PROGMEM EMAIL[]         =    "prototype-account@agiftforcrush.iam.gserviceaccount.com";
+    const char PROGMEM PASSWORD[]      =    "prototype@pw3204";
 
-FirebaseData firebaseData;
-FirebaseAuth auth;
-FirebaseConfig config;
+    FirebaseData firebaseData;
+    FirebaseAuth auth;
+    FirebaseConfig config;
+#endif
 
-#define elif else if
+    /// try to connect manufacture wifi
+static const char PROGMEM   mSSID[] = "hg.xnb",
+                            mPW[]   = "nGXXFUS@3204";
+
 #define SHOW_GUIDE_COUNTS_MAX 100
 #ifndef BTN_PRESSED
     #define BTN_PRESSED
@@ -62,46 +70,48 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
     canvas.insert_text(POINT<>(85+90, 145), g0, GUIDE_COLOR);
 }
 
-bool connect_to_rtdb_firebase(){
-    #if LOG == true
-        call("connect_to_rtdb_firebase");
-        log2ser( "Connecting to Firebase...");
-    #endif
-    config.api_key = (String) API_KEY;
-    config.database_url = (String) DATABASE_URL;
-    auth.user.email = String(EMAIL);
-    auth.user.password = (String) PASSWORD;
-    firebaseData.setBSSLBufferSize(512, 512);
-    firebaseData.setResponseSize(512);
-    firebaseData.setCert(NULL);
-    // firebaseData.setReadTimeout(firebaseData, 5000);
-    for(uint8_t i = 0; i < 5; ++i) {
-        #if BASIC_IO == true
-            basic_io::led0_blinky(2);
-        #endif
+#if FIREBASE_RTDB == true
+    bool connect_to_rtdb_firebase(){
         #if LOG == true
-            log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+            call("connect_to_rtdb_firebase");
+            log2ser( "Connecting to Firebase...");
         #endif
-        Firebase.begin(&config, &auth);
-        #if LOG == true
-            log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
-        #endif
-        if(Firebase.ready()) {
-            Firebase.reconnectWiFi(true);
+        config.api_key = (String) API_KEY;
+        config.database_url = (String) DATABASE_URL;
+        auth.user.email = String(EMAIL);
+        auth.user.password = (String) PASSWORD;
+        firebaseData.setBSSLBufferSize(512, 512);
+        firebaseData.setResponseSize(512);
+        firebaseData.setCert(NULL);
+        // firebaseData.setReadTimeout(firebaseData, 5000);
+        for(uint8_t i = 0; i < 5; ++i) {
             #if BASIC_IO == true
-                basic_io::led1_blinky(2);
+                basic_io::led0_blinky(2);
             #endif
             #if LOG == true
-                msg2ser(  "Connected to Firebase!");
+                log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
             #endif
-            return true;
+            Firebase.begin(&config, &auth);
+            #if LOG == true
+                log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+            #endif
+            if(Firebase.ready()) {
+                Firebase.reconnectWiFi(true);
+                #if BASIC_IO == true
+                    basic_io::led1_blinky(2);
+                #endif
+                #if LOG == true
+                    msg2ser(  "Connected to Firebase!");
+                #endif
+                return true;
+            }
         }
+        #if LOG == true
+            msg2ser(  "Can't connect to Firebase!");
+        #endif
+        return false;
     }
-    #if LOG == true
-        msg2ser(  "Can't connect to Firebase!");
-    #endif
-    return false;
-}
+#endif
 
 uint8_t wifi_connect(uint8_t wifi_i = 0){
 
@@ -292,17 +302,12 @@ uint8_t wifi_connect(uint8_t wifi_i = 0){
     
     // /// By the normal, this function can't reach here :v
     // screen_mode = enum_SCREEN_MODE::ERROR_MODE;
-    // log2ser( "return: 0xff");
-    // return 0xff;
-    
+    log2ser( "return: 0xff");
+    return 0xff;
 }
 
 void wifi_setup(){
     call("wifi_setup: ");
-
-    /// try to connect manufacture wifi
-    String  mSSID = "hg.xnb",
-            mPW   = "nGXXFUS@3204";
 
     WiFi.mode(WIFI_STA);
 
@@ -316,49 +321,10 @@ void wifi_setup(){
         #endif
         WiFi.begin(mSSID, mPW);
         delay(1000);
-        connect_to_rtdb_firebase();
-        // if(WiFi.status() == WL_CONNECTED) {
-        //     #if BASIC_IO == true
-        //         basic_io::led1_blinky(2);
-        //     #endif
-        //     #if LOG == true
-        //         log2ser("Succesful!");
-        //     #endif
-        //     /// START CONNECT FIREBASE
-        //     #if LOG == true
-        //         log2ser( "Firebase: ", "Connecting to Firebase...");
-        //     #endif
-        //     config.api_key = (String) API_KEY;
-        //     config.database_url = (String) DATABASE_URL;
-        //     auth.user.email = String(EMAIL);
-        //     auth.user.password = (String) PASSWORD;
-        //     firebaseData.setBSSLBufferSize(512, 512);
-        //     firebaseData.setResponseSize(512);
-        //     firebaseData.setCert(NULL);
-        //     // firebaseData.setReadTimeout(firebaseData, 5000);
-        //     for(uint8_t i = 0; i < 5; ++i) {
-        //         #if BASIC_IO == true
-        //             basic_io::led0_blinky(2);
-        //         #endif
-        //         #if LOG == true
-        //             log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
-        //         #endif
-        //         Firebase.begin(&config, &auth);
-        //         #if LOG == true
-        //             log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
-        //         #endif
-        //         if(Firebase.ready()) break;
-        //     }
-        //     Firebase.reconnectWiFi(true);
-        //     #if BASIC_IO == true
-        //         basic_io::led1_blinky(2);
-        //     #endif
-        //     #if LOG == true
-        //         msg2ser(  "Connected to Firebase!");
-        //     #endif
-        //     return;
-        // }
-    
+        #if FIREBASE_RTDB == true
+            connect_to_rtdb_firebase();
+        #endif
+        return;
     }
 
     #if LOG == true

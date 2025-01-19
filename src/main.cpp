@@ -33,10 +33,6 @@ void setup(){
     #if SDCARD_RW == true
         sdcard_init();
     #endif
-    #if FIREBASE_RTDB == true
-        firebase_init();
-    #endif
-
 }
 
 void loop(){
