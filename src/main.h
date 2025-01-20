@@ -320,6 +320,8 @@ void slideshow_mode(){
             #if BASIC_IO == true
                 if(turn_on_bedroom_light){
                     basic_io::led1_analog_ctl(light_level);
+                }else{
+                    basic_io::led1_analog_ctl(0);
                 }
                 // basic_io::led1_state_value(turn_on_bedroom_light);
             #endif
