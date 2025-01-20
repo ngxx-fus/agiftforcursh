@@ -116,7 +116,7 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
         }
         CONNECT_TO_RTDB_FIREBASE_SAFE_EXIT:
         #if LOG == true
-            msg2ser(  "Can't connect to Firebase!");
+            log2ser(  "Can't connect to Firebase!");
         #endif
         return false;
     }
