@@ -208,7 +208,6 @@ public:
     uint32_t get_last_t() { return this->last_t; }
 };
 
-
 String filename_get_extension(String filename){
     String res = "";
     uint8_t dot = 0;
@@ -222,12 +221,19 @@ String filename_get_extension(String filename){
     return res;
 }
 
-
-bool logic_or(bool in){return in;}
-
-template<class...T>
-bool logic_or(bool in0, T... inN){
-    return (in0) | logic_or(inN...);
+template<class Tnum, class Tdelta, class Tmaxval, class Tminval>
+Tnum num_increase(Tnum num, Tdelta const delta, Tminval const minval, Tmaxval const maxval){
+    num = (num < minval)?(minval):(num);
+    num = (num >= maxval)?(minval):(num + delta);
+    return num;
 }
+
+template<class Tnum, class Tdelta, class Tmaxval, class Tminval>
+Tnum num_decrease(Tnum num, Tdelta const delta, Tminval const minval, Tmaxval const maxval){
+    num = (num > maxval)?(maxval):(num);
+    num = (num <= minval)?(maxval):(num - delta);
+    return num;
+}
+
 
 #endif

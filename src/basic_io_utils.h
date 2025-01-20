@@ -177,6 +177,10 @@ namespace basic_io{
         }
     }
 
+    void led1_analog_ctl(uint8_t percent_level = 100){
+        analogWrite(LED1_PIN, 255*percent_level/100);
+    }
+
     #if ISR_HANDLER == true
         void isr3(){
             ISR_WAIT_FOR_STABLE;
@@ -328,6 +332,9 @@ void basic_io_init(){
             info("enable: led<1> at <",LED1_PIN,">");
         #endif
         pinMode(LED1_PIN, OUTPUT);
+        analogWriteFrequency(20000U);
+        analogWriteResolution(8);
+
     #endif
 }
 

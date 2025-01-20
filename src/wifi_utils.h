@@ -76,6 +76,14 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
             call("connect_to_rtdb_firebase");
             log2ser( "Connecting to Firebase...");
         #endif
+
+        if(WiFi.status() != WL_CONNECTED){
+            #if LOG == true
+                log2ser( "Not Internet Connection!");
+            #endif
+            goto CONNECT_TO_RTDB_FIREBASE_SAFE_EXIT;
+        }
+
         config.api_key = (String) API_KEY;
         config.database_url = (String) DATABASE_URL;
         auth.user.email = String(EMAIL);
@@ -84,7 +92,7 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
         firebaseData.setResponseSize(512);
         firebaseData.setCert(NULL);
         // firebaseData.setReadTimeout(firebaseData, 5000);
-        for(uint8_t i = 0; i < 5; ++i) {
+        for(uint8_t i = 0; i < 3; ++i) {
             #if BASIC_IO == true
                 basic_io::led0_blinky(2);
             #endif
@@ -106,6 +114,7 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
                 return true;
             }
         }
+        CONNECT_TO_RTDB_FIREBASE_SAFE_EXIT:
         #if LOG == true
             msg2ser(  "Can't connect to Firebase!");
         #endif
@@ -322,9 +331,8 @@ void wifi_setup(){
         WiFi.begin(mSSID, mPW);
         delay(1000);
         #if FIREBASE_RTDB == true
-            connect_to_rtdb_firebase();
+            if(connect_to_rtdb_firebase()) return;
         #endif
-        return;
     }
 
     #if LOG == true

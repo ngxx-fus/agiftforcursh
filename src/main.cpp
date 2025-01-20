@@ -4,13 +4,14 @@
 #define USB_SERIAL              true
 #define TFT_SCREEN              true
 #define SENSORS                 true
-#define FIREBASE_RTDB           false
+#define FIREBASE_RTDB           true
 #define SDCARD_RW               true
 #define SAVE_LAST_PRESSED       true
 #define CUSTOM_ISR_HANDLER      false
 #define SOFTWARE_TEST           false
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
+#define LOCAL_CONFIG            true
 
 #include "main.h"
 
@@ -32,6 +33,9 @@ void setup(){
     #endif
     #if SDCARD_RW == true
         sdcard_init();
+    #endif
+    #if LOCAL_CONFIG == true
+        config_init();
     #endif
 }
 
@@ -90,19 +94,6 @@ void loop(){
         #endif
     #endif
 }
-
-
-
-
-// #include "firebase_utils.h"
-// void setup(){
-
-// }
-// void loop(){
-
-// }
-
-
 
 
 

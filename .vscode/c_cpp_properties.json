@@ -10,7 +10,6 @@
             "includePath": [
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
-                "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/TFT 22 ILI9225/src",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/ThingSpeak/src",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/Firebase ESP32 Client/src",
                 "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
@@ -251,7 +250,6 @@
                 "path": [
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
-                    "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/TFT 22 ILI9225/src",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/ThingSpeak/src",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/Firebase ESP32 Client/src",
                     "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
