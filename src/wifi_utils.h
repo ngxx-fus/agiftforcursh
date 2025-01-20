@@ -1,15 +1,34 @@
 #ifndef WIFI_UTILS_H
 #define WIFI_UTILS_H
 
+#define elif else if
+
+#include "WiFi.h"
+#if FIREBASE_RTDB == true
+    #include "FirebaseESP32.h"
+#endif
 
 #include "basic_io_utils.h"
 #include "serial_utils.h"
 #include "tft_utils.h"
 #include "images.h"
-#include "WiFi.h"
 
-#define elif else if
+#if FIREBASE_RTDB == true
+    const char PROGMEM  DATABASE_URL[] =    "https://agiftforcrush-default-rtdb.firebaseio.com/";
+    const char PROGMEM  API_KEY[]      =    "AIzaSyD2KF4BJw4Ye3aDAzs8P4K9Bj7D_dOevWM";
+    const char PROGMEM EMAIL[]         =    "prototype-account@agiftforcrush.iam.gserviceaccount.com";
+    const char PROGMEM PASSWORD[]      =    "prototype@pw3204";
 
+    FirebaseData firebaseData;
+    FirebaseAuth auth;
+    FirebaseConfig config;
+#endif
+
+    /// try to connect manufacture wifi
+static const char PROGMEM   mSSID[] = "hg.xnb",
+                            mPW[]   = "nGXXFUS@3204";
+
+#define SHOW_GUIDE_COUNTS_MAX 100
 #ifndef BTN_PRESSED
     #define BTN_PRESSED
     static uint8_t btn_pressed = 0x0;
@@ -20,7 +39,6 @@ static void wifi_setup_btn3_isr(){
         call( "wifi_setup_btn3_isr");
     #endif
     btn_pressed |= 0x8;
-    delay(500);
 }
 
 static void wifi_setup_btn2_isr(){
@@ -52,6 +70,57 @@ static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", Str
     canvas.insert_text(POINT<>(85+90, 145), g0, GUIDE_COLOR);
 }
 
+#if FIREBASE_RTDB == true
+    bool connect_to_rtdb_firebase(){
+        #if LOG == true
+            call("connect_to_rtdb_firebase");
+            log2ser( "Connecting to Firebase...");
+        #endif
+
+        if(WiFi.status() != WL_CONNECTED){
+            #if LOG == true
+                log2ser( "Not Internet Connection!");
+            #endif
+            goto CONNECT_TO_RTDB_FIREBASE_SAFE_EXIT;
+        }
+
+        config.api_key = (String) API_KEY;
+        config.database_url = (String) DATABASE_URL;
+        auth.user.email = String(EMAIL);
+        auth.user.password = (String) PASSWORD;
+        firebaseData.setBSSLBufferSize(512, 512);
+        firebaseData.setResponseSize(512);
+        firebaseData.setCert(NULL);
+        // firebaseData.setReadTimeout(firebaseData, 5000);
+        for(uint8_t i = 0; i < 3; ++i) {
+            #if BASIC_IO == true
+                basic_io::led0_blinky(2);
+            #endif
+            #if LOG == true
+                log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+            #endif
+            Firebase.begin(&config, &auth);
+            #if LOG == true
+                log2ser("ESP.getFreeHeap: ", ESP.getFreeHeap());
+            #endif
+            if(Firebase.ready()) {
+                Firebase.reconnectWiFi(true);
+                #if BASIC_IO == true
+                    basic_io::led1_blinky(2);
+                #endif
+                #if LOG == true
+                    msg2ser(  "Connected to Firebase!");
+                #endif
+                return true;
+            }
+        }
+        CONNECT_TO_RTDB_FIREBASE_SAFE_EXIT:
+        #if LOG == true
+            msg2ser(  "Can't connect to Firebase!");
+        #endif
+        return false;
+    }
+#endif
 
 uint8_t wifi_connect(uint8_t wifi_i = 0){
 
@@ -242,35 +311,57 @@ uint8_t wifi_connect(uint8_t wifi_i = 0){
     
     // /// By the normal, this function can't reach here :v
     // screen_mode = enum_SCREEN_MODE::ERROR_MODE;
-    // log2ser( "return: 0xff");
-    // return 0xff;
-    
+    log2ser( "return: 0xff");
+    return 0xff;
 }
 
 void wifi_setup(){
+    call("wifi_setup: ");
 
+    WiFi.mode(WIFI_STA);
+
+    #if LOG == true
+        log2ser("Try connect to Manufacturer's Wi-Fi...");
+    #endif
+    
+    for(uint8_t i = 0; i <= 2; ++i){
+        #if BASIC_IO == true
+            basic_io::led0_blinky(2);
+        #endif
+        WiFi.begin(mSSID, mPW);
+        delay(1000);
+        #if FIREBASE_RTDB == true
+            if(connect_to_rtdb_firebase()) return;
+        #endif
+    }
+
+    #if LOG == true
+        log2ser("Failed!");
+        log2ser("Scanning other Wi-Fis...");
+    #endif
+
+    if(WiFi.status() == WL_CONNECTED) return;
+
+    /// scan and connect to another wifi
+    basic_io::led0_blinky(5, 5, 15);
     basic_io::btn3_attach_interrupt(wifi_setup_btn3_isr);
     basic_io::btn2_attach_interrupt(wifi_setup_btn2_isr);
     basic_io::btn1_attach_interrupt(wifi_setup_btn1_isr);
     basic_io::btn0_attach_interrupt(wifi_setup_btn0_isr);
 
     screen_mode = enum_SCREEN_MODE::SETUP_WIFI_MODE;
-    call("wifi_setup: ");
 
     uint8_t text0 = 1, wifi_icon = 50, btn0 = 130, btn1 = btn0 + 30,
             net0 = 0, net1 = 0, net2 = 0, net3 = 0, net4 = 0;
     uint8_t sel = false, prev_sel = true;
     uint8_t wf_ss_level = 0;
-
-    WiFi.mode(WIFI_STA);
+    uint8_t show_guide_count = 0;
 
     /// choose START_SCAN or SKIPP
     while(0x1){
         if(sel != prev_sel){
             prev_sel = sel;
             canvas.clear();
-            /// show guide
-            show_GUIDE("UP", "DN", "OK", "->");
             /// Show skip or scan question?
             canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x0, true, 0xf7be);
             canvas.insert_text(POINT<>(text0+18, 35), "Set-up Wi-Fi?", 0x2945);
@@ -290,7 +381,13 @@ void wifi_setup(){
 
             canvas.show();
         }
-
+        /// show guide
+        if(show_guide_count < SHOW_GUIDE_COUNTS_MAX){
+            /// log2ser("show guide (",show_guide_count,")");
+            ++show_guide_count;
+            show_GUIDE("UP", "DN", "OK", "?");
+            canvas.show();
+        }
         /// move up selection
         if(btn_pressed & 0x8){
             btn_pressed = btn_pressed & 0xF7;
@@ -317,6 +414,8 @@ void wifi_setup(){
         }
     }
 
+    /// reset show guide count
+    show_guide_count = 0;
     /// SCAN and CHOOSE Wi-Fi access-point
     prev_sel = ~sel;
     /// move btn0 and 1
@@ -331,12 +430,14 @@ void wifi_setup(){
 
         uint16_t t0 = millis();
         log2ser( "Wi-Fi: Scanning AP...");
+        WiFi.disconnect(false, true);
+        WiFi.mode(WIFI_STA);
         WiFi.scanDelete();
         int16_t nets =  WiFi.scanNetworks();
-        if(millis() - t0 <= 2000){
+        if(t_since(t0) <= 1000){
             log2ser( "Wi-Fi scanning is too fast!");
             screen_mode = enum_SCREEN_MODE::ERROR_MODE;
-            return;
+            goto WIFI_SETUP_SAFE_EXIT;
         }
         
         /// SELECT Wi-Fi to connect
@@ -351,6 +452,13 @@ void wifi_setup(){
         while(0x1){
             /// Show all available Wi-Fi(s)
             canvas.clear();
+            /// show guide
+            if(show_guide_count <= SHOW_GUIDE_COUNTS_MAX){
+                /// log2ser("show guide (",show_guide_count,")");
+                ++show_guide_count;
+                show_GUIDE("UP", "DN", "OK", "?");
+                // canvas.show();
+            }
             canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x08ab, true, 0x08ab);
             canvas.insert_text(POINT<>(text0+18, 17), "Available Wi-Fi(s)", 0xFFFF);
             /// net 0

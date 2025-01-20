@@ -15,7 +15,7 @@ using namespace std;
     #define SDCARD_SPI_CS_PIN 5
 #endif
 
-bool sdcard_is_available = true;
+static bool sdcard_is_available = true;
 
 void sdcard_init(){
     #if LOG == true
@@ -287,6 +287,18 @@ inline void sdcard_rename_file(fs::FS &fs, const char *path_old, const char *pat
             log2ser( "SDCard: Rename ", path_old, " failed");
         #endif
     ;
+}
+
+/// @brief 
+/// @return 
+uint32_t update_imgs_list(vector<String> &imgs_list){
+    #if SDCARD_RW == true
+        #if LOG == true
+            call("update_imgs_list");
+        #endif
+        imgs_list = sdcard_list_dir(SD, "/imgs", 0);
+    #endif
+    return imgs_list.size();
 }
 
 #endif

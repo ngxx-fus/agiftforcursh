@@ -11,6 +11,7 @@
 #define SOFTWARE_TEST           false
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
+#define LOCAL_CONFIG            true
 
 #include "main.h"
 
@@ -27,16 +28,15 @@ void setup(){
     #if TFT_SCREEN == true
         canvas_init();
     #endif
-    #if SDCARD_RW == true
-        sdcard_init();
-    #endif
     #if WIFI_CONNECTION == true
         wifi_setup();
     #endif
-    #if FIREBASE_RTDB == true
-        firebase_init();
+    #if SDCARD_RW == true
+        sdcard_init();
     #endif
-
+    #if LOCAL_CONFIG == true
+        config_init();
+    #endif
 }
 
 void loop(){
@@ -94,19 +94,6 @@ void loop(){
         #endif
     #endif
 }
-
-
-
-
-// #include "firebase_utils.h"
-// void setup(){
-
-// }
-// void loop(){
-
-// }
-
-
 
 
 

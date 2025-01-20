@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <Arduino.h>
 #include <serial_utils.h>
-#include <mod/TFT_22_ILI9225_MOD.h>
+#include <mod_libs/TFT_22_ILI9225_MOD.h>
 
 using namespace std;
 
@@ -773,17 +773,22 @@ void canvas_init(){
     #endif
     canvas.initialize(220, 172, 0, 0xFFFF);
     #if LOG == true
-        log2ser("\t", "W: ", canvas.W(), " H: ", canvas.H());
+        log2ser("Resolution: " "W: ", canvas.W(), " H: ", canvas.H());
     #endif
-
-    canvas.insert_text(POINT<>(90, 20), "~Hello!#  HAHA", 0xAAAA);
-    canvas.insert_text(POINT<>(120, 19), "from ngxxfus :>", 0xAAAA);
+    canvas.insert_text(POINT<>(90, 20),  "~Hello! #HAHA~", 0xAAAA);
+    canvas.insert_text(POINT<>(125, 19), "This is a gift", 0xAAAA);
+    canvas.insert_text(POINT<>(145, 19), "from ngxxfus :>", 0xAAAA);
     canvas.show(true);
-
-    delay(1000);
     
+    #if BASIC_IO == true
+        basic_io::led1_blinky(3, 10, 40);
+        basic_io::led1_blinky(2, 100, 100);
+        basic_io::led1_blinky(1, 3000, 0);
+    #endif
+                                                                             
     canvas.clear(true);
     canvas.show(true);
+
 }
 
 /// >>>>>>>>>>>>>>>>> SOME UTIL FUNCS >>>>>>>>>>>>>>>>>>>>
@@ -882,5 +887,74 @@ inline void show_2button_on_1line(
     canvas.insert_bitmap_image(POINT<>(btn_row, 93), _64x27_rounded_rectangle, 64, 27, btn1_color);
     canvas.insert_text(POINT<>(btn_row+18, col1), text1, txt1_color);
 }
+
+
+/// @brief show error screen
+void error_mode(){
+    #if TFT_SCREEN == true
+        canvas.refill(0xc0e5);
+        uint16_t err_row = 18;
+        canvas.insert_text(POINT<>(18, 55), "ERROR", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Hello!", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "An error occured!", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Please press RESET", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "button to restart", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "system!", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Contact info:", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "> fb.com/ngxxfus", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "> msnp@outlook.com", 0xffff);
+        canvas.insert_text(POINT<>(err_row+=18, 5), ".vn", 0xffff);
+        canvas.show(true);
+    #endif
+    #if BASIC_IO == true
+        basic_io::led0_val(1);
+        basic_io::led0_blinky(10000, 19, 253);
+    #endif
+    #if CONTROLLER == true
+        while(0x1)  controller::iled_blinky(1);
+    #endif
+}
+
+/// @brief show notification screen for reserved feature
+void reserved_feature_mode(){
+    #if TFT_SCREEN == true
+        canvas.refill(0x7fd4);
+        uint16_t err_row = 18;
+        canvas.insert_text(POINT<>(18, 48), "- DEV -", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Hello!", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "This is NOT an", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "ERROR. This is a", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "RESERVED feature!", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Press RESET to", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "restart :>", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "Contact info:", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "> fb.com/ngxxfus", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), "> msnp@outlook.com", 0x2124);
+        canvas.insert_text(POINT<>(err_row+=18, 5), ".vn", 0x2124);
+        canvas.show(true);
+    #endif
+    #if BASIC_IO == true
+        basic_io::led0_val(1);
+        basic_io::led0_blinky(10, 17, 329);
+    #endif
+    #if CONTROLLER == true
+        controller::iled_blinky(10, 1000);
+    #endif
+}
+
+/// @brief show humid and temp box (for slide show mode)
+void show_humid_temp_box(POINT<> pos, float humid, float temp, uint16_t background_color = 0x0, uint16_t text_color = 0xFFFF){
+    /// insert background
+    canvas.insert_rectangle(pos, 120, 43, background_color, true, background_color);
+    /// insert humid/
+    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+5), "Humid: ", text_color);
+    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+70), String(humid), text_color);
+    /// insert temp
+    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+5), "Temp: ", text_color);
+    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+70), String(temp), text_color);
+}
+
+
 
 #endif
