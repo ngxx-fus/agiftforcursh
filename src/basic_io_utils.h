@@ -25,6 +25,9 @@
 #ifndef BTN3_PIN
     #define BTN3_PIN 0
 #endif
+#ifndef BTN4_PIN
+    #define BTN4_PIN 0
+#endif
 #ifndef LED0_PIN
     #define LED0_PIN 0
 #endif
@@ -59,15 +62,23 @@ namespace basic_io{
                                 btn1_last_pressed = 0,
                                 btn2_last_pressed = 0,
                                 btn3_last_pressed = 0;
+                                btn4_last_pressed = 0;
     #endif
 
     #if CUSTOM_ISR_HANDLER == true
         function<void(void)>    btn0_isr_handler,
                                 btn1_isr_handler,
                                 btn2_isr_handler,
-                                btn3_isr_handler;
+                                btn3_isr_handler,
+                                btn4_isr_handler;
     #endif
 
+    void btn4_detach_interrupt(){
+        #if LOG == true
+            call( "btn4_detach_interrupt");
+        #endif
+        detachInterrupt(digitalPinToInterrupt(BTN4_PIN));
+    }
     void btn3_detach_interrupt(){
         #if LOG == true
             call( "btn3_detach_interrupt");
@@ -91,6 +102,18 @@ namespace basic_io{
             call( "btn0_detach_interrupt");
         #endif
         detachInterrupt(digitalPinToInterrupt(BTN0_PIN));
+    }
+
+    template<class Tfunc>
+    void btn4_attach_interrupt(Tfunc &isr_func){
+        #if LOG == true
+            call( "btn4_attach_interrupt");
+        #endif
+        attachInterrupt(
+            digitalPinToInterrupt(BTN4_PIN), 
+            isr_func, 
+            FALLING
+        );
     }
 
     template<class Tfunc>
@@ -155,17 +178,18 @@ namespace basic_io{
     bool btn1_val(){return digitalRead(BTN1_PIN);}
     bool btn2_val(){return digitalRead(BTN2_PIN);}
     bool btn3_val(){return digitalRead(BTN3_PIN);}
+    bool btn4_val(){return digitalRead(BTN4_PIN);}
 
-    bool led0_val(){return led0_state;}
+    bool led0_val(){return !led0_state;}
     bool led1_state_value(){return led1_state;}
-    void led0_val(bool state){led0_state = state; digitalWrite(LED0_PIN, state);}
+    void led0_val(bool state){led0_state = !state; digitalWrite(LED0_PIN, !state);}
     void led1_state_value(bool state){led1_state = state; digitalWrite(LED1_PIN, state);}
 
     void led0_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
         while(times--){
-            digitalWrite(LED0_PIN, LOW); delay(t_off);
-            digitalWrite(LED0_PIN, HIGH); delay(t_on);
-            digitalWrite(LED0_PIN, LOW);
+            digitalWrite(LED0_PIN, HIGH); delay(t_off);
+            digitalWrite(LED0_PIN, LOW); delay(t_on);
+            digitalWrite(LED0_PIN, HIGH);
         }
     }
 
@@ -316,6 +340,26 @@ void basic_io_init(){
         #endif
         #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
             if(basic_io::btn3_isr_handler)
+                #if LOG == true
+                    info("atteched isr at btn3");
+                #endif
+        #endif
+    #endif
+    #ifdef BTN4_PIN
+        #if LOG == true
+            info("enable: btn4 at <", BTN4_PIN, ">");
+            info("enable: btn4: input/pullup");
+        #endif
+        pinMode(BTN4_PIN, INPUT_PULLUP);
+        #if ISRHANDLER == true
+            attachInterrupt(
+                digitalPinToInterrupt(BTN4_PIN), 
+                basic_io::isr4, 
+                FALLING
+            );
+        #endif
+        #if ISRHANDLER == true && CUSTOM_ISR_HANDLER == true
+            if(basic_io::btn4_isr_handler)
                 #if LOG == true
                     info("atteched isr at btn3");
                 #endif
