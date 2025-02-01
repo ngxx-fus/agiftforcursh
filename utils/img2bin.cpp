@@ -2,82 +2,673 @@
 using namespace std;
 #include <jpeglib.h>
 
-uint16_t rgb_to_rgb565(unsigned char r, unsigned char g, unsigned char b) {
-    // Extract 5 bits for red, 6 bits for green, and 5 bits for blue
-    uint16_t r_5 = (r >> 3) & 0x1F; // Take the upper 5 bits of red
-    uint16_t g_6 = (g >> 2) & 0x3F; // Take the upper 6 bits of green
-    uint16_t b_5 = (b >> 3) & 0x1F; // Take the upper 5 bits of blue
+#include <cstdint> 
 
-    // Combine into a single 16-bit value
-    return (r_5 << 11) | (g_6 << 5) | b_5;
+void raise_exception(string msg = "unknown", int exit_code = 1){
+    cout << "Err: " << msg << '\n';
+    exit(exit_code);
 }
 
-void readJPEG(const char* filename, const char* out) {
-    // Open the file
-    FILE* infile = fopen(filename, "rb");
-    std::ofstream fs(out, std::ios::out | std::ios::binary | std::ios::app);
-    if (!infile) {
-        std::cerr << "Error: Cannot open file " << filename << std::endl;
-        return;
+class IMG_SHAPE{
+private:
+    uint16_t width;
+    uint16_t height;
+
+public:
+    IMG_SHAPE(uint16_t width = 0, uint16_t height = 0){
+        this->height = height;
+        this->width  = width;
+    }
+    
+    uint16_t W() const {return this->width;}
+    uint16_t H() const {return this->height;}
+
+    IMG_SHAPE& operator = (IMG_SHAPE o){
+        this->width  = o.width;
+        this->height = o.height;
+        return *this;
+    }
+    
+    void set(uint16_t height, uint16_t width){
+        this->height = height;
+        this->width  = width;
     }
 
-    // Decompress the JPEG file
-    struct jpeg_decompress_struct cinfo;
-    struct jpeg_error_mgr jerr;
+    void H(uint16_t height){this->height = height;}
+    void W(uint16_t width){this->width = width;}
 
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_decompress(&cinfo);
-    jpeg_stdio_src(&cinfo, infile);
-    jpeg_read_header(&cinfo, TRUE);
-    jpeg_start_decompress(&cinfo);
+    bool operator == (IMG_SHAPE o){
+        return (this->height == o.height)
+                && (this->width == o.width);
+    }
+    bool operator != (IMG_SHAPE o){
+        return (this->height != o.height)
+                || (this->width != o.width);
+    }
 
-    // Get image dimensions
-    int width = cinfo.output_width;
-    int height = cinfo.output_height;
-    int channels = cinfo.output_components; // 3 for RGB
-    std::cout << "Image dimensions: " << width << "x" << height << ", Channels: " << channels << std::endl;
+    uint32_t HxW() const {return uint32_t(this->height) * uint32_t(this->width);}
 
-    // Allocate memory for a row of pixels
-    unsigned char* row_buffer = new unsigned char[width * channels];
+    friend std::ostream& operator<<(std::ostream& os, const IMG_SHAPE& o){
+        os << "(" << o.height << ", " << o.width << ")";
+        return os;
+    }
 
-    uint16_t r,g,b;
+};
 
-    // Read each row
-    for (int y = 0; y < height; y++) {
-        jpeg_read_scanlines(&cinfo, &row_buffer, 1);
-        for (int x = 0; x < width; x++) {
-            int index = x * channels;
-            unsigned char red = row_buffer[index];
-            unsigned char green = row_buffer[index + 1];
-            unsigned char blue = row_buffer[index + 2];
-            /// RGB -> 565
-            uint16_t _565f = rgb_to_rgb565(red, green, blue);
-            /// split into byteH byteL
-            const char byte_h = (_565f&0xFF00)>>8;
-            const char byte_l = _565f & 0x00FF;
-            /// write to bin file
-            fs.ostream::write(&byte_h, 1);
-            fs.ostream::write(&byte_l, 1);
+class RGB_PIXEL {
+private:
+    uint16_t red, green, blue;
 
-            // std::cout << "Pixel (" << y << ", " << x << "): " \
-            //           << "R=" << (int)red << ", G=" << (int)green << ", B=" << (int)blue \
-            //           << "\t--> 565f: " << hex << (uint16_t) (byte_h&0xFF) <<(uint16_t) (byte_l&0xFF) \
-            //           << dec << std::endl;
+    // Convert RGB888 to RGB565
+    inline uint16_t RGB_to_RGB565(uint8_t red, uint8_t green, uint8_t blue) const {
+        return ((red & 0xF8) << 8) |   // Take the top 5 bits of Red
+               ((green & 0xFC) << 3) | // Take the top 6 bits of Green
+               ((blue & 0xF8) >> 3);   // Take the top 5 bits of Blue
+    }
+
+    // Normalize values to 8-bit range
+    template <class T>
+    T norm_1608(T in) const {
+        return (in > 255) ? 255 : in;
+    }
+
+public:
+    // Constructor
+    RGB_PIXEL(uint16_t red = 0, uint16_t green = 0, uint16_t blue = 0)
+        : red(red), green(green), blue(blue) {}
+
+    // Setters
+    void RED(uint16_t new_val){this->red = new_val;}
+    void GREEN(uint16_t new_val){this->green = new_val;}
+    void BLUE(uint16_t new_val){this->blue = new_val;}
+
+    // Getters
+    uint16_t RED() const { return red; }
+    uint16_t GREEN() const { return green; }
+    uint16_t BLUE() const { return blue; }
+
+    // Normalize function
+    void NORMALIZE() {
+        red   = norm_1608(red);
+        green = norm_1608(green);
+        blue  = norm_1608(blue);
+    }
+
+    // Assignment operator
+    RGB_PIXEL& operator=(const RGB_PIXEL& o) {
+        if (this != &o) {
+            red = o.RED();
+            green = o.GREEN();
+            blue = o.BLUE();
+        }
+        return *this;
+    }
+
+    // Addition operators
+    RGB_PIXEL operator+(const RGB_PIXEL& o) const {
+        return RGB_PIXEL(RED() + o.RED(), GREEN() + o.GREEN(), BLUE() + o.BLUE());
+    }
+
+    template<class Tw>
+    RGB_PIXEL operator+(Tw white) const {
+        return RGB_PIXEL(RED() + white, GREEN() + white, BLUE() + white);
+    }
+
+    // Self-addition
+    RGB_PIXEL& operator += (const RGB_PIXEL& o) {
+        this->red   = (this->red   + o.red   > 65535U) ? 65535 : this->red   + o.red;
+        this->green = (this->green + o.green > 65535U) ? 65535 : this->green + o.green;
+        this->blue  = (this->blue  + o.blue  > 65535U) ? 65535 : this->blue  + o.blue;
+        return *this;
+    }
+
+    // Subtraction operators
+    RGB_PIXEL operator-(const RGB_PIXEL& o) const {
+        return RGB_PIXEL(RED() - o.RED(), GREEN() - o.GREEN(), BLUE() - o.BLUE());
+    }
+
+    RGB_PIXEL& operator-=(const RGB_PIXEL& o){
+        this->green -= o.GREEN();
+        this->red   -= o.RED();
+        this->blue  -= o.BLUE();
+        return *this;
+    }
+
+    template<class Tw>
+    RGB_PIXEL operator-(Tw white) const {
+        return RGB_PIXEL(RED() - white, GREEN() - white, BLUE() - white);
+    }
+
+    // Multiplication operators
+    RGB_PIXEL operator*(const RGB_PIXEL& o) const {
+        return RGB_PIXEL(RED() * o.RED(), GREEN() * o.GREEN(), BLUE() * o.BLUE());
+    }
+
+    RGB_PIXEL& operator*=(const RGB_PIXEL& o){
+        this->green *= o.GREEN();
+        this->red   *= o.RED();
+        this->blue  *= o.BLUE();
+        return *this;
+    }
+
+    template<class Tw>
+    RGB_PIXEL operator*(Tw white) const {
+        return RGB_PIXEL(RED() * white, GREEN() * white, BLUE() * white);
+    }
+
+    // Division operators (avoid division by zero)
+    RGB_PIXEL operator/(const RGB_PIXEL& o) const {
+        return RGB_PIXEL(o.RED() ? RED() / o.RED() : 0,
+                         o.GREEN() ? GREEN() / o.GREEN() : 0,
+                         o.BLUE() ? BLUE() / o.BLUE() : 0);
+    }
+
+    template<class Tw>
+    RGB_PIXEL operator/(Tw white) const {
+        return RGB_PIXEL(white ? RED() / white : 0,
+                         white ? GREEN() / white : 0,
+                         white ? BLUE() / white : 0);
+    }
+
+    RGB_PIXEL& operator /= (const RGB_PIXEL& o){
+        this->green /= o.GREEN();
+        this->red   /= o.RED();
+        this->blue  /= o.BLUE();
+        return *this;
+    }
+
+    // Convert to 16-bit RGB565 format
+    uint16_t to_565_format() const {
+        return RGB_to_RGB565(
+            static_cast<uint8_t>(norm_1608(RED())),
+            static_cast<uint8_t>(norm_1608(GREEN())),
+            static_cast<uint8_t>(norm_1608(BLUE()))
+        );
+    }
+
+    bool operator == (const RGB_PIXEL& o){
+        return (RED() == o.RED()) 
+                && (GREEN() == o.GREEN()) 
+                && (BLUE()  == o.BLUE());
+    }
+
+    bool operator != (const RGB_PIXEL& o){
+        return (RED() != o.RED()) 
+                || (GREEN() != o.GREEN()) 
+                || (BLUE()  != o.BLUE());
+    }
+
+
+    friend std::ostream& operator<<(std::ostream& os, const RGB_PIXEL& pixel){
+        os << "(" << pixel.RED() << ", " << pixel.GREEN() << ", " << pixel.BLUE() << ")";
+        return os;
+    }
+
+};
+
+class RGB_IMG{
+private:
+    uint32_t id;
+    RGB_PIXEL* pixels;
+    IMG_SHAPE shape;
+protected:
+    uint32_t xy_to_index(uint16_t x, uint16_t y,IMG_SHAPE shape) const {
+        if( x >= shape.H() || y >= shape.W() ) return 0U;
+        return uint32_t(x) * uint32_t(shape.W()) + uint32_t(y);
+    }
+
+    template<class Tmsg>
+    void actually_print_log(Tmsg msg) const {
+        // will be called at last of param list :v 
+        cout << msg << '\n';
+    }
+
+    template<class Tmsg, class... Tmsgs>
+    void actually_print_log(Tmsg msg, Tmsgs... msgs) const {
+        cout << msg;
+        actually_print_log(msgs...);
+    }
+
+    template<class... Tmsgs>
+    void write_log(Tmsgs... msgs) const {
+        cout << "<RGB_IMG id=" << id << "> ";
+        actually_print_log(msgs...);
+    }
+
+
+public:
+    RGB_IMG(uint16_t max_height = 0, uint16_t max_width = 0, RGB_PIXEL preset = {0, 0, 0})
+    {
+
+        this->id = uintptr_t(&id);
+        if( !max_height  || !max_width ){
+            this->pixels        = NULL;
+            this->shape.set(0, 0);
+            return;
+        }else{
+            this->pixels        = new RGB_PIXEL[ uint32_t(max_height) * uint32_t(max_width) ];
+            this->shape.set(max_height, max_width);
+        }
+        if( preset != RGB_PIXEL({0, 0, 0}) ){
+            for(uint32_t i = 0; i < max_height*max_width; ++i){
+                *(pixels + i) = preset;
+            }
+        }
+        write_log("initialized ", "h= ", max_height, " w= ", max_width);
+    }
+
+    RGB_IMG(string jpg_path){
+        FILE* infile = fopen(jpg_path.c_str(), "rb");
+
+        if (!infile) {
+            write_log("failed to initialize!");
+            exit(1);
+        }
+
+        // Decompress the JPEG file
+        struct jpeg_decompress_struct cinfo;
+        struct jpeg_error_mgr jerr;
+
+        cinfo.err = jpeg_std_error(&jerr);
+        jpeg_create_decompress(&cinfo);
+        jpeg_stdio_src(&cinfo, infile);
+        jpeg_read_header(&cinfo, TRUE);
+        jpeg_start_decompress(&cinfo);
+
+        // Get image dimensions
+        this->shape.set(cinfo.output_height, cinfo.output_width);
+        this->pixels    = new RGB_PIXEL[ this->shape.HxW() ];
+        int channels = cinfo.output_components; // 3 for RGB
+
+        // Allocate memory for a row of pixels
+        unsigned char* row_buffer = new unsigned char[this->shape.W() * channels];
+
+        // Read each row
+        for (int x = 0; x < this->shape.H(); ++x) {
+            jpeg_read_scanlines(&cinfo, &row_buffer, 1);
+            for (int y = 0; y < this->shape.W(); ++y) {
+                int index = y * channels;
+                unsigned char red = row_buffer[index];
+                unsigned char green = row_buffer[index + 1];
+                unsigned char blue = row_buffer[index + 2];
+                this->pixels[xy_to_index(x, y, shape)]
+                = {red, green, blue};
+            }
+        }
+
+        write_log("initialized", " h=", shape.H() ," w=", shape.W(), " c=", channels);
+
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        fclose(infile);
+    }
+
+    uint32_t ID() const {return this->id;}
+
+    void RESIZE(uint16_t new_height, uint16_t new_width){
+        delete[] pixels;
+        pixels = NULL;
+        this->shape.set(new_height, new_width);
+        if( shape.HxW() > 0U ){
+            pixels = new RGB_PIXEL[ shape.HxW() ];
         }
     }
 
-    // Cleanup
-    delete[] row_buffer;
-    jpeg_finish_decompress(&cinfo);
-    jpeg_destroy_decompress(&cinfo);
-    fclose(infile);
-    fs.close();
-}
+    void SET_HEIGHT(uint16_t new_height){this->shape.H(new_height);}
+    void SET_WIDTH(uint16_t new_width){this->shape.W(new_width);}
+    void SET_PIXEL(uint32_t index, RGB_PIXEL new_pixel){
+        if(index >= uint32_t(this->HEIGHT()) * uint32_t(this->WIDTH())){
+            write_log("ERROR: ", "RGB_PIXEL.PIXEL: out-of-range");
+            exit(1);
+        }
+        *(this->pixels + index) = new_pixel;
+    }
+    void SET_PIXEL(uint16_t x, uint16_t y, RGB_PIXEL new_pixel){
+        if(x >= this->HEIGHT() || y >= this->WIDTH()){
+            write_log("ERROR: ", "RGB_PIXEL.PIXEL: out-of-range");
+            exit(1);
+        }
+        *(pixels + uint32_t(x) * uint32_t(this->WIDTH()) + uint32_t(y)) = new_pixel;
+    }
+
+    uint16_t HEIGHT()const {return this->shape.H();}
+    uint16_t WIDTH() const {return this->shape.W();}
+    IMG_SHAPE SHAPE() const {return this->shape;}
+
+    RGB_PIXEL& PIXEL(uint32_t index) const {
+        if(index >= uint32_t(this->HEIGHT()) * uint32_t(this->WIDTH())){
+            this->write_log("ERROR: ", "RGB_PIXEL.PIXEL: out-of-range");
+            exit(1);
+        }
+        return *( pixels + index);    
+    }
+
+    RGB_PIXEL& PIXEL(uint16_t x, uint16_t y) const {
+        if(x >= this->HEIGHT() || y >= this->WIDTH()){
+            write_log("ERROR: ", "RGB_PIXEL.PIXEL: out-of-range");
+            exit(1);
+        }
+        return *(pixels + uint32_t(x) * uint32_t(this->WIDTH()) + uint32_t(y));
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const RGB_IMG& img){
+        os << "<RGB_IMG id=" << img.ID() << ">\n";
+        for(uint16_t x = 0; x < img.HEIGHT(); ++x){
+            for(uint16_t y = 0; y < img.WIDTH(); ++y){
+                os << img.PIXEL(x, y) << '\t';
+            }
+            os << '\n';
+        }
+        return os;
+    }
+
+    RGB_IMG& operator = (RGB_IMG const& o){
+        this->RESIZE(o.HEIGHT(), o.WIDTH());
+        for(uint32_t i = 0; i < uint32_t(o.HEIGHT()) * uint32_t(o.WIDTH()); ++i){
+            this->SET_PIXEL(i, o.PIXEL(i));
+        }
+        return *this;
+    }
+
+    RGB_IMG& operator += (RGB_IMG const& o){
+        if(this->SHAPE() != o.SHAPE()) {
+            write_log("+=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
+            exit(1);
+        }
+        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
+            this->PIXEL(i) += o.PIXEL(i);
+        }
+        return *this;
+    }
+
+    RGB_IMG& operator -= (RGB_IMG const& o){
+        if(this->SHAPE() != o.SHAPE()) {
+            write_log("-=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
+            exit(1);
+        }
+        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
+            this->PIXEL(i) -= o.PIXEL(i);
+        }
+        return *this;
+    }
+
+    RGB_IMG& operator /= (RGB_IMG const& o){
+        if(this->SHAPE() != o.SHAPE()) {
+            write_log("-=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
+            exit(1);
+        }
+        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
+            this->PIXEL(i) /= o.PIXEL(i);
+        }
+        return *this;
+    }
+
+    RGB_IMG& operator /= (RGB_PIXEL const& pixel){
+        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
+            this->PIXEL(i) /= pixel;
+        }
+        return *this;
+    }
+
+    RGB_IMG& conv_2d(const RGB_IMG& filter) {
+        if (!pixels || filter.HEIGHT() == 0 || filter.WIDTH() == 0) return *this;
+
+        uint16_t res_h = HEIGHT() - filter.HEIGHT() + 1;
+        uint16_t res_w = WIDTH() - filter.WIDTH() + 1;
+        
+        // Allocate new memory for the result
+        RGB_PIXEL* new_pixels = new RGB_PIXEL[res_h * res_w];
+
+        // Get raw pointers for fast access
+        RGB_PIXEL* orig_pixels = pixels;
+        RGB_PIXEL* filter_pixels = filter.pixels;
+
+        uint16_t filter_h = filter.HEIGHT();
+        uint16_t filter_w = filter.WIDTH();
+        uint16_t width = WIDTH();
+
+        // Process convolution using optimized access
+        for (uint16_t res_x = 0; res_x < res_h; ++res_x) {
+            for (uint16_t res_y = 0; res_y < res_w; ++res_y) {
+                
+                RGB_PIXEL sum = {0, 0, 0}; // Accumulator for convolution
+
+                // Unrolled loop for better performance
+                for (uint16_t fx = 0; fx < filter_h; ++fx) {
+                    RGB_PIXEL* orig_row = orig_pixels + (res_x + fx) * width;
+                    RGB_PIXEL* filter_row = filter_pixels + fx * filter_w;
+
+                    for (uint16_t fy = 0; fy < filter_w; fy += 2) {
+                        sum = sum + (orig_row[res_y + fy] * filter_row[fy]);
+
+                        // Unrolling second iteration (only if fy+1 is within bounds)
+                        if (fy + 1 < filter_w) {
+                            sum = sum + (orig_row[res_y + fy + 1] * filter_row[fy + 1]);
+                        }
+                    }
+                }
+
+                // Store the computed value
+                new_pixels[xy_to_index(res_x, res_y, {res_h, res_w})] = sum;
+            }
+        }
+
+        // Free old memory and replace with new data
+        delete[] pixels;
+        this->pixels = new_pixels;
+        this->shape.set(res_h, res_w);
+
+        write_log("e_conv_2d: res_h=", res_h, ", res_w=", res_w);
+
+        return *this;
+    }
+
+    RGB_IMG& size_reducing(uint16_t percent) {
+        if (percent == 0 || percent >= 100) {
+            write_log("size_reducing::ERROR - Invalid percentage: ", percent);
+            return *this;
+        }
+
+        uint16_t new_height = HEIGHT() * percent / 100;
+        uint16_t new_width = WIDTH() * percent / 100;
+
+        if (new_height == 0 || new_width == 0) {
+            write_log("size_reducing::ERROR - New dimensions too small: ", new_height, "x", new_width);
+            return *this;
+        }
+
+        // Allocate new buffer
+        RGB_PIXEL* new_pixels = new RGB_PIXEL[new_height * new_width];
+
+        double x_ratio = static_cast<double>(WIDTH()) / new_width;
+        double y_ratio = static_cast<double>(HEIGHT()) / new_height;
+
+        for (uint16_t new_x = 0; new_x < new_height; ++new_x) {
+            for (uint16_t new_y = 0; new_y < new_width; ++new_y) {
+                // Compute source coordinates in the original image
+                double src_x = new_x * y_ratio;
+                double src_y = new_y * x_ratio;
+
+                uint16_t x1 = static_cast<uint16_t>(src_x);
+                uint16_t y1 = static_cast<uint16_t>(src_y);
+                uint16_t x2 = std::min(x1 + 1, HEIGHT() - 1);
+                uint16_t y2 = std::min(y1 + 1, WIDTH() - 1);
+
+                double x_diff = src_x - x1;
+                double y_diff = src_y - y1;
+
+                // Bilinear interpolation
+                RGB_PIXEL p1 = PIXEL(x1, y1);
+                RGB_PIXEL p2 = PIXEL(x1, y2);
+                RGB_PIXEL p3 = PIXEL(x2, y1);
+                RGB_PIXEL p4 = PIXEL(x2, y2);
+
+                RGB_PIXEL interp;
+                interp.RED(static_cast<uint16_t>(
+                    p1.RED() * (1 - x_diff) * (1 - y_diff) +
+                    p2.RED() * y_diff * (1 - x_diff) +
+                    p3.RED() * x_diff * (1 - y_diff) +
+                    p4.RED() * x_diff * y_diff
+                ));
+                interp.GREEN(static_cast<uint16_t>(
+                    p1.GREEN() * (1 - x_diff) * (1 - y_diff) +
+                    p2.GREEN() * y_diff * (1 - x_diff) +
+                    p3.GREEN() * x_diff * (1 - y_diff) +
+                    p4.GREEN() * x_diff * y_diff
+                ));
+                interp.BLUE(static_cast<uint16_t>(
+                    p1.BLUE() * (1 - x_diff) * (1 - y_diff) +
+                    p2.BLUE() * y_diff * (1 - x_diff) +
+                    p3.BLUE() * x_diff * (1 - y_diff) +
+                    p4.BLUE() * x_diff * y_diff
+                ));
+
+                new_pixels[new_x * new_width + new_y] = interp;
+            }
+        }
+
+        // Replace old buffer
+        delete[] pixels;
+        pixels = new_pixels;
+        shape.set(new_height, new_width);
+
+        write_log("size_reducing::SUCCESS - New size: ", new_height, "x", new_width);
+        return *this;
+    }
+
+    RGB_IMG& crop(uint16_t crop_h, uint16_t crop_w) {
+        if (crop_h == 0 || crop_w == 0 || crop_h > HEIGHT() || crop_w > WIDTH()) {
+            write_log("crop::ERROR - Invalid crop size: ", crop_h, "x", crop_w);
+            return *this;
+        }
+
+        // Calculate the top-left corner of the crop area
+        uint16_t start_x = (HEIGHT() - crop_h) / 2;
+        uint16_t start_y = (WIDTH() - crop_w) / 2;
+
+        // Allocate memory for cropped pixels
+        RGB_PIXEL* new_pixels = new RGB_PIXEL[crop_h * crop_w];
+
+        // Copy pixels from original image
+        for (uint16_t x = 0; x < crop_h; ++x) {
+            for (uint16_t y = 0; y < crop_w; ++y) {
+                new_pixels[x * crop_w + y] = PIXEL(start_x + x, start_y + y);
+            }
+        }
+
+        // Replace old pixel buffer
+        delete[] pixels;
+        pixels = new_pixels;
+        shape.set(crop_h, crop_w);
+
+        write_log("crop::SUCCESS - New size: ", crop_h, "x", crop_w);
+        return *this;
+    }
+
+    bool save_to_jpg(const string& filename, int quality = 75) {
+        FILE* outfile = fopen(filename.c_str(), "wb");
+        if (!outfile) {
+            write_log("Failed to open file for writing: ", filename);
+            return false;
+        }
+
+        struct jpeg_compress_struct cinfo;
+        struct jpeg_error_mgr jerr;
+
+        cinfo.err = jpeg_std_error(&jerr);
+        jpeg_create_compress(&cinfo);
+        jpeg_stdio_dest(&cinfo, outfile);
+
+        cinfo.image_width = WIDTH();
+        cinfo.image_height = HEIGHT();
+        cinfo.input_components = 3; // RGB
+        cinfo.in_color_space = JCS_RGB;
+
+        jpeg_set_defaults(&cinfo);
+        jpeg_set_quality(&cinfo, quality, TRUE);
+        jpeg_start_compress(&cinfo, TRUE);
+
+        JSAMPROW row_pointer[1];
+        unsigned char* row_buffer = new unsigned char[WIDTH() * 3];
+
+        while (cinfo.next_scanline < cinfo.image_height) {
+            for (int y = 0; y < WIDTH(); ++y) {
+                RGB_PIXEL pixel = PIXEL(cinfo.next_scanline, y);
+                row_buffer[y * 3] = static_cast<uint8_t>(pixel.RED());
+                row_buffer[y * 3 + 1] = static_cast<uint8_t>(pixel.GREEN());
+                row_buffer[y * 3 + 2] = static_cast<uint8_t>(pixel.BLUE());
+            }
+            row_pointer[0] = row_buffer;
+            jpeg_write_scanlines(&cinfo, row_pointer, 1);
+        }
+
+        jpeg_finish_compress(&cinfo);
+        jpeg_destroy_compress(&cinfo);
+        fclose(outfile);
+        delete[] row_buffer;
+
+        write_log("Image saved to: ", filename);
+        return true;
+    }
+
+    bool save_to_bin(const string& filename) {
+        std::ofstream fs(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        
+        if (!fs) {
+            write_log("ERROR: Unable to open file for writing: ", filename);
+            return false;
+        }
+
+        for (uint32_t i = 0; i < shape.HxW(); ++i) {
+            uint16_t _565_pixel = pixels[i].to_565_format();
+            char byte_h = (_565_pixel >> 8) & 0xFF;
+            char byte_l = _565_pixel & 0xFF;
+            
+            fs.write(&byte_h, 1);
+            fs.write(&byte_l, 1);
+        }
+
+        fs.close();
+        write_log("Image saved to binary file: ", filename);
+        return true;
+    }
+
+    ~RGB_IMG(){
+        write_log("delete[] pixels=", pixels);
+        if(pixels == NULL) return;
+        delete[] pixels;
+        pixels = NULL;
+        write_log("done!");
+    }
+};
 
 int main(int argc, char* argv[]){
-    for(int i = 0; i < argc; i++)
-        cout << "arg[" << i << "] : " << argv[i] << endl;
-    if(argc != 3) return 0;
-    readJPEG( argv[1], argv[2]);
+    
+    for(int i = 1; i < argc; i++){
+        cout << "\nProcessing " << "arg[" << i << "] : " << argv[i] << '\n';
+
+        RGB_IMG img0(argv[i]);
+
+        if( img0.SHAPE().W() < 172 || img0.SHAPE().H() < 220 ){
+            continue;
+        }
+
+        uint16_t percent = max(
+            100.0 * 192 / img0.SHAPE().W(),
+            100.0 * 240 / img0.SHAPE().H()
+        );
+
+        img0.size_reducing(percent);
+        img0.crop(220, 172);
+
+        string jpg_output = "./resized_imgs/resized_img_" + to_string(i) + ".jpg";
+        string bin_output = "./bins/img" + to_string(i) + ".bin";
+
+        img0.save_to_jpg(jpg_output.c_str(), 100);
+        img0.save_to_bin(bin_output);
+    }
+
+    cout << "\n>>>> done >>>>\n";
+    
     return 0;
 }
