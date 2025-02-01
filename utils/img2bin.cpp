@@ -611,6 +611,27 @@ public:
         return true;
     }
 
+    bool save_to_bin(const string& filename) {
+        std::ofstream fs(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        
+        if (!fs) {
+            write_log("ERROR: Unable to open file for writing: ", filename);
+            return false;
+        }
+
+        for (uint32_t i = 0; i < shape.HxW(); ++i) {
+            uint16_t _565_pixel = pixels[i].to_565_format();
+            char byte_h = (_565_pixel >> 8) & 0xFF;
+            char byte_l = _565_pixel & 0xFF;
+            
+            fs.write(&byte_h, 1);
+            fs.write(&byte_l, 1);
+        }
+
+        fs.close();
+        write_log("Image saved to binary file: ", filename);
+        return true;
+    }
 
     ~RGB_IMG(){
         write_log("delete[] pixels=", pixels);
@@ -622,9 +643,9 @@ public:
 };
 
 int main(int argc, char* argv[]){
-    srand(time(0));
+    
     for(int i = 1; i < argc; i++){
-        cout << "Processing " << "arg[" << i << "] : " << argv[i] << '\n';
+        cout << "\nProcessing " << "arg[" << i << "] : " << argv[i] << '\n';
 
         RGB_IMG img0(argv[i]);
 
@@ -640,10 +661,11 @@ int main(int argc, char* argv[]){
         img0.size_reducing(percent);
         img0.crop(220, 172);
 
-        string output = "./resized_imgs/resized_img_" + to_string(i) + ".jpg";
+        string jpg_output = "./resized_imgs/resized_img_" + to_string(i) + ".jpg";
+        string bin_output = "./bins/img" + to_string(i) + ".bin";
 
-        img0.save_to_jpg(output.c_str(), 100);
-
+        img0.save_to_jpg(jpg_output.c_str(), 100);
+        img0.save_to_bin(bin_output);
     }
 
     cout << "\n>>>> done >>>>\n";

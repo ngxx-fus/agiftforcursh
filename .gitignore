@@ -3,3 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+utils/bins
+utils/imgs
+utils/archived
+utils/resized_imgs

@@ -1,12 +1,9 @@
 cpp_file_path:=img2bin.cpp
-full_size_img_dir:=none
-output_img_dir:=none
 
-all: run 
+all: run
 
-run: compile clear_output
-	# ./img2bin	./imgs/img*.jpg
-	./img2bin	./imgs/*.jpg
+run: compile 
+	./img2bin	./imgs/*
 
 memcheck: compile
 	valgrind --tool=memcheck ./img2bin
@@ -16,9 +13,15 @@ compile:
 
 clear_output:
 	rm -rf ./resized_imgs/*
+	rm -rf ./bins/*
+
+coppy_to_sdcard:
+	mkdir -p /media/ngxxfus/SD_CARD/imgs
+	cp -rf ./bins/*.bin  /media/ngxxfus/SD_CARD/imgs
 
 install_dep:
 	sudo apt update
 	sudo apt upgrade
 	sudo apt install g++ gcc
 	sudo apt install libjpeg-dev
+

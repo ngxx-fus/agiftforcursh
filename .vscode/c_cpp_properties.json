@@ -1,13 +1,9 @@
-//
-// !!! WARNING !!! AUTO-GENERATED FILE!
-// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
-// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
-//
 {
     "configurations": [
         {
             "name": "PlatformIO",
             "includePath": [
+                "/usr/include/",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
                 "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/ThingSpeak/src",
@@ -243,11 +239,12 @@
                 "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
-                ""
+                "/usr/include/x86_64-linux-gnu"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
+                    "/usr/include/",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/include",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/src",
                     "/mnt/sda1/DOC/HCMUTE_DOCs/NH_2024_2025_HK_01/ITFA336064/a_gift_for_crush/.pio/libdeps/esp32doit-devkit-v1/ThingSpeak/src",
@@ -482,8 +479,7 @@
                     "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                     "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
-                    ""
+                    "/home/ngxxfus/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src"
                 ]
             },
             "defines": [
@@ -511,7 +507,7 @@
             "compilerPath": "/home/ngxxfus/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc",
             "compilerArgs": [
                 "-mlongcalls",
-                ""
+                "-ljpeg"
             ]
         }
     ],
