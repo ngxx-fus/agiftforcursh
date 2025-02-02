@@ -41,7 +41,7 @@ First, change the path to SDCard, the simple way, open SDCard dir, then ```ctrl+
 ```Makefile
 [line 25] SDCARD_TARGET   := /media/ngxxfus/SD_CARD
 ```
-![ex](./archived/output.gif)
+![output](https://github.com/user-attachments/assets/4b238669-9ef3-4bf9-a3cc-ccd8b178b3b8)
 
 Seccond, copy all images (which you want to be converted) into ```imgs``` directory.
 
