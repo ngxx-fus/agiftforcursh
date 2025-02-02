@@ -15,9 +15,10 @@ This C++ program requires `libjpeg` to read/write JPG image file and `g++` to co
 
 ## Working Tree
 
+NOTE: Cause of ```.gitignore```, some directorys will not be appeared in this repository. You need to manually create them.
+
 ```text
     utils
-    ├──── archived                              : contains archived imgs, cpp files, bash script files 
     ├──── imgs                                  : original imgs (input img source)
     │     ├──── *.jgp / *.JPG
     │     └──── ...
@@ -28,8 +29,9 @@ This C++ program requires `libjpeg` to read/write JPG image file and `g++` to co
     │     ├──── resized_img_1.jpg 
     │     └──── ...
     ├──── img2bin.cpp                           : the C++ program to convert JPG img -> BIN img
-    ├──── Makefile                              : 
-    └──── ...
+    ├──── Makefile
+    ├──── readme.md 
+    └──── .gitignore
 ```
 
 ## Useage

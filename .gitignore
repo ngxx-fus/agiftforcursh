@@ -7,3 +7,5 @@ utils/bins
 utils/imgs
 utils/archived
 utils/resized_imgs
+utils/img2bin
+utils/img2bin.o
