@@ -283,4 +283,4 @@
  src/mod_libs/fonts/FreeSerif9pt7b.h src/general_utils.h src/wifi_utils.h \
  src/sensor_utils.h \
  .pio/libdeps/esp32doit-devkit-v1/DHT\ sensor\ library/DHT.h \
- src/sdcard_utils.h src/config_utils.h
+ src/sdcard_utils.h

@@ -34,40 +34,72 @@ static const char PROGMEM   mSSID[] = "hg.xnb",
     static uint8_t btn_pressed = 0x0;
 #endif
 
-static void wifi_setup_btn3_isr(){
+static void wifi_setup_btn4_isr(){
     #if LOG == true
         call( "wifi_setup_btn3_isr");
     #endif
-    btn_pressed |= 0x8;
+    if(millis() - basic_io::btn4_last_pressed < 200) return;
+    basic_io::btn4_last_pressed = millis();
+    btn_pressed |= basic_io::btn4_bmask;
+}
+
+static void wifi_setup_btn3_isr(){
+    if(millis() - basic_io::btn3_last_pressed < 200) return;
+    #if LOG == true
+        call( "wifi_setup_btn3_isr");
+    #endif
+    basic_io::btn3_last_pressed = millis();
+    btn_pressed |= basic_io::btn3_bmask;
 }
 
 static void wifi_setup_btn2_isr(){
+    if(millis() - basic_io::btn2_last_pressed < 200) return;
     #if LOG == true
         call( "wifi_setup_btn2_isr");
     #endif
-    btn_pressed |= 0x4;
+    basic_io::btn2_last_pressed = millis();
+    btn_pressed |= basic_io::btn2_bmask;
 }
 
 static void wifi_setup_btn1_isr(){
+    if(millis() - basic_io::btn1_last_pressed < 200) return;
     #if LOG == true
         call( "wifi_setup_btn1_isr");
     #endif
-    btn_pressed |= 0x2;
+    basic_io::btn1_last_pressed = millis();
+    btn_pressed |= basic_io::btn1_bmask;
 }
 
 static void wifi_setup_btn0_isr(){
+    if(millis() - basic_io::btn0_last_pressed < 200) return;
     #if LOG == true
         call( "wifi_setup_btn0_isr");
     #endif
-    btn_pressed |= 0x1;
+    basic_io::btn0_last_pressed = millis();
+    btn_pressed |= basic_io::btn0_bmask;
 }
 
-static void show_GUIDE(String g3 = "UP", String g2 = "DN", String g1 = "CH", String g0 = "OK"){
+template<class Tconfig_name, class Tconfig_val>
+static void show_MENUCONFIG_LINE(
+    uint16_t row, 
+    Tconfig_name conf_name,             Tconfig_val conf_val, 
+    uint16_t conf_name_col = 4,         uint16_t conf_val_col = 115, 
+    uint16_t conf_name_color = 0x10a9,  uint16_t conf_val_color = 0x19ec
+){
+    canvas.insert_text(POINT<>(row, conf_name_col), String(conf_name), conf_name_color);
+    canvas.insert_text(POINT<>(row, conf_val_col), String(conf_val), conf_val_color);
+}
+
+static void show_GUIDE(String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK"){
+    static uint16_t const line_distance = 30;
+    static uint16_t const anchor_x        = 65;
+    static uint16_t const anchor_y        = 140;
     /// show guide
-    canvas.insert_text(POINT<>(85, 145),    g3, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(85+30, 145), g2, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(85+60, 145), g1, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(85+90, 145), g0, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(1)*line_distance, anchor_y), g3, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(2)*line_distance, anchor_y), g2, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(3)*line_distance, anchor_y), g1, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(4)*line_distance, anchor_y), g0, GUIDE_COLOR);
 }
 
 #if FIREBASE_RTDB == true
@@ -320,6 +352,10 @@ void wifi_setup(){
 
     WiFi.mode(WIFI_STA);
 
+    canvas.refill(0xFFFF);
+    canvas.insert_text({25, 5}, "loading...", 0x0);
+    canvas.show();
+
     #if LOG == true
         log2ser("Try connect to Manufacturer's Wi-Fi...");
     #endif
@@ -329,7 +365,7 @@ void wifi_setup(){
             basic_io::led0_blinky(2);
         #endif
         WiFi.begin(mSSID, mPW);
-        delay(1000);
+        delay(500);
         #if FIREBASE_RTDB == true
             if(connect_to_rtdb_firebase()) return;
         #endif
@@ -344,6 +380,7 @@ void wifi_setup(){
 
     /// scan and connect to another wifi
     basic_io::led0_blinky(5, 5, 15);
+    basic_io::btn4_attach_interrupt(wifi_setup_btn4_isr);
     basic_io::btn3_attach_interrupt(wifi_setup_btn3_isr);
     basic_io::btn2_attach_interrupt(wifi_setup_btn2_isr);
     basic_io::btn1_attach_interrupt(wifi_setup_btn1_isr);
@@ -362,6 +399,8 @@ void wifi_setup(){
         if(sel != prev_sel){
             prev_sel = sel;
             canvas.clear();
+            /// show guide
+            show_GUIDE("NE", "SK", "UP", "DN", "OK");
             /// Show skip or scan question?
             canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x0, true, 0xf7be);
             canvas.insert_text(POINT<>(text0+18, 35), "Set-up Wi-Fi?", 0x2945);
@@ -381,37 +420,46 @@ void wifi_setup(){
 
             canvas.show();
         }
-        /// show guide
-        if(show_guide_count < SHOW_GUIDE_COUNTS_MAX){
-            /// log2ser("show guide (",show_guide_count,")");
-            ++show_guide_count;
-            show_GUIDE("UP", "DN", "OK", "?");
-            canvas.show();
+
+        /// next
+        if(btn_pressed & basic_io::btn4_bmask){
+            btn_pressed &= basic_io::btn4_invbmask;
+            delay(200);
+            break;
         }
+
+        /// skip
+        if(btn_pressed & basic_io::btn3_bmask){
+            btn_pressed &= basic_io::btn3_invbmask;
+            basic_io::all_led_blinky(2);
+            goto WIFI_SETUP_SAFE_EXIT;
+        }
+
         /// move up selection
-        if(btn_pressed & 0x8){
-            btn_pressed = btn_pressed & 0xF7;
+        if(btn_pressed & basic_io::btn2_bmask){
+            btn_pressed &= basic_io::btn2_invbmask;
             sel = (sel)?0:1;
             delay(200);
         }
 
         /// move down selection
-        if( btn_pressed & 0x4 ){ 
-            btn_pressed = btn_pressed & 0xFB;
+        if( btn_pressed & basic_io::btn1_bmask ){ 
+            btn_pressed &= basic_io::btn1_invbmask;
             sel = (sel)?0:1;
             delay(200);
         }
 
-        if( btn_pressed & 0x2 ){ 
-            btn_pressed = btn_pressed & 0xFD;
+        if( btn_pressed & basic_io::btn0_bmask ){ 
+            btn_pressed &= basic_io::btn0_invbmask;
             if(sel == 1){
                 screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
-                return;
+                goto WIFI_SETUP_SAFE_EXIT;
             }else{
                 break;
             }
             delay(200);
         }
+    
     }
 
     /// reset show guide count
@@ -453,12 +501,8 @@ void wifi_setup(){
             /// Show all available Wi-Fi(s)
             canvas.clear();
             /// show guide
-            if(show_guide_count <= SHOW_GUIDE_COUNTS_MAX){
-                /// log2ser("show guide (",show_guide_count,")");
-                ++show_guide_count;
-                show_GUIDE("UP", "DN", "OK", "?");
-                // canvas.show();
-            }
+            show_GUIDE("RE", "SK", "UP", "DN", "OK");
+            /// title
             canvas.insert_rectangle(POINT<>(text0, 1), 170, 27, 0x08ab, true, 0x08ab);
             canvas.insert_text(POINT<>(text0+18, 17), "Available Wi-Fi(s)", 0xFFFF);
             /// net 0
@@ -530,28 +574,46 @@ void wifi_setup(){
                 canvas.insert_rectangle(POINT<>(sel_row-1, 24), 121, 29, 0x12ca);
             /// show to screen
             canvas.show();
+
+            /// re-scan
+            if(btn_pressed & basic_io::btn4_bmask){
+                btn_pressed &= basic_io::btn4_invbmask;
+                delay(200);
+                goto START_WIFI_SCANNING;
+            }
+
+            /// skip
+            if(btn_pressed & basic_io::btn3_bmask){
+                btn_pressed &= basic_io::btn3_invbmask;
+                delay(200);
+                screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
+                goto WIFI_SETUP_SAFE_EXIT;
+            }
+
             /// change selected row (up)
-            if(btn_pressed & 0x8){
-                btn_pressed = btn_pressed & 0xF7;
+            if(btn_pressed & basic_io::btn2_bmask){
+                btn_pressed &= basic_io::btn2_invbmask;
                 sel = (sel+6)%7;
                 delay(200);
             }
             /// change selected row (down)
-            if( btn_pressed & 0x4 ){ 
-                btn_pressed = btn_pressed & 0xFB;
+            if( btn_pressed & basic_io::btn1_bmask ){ 
+                btn_pressed &= basic_io::btn1_invbmask;
                 sel = (sel+1)%7;
                 delay(200);
             }
             /// process selected mode
-            if( btn_pressed & 0x2 ){ 
-                btn_pressed = btn_pressed & 0xFD;
+            if( btn_pressed & basic_io::btn0_bmask ){ 
+                btn_pressed &= basic_io::btn0_invbmask;
                 delay(200);
                 /// sel: 0..4
                 if( nets > 0 && sel < 5){
                     uint8_t return_code =  wifi_connect(sel);
                     switch (return_code){
                         /// Connected to Wi-Fi 
-                        case 0: return;
+                        case 0: 
+                            screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
+                            goto WIFI_SETUP_SAFE_EXIT;
                         /// Exit (without connect wifi) code
                         case 1: goto START_WIFI_SCANNING;
                         /// Failed to connect to Wi-Fi
@@ -574,11 +636,14 @@ void wifi_setup(){
     }
 
     WIFI_SETUP_SAFE_EXIT:
+    log2ser("goto WIFI_SETUP_SAFE_EXIT");
     btn_pressed = 0x0;
+    basic_io::btn4_detach_interrupt();
     basic_io::btn3_detach_interrupt();
     basic_io::btn2_detach_interrupt();
     basic_io::btn1_detach_interrupt();
     basic_io::btn0_detach_interrupt();
+    screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
     return;
 }
 

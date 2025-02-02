@@ -1,7 +1,21 @@
 #ifndef SDCARD_UTILS_H
 #define SDCARD_UTILS_H
 
+#ifndef rep
+#define rep(i,a,b) for(int i = (a); i <= (b); ++i)
+#endif
+#ifndef rev
+#define rev(i,a,b) for(int i = (b); i >= (a); --i)
+#endif
+#ifndef revt
+#define rept(type, i,a,b) for(type i = (a); i <= (b); ++i)
+#endif
+#ifndef revt
+#define revt(type, i,b, a) for(type i = (b); i >= (a); --i)
+#endif
+
 #include <vector>
+#include <queue>
 
 #include "general_utils.h"
 
@@ -15,290 +29,194 @@ using namespace std;
     #define SDCARD_SPI_CS_PIN 5
 #endif
 
-static bool sdcard_is_available = true;
+/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>>>>>>>>>>>>>>>>> NAMESPACE SDCCARD_IMGS >>>>>>>>>>>>>>>>>>>
+
+namespace sdcard_imgs{
+
+    bool            is_available                = true;
+    String          imgs_path                   = "/imgs";
+    vector<String>  img_list;
+    String          filename_get_extension(String filename, uint16_t mode);
+    uint32_t        list();
+    bool            sdcard_load_565img(uint16_t img[172][220], String filename);
+    bool            cache(uint32_t img_index);
+    /// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ///
+
+    String filename_get_extension(String filename, uint16_t mode){
+        /// mode = 0x1 : to_lowercase
+        /// mode = 0x2 : to_uppercase
+        String res = "";
+        uint8_t dot = 0;
+        if(filename.isEmpty()) return res;
+        if(
+            filename.charAt(filename.length()-1) == '/'||
+            filename.charAt(filename.length()-1) == '\\'
+        )   filename.remove(filename.length()-1);
+        revt(uint8_t, i, filename.length()-1, 0)
+            if(filename.charAt(i) != '.'){
+                res += filename.charAt(i);
+            }else{
+                break;
+            }
+
+        reverse(res.begin(), res.end());
+        
+        switch (mode){
+            case 0x1: res.toLowerCase(); break;
+            case 0x2: res.toUpperCase(); break;
+        }
+
+        return res;
+    }
+
+    void sdcard_ls(vector<String>& list, String path = "/", uint16_t level = 100)
+    {
+        #if LOG == true
+            call("sdcard_imgs::", "sdcard_ls");
+        #endif
+        File root = SD.open(path);
+        if (!root) {
+            #if LOG == true
+                log2ser("sdcard_imgs::", "sdcard_ls", "cannot open ", path);
+            #endif
+            sdcard_imgs::is_available = false;
+            return;
+        }
+
+        sdcard_imgs::is_available = true;
+        File file = root.openNextFile();
+
+        while (file){
+            if (file.isDirectory()){
+                if(level){
+                    sdcard_ls(list, file.name(), level - 1);
+                }else{
+                    continue;
+                }
+            }else{
+                String lowercase_extension = filename_get_extension(file.name(), 0x1);
+                if(lowercase_extension == "bin"){
+                    list.push_back(concatenate(path, "/", file.name()));
+                }
+            }
+            file = root.openNextFile();
+        }
+        file.close();
+    }
+
+    uint32_t list(){
+        #if LOG == true
+            call("sdcard_imgs::list");
+        #endif
+        sdcard_ls(img_list, imgs_path);
+        return img_list.size();
+    }
+
+    bool cache_and_insert(CANVAS<uint16_t> &canvas, uint32_t img_index){
+        #if LOG == true
+            call("sdcard_imgs::cache_and_insert");
+        #endif
+        #if SDCARD_RW == true
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: ", sdcard_imgs::is_available?'T':'F');
+                #endif
+                canvas.refill(0xFFFF);
+                single_TEXT_LINE(1, "An error occured!");
+                return false;
+            }
+            if( img_index >= img_list.size()){
+                #if LOG == true
+                    log2ser("sdcard_imgs::cache_and_insert(): ", "out of range");
+                #endif
+                canvas.refill(0xFFFF);
+                single_TEXT_LINE(1, "An error occured!");
+                return false;
+            };
+
+            File file = SD.open(img_list[img_index], FILE_READ);
+            
+            #if LOG == true
+                log2ser("sdcard_imgs::cache_and_insert: open ", img_list[img_index]);
+            #endif
+
+            if(!file){
+                #if LOG == true
+                    log2ser("sdcard_imgs::cache_and_insert : failed to open ", img_list[img_index]);
+                #endif
+                sdcard_imgs::is_available = false;
+                canvas.refill(0xFFFF);
+                single_TEXT_LINE(1, "An error occured!");
+                return false;
+            }
+            uint8_t  buf16[2];
+            uint16_t r, c, _565pixel = 0xf802;
+            rept(uint16_t, i, 0, 220*172-1){
+                r = uint16_t(i/172), c = uint16_t(i%172); 
+                file.read(buf16, 2);
+                _565pixel = ((uint16_t(buf16[0])&0xFF) << 8) | (uint16_t(buf16[1])&0xFF);
+                canvas.set_pixel({r, c}, _565pixel);
+            }
+            sdcard_imgs::is_available = true;
+            file.close();
+            return true;
+        #else
+            canvas.refill(0xFFFF);
+            sdcard_imgs::is_available = false;
+            return false;
+        #endif
+    }
+
+};
+
+
+
+/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>                                                      >>>>>
+/// >>>>>>>>>>>>>>>>>>>>> OTHER DEFINATION >>>>>>>>>>>>>>>>>>>>>>>>>
 
 void sdcard_init(){
     #if LOG == true
-        call("sdcard_init: ");
+        call("sdcard_init");
     #endif
+
     SPI.setFrequency(UINT32_MAX);
     if(!SD.begin(SDCARD_SPI_CS_PIN)){
         #if LOG == true
             log2ser( "SDcard: failed to mount");
         #endif
-        #if CONTROLLER == true
-            controller::iled_blinky(10);
-        #endif
-        if(SD.cardType() == CARD_NONE){
-            sdcard_is_available = false;
-            #if LOG == true
-                log2ser( "SDcard: No SDcard");
-            #endif
-            #if BASIC_IO == true
-                basic_io::led0_blinky(5, 15, 30);
-            #endif
-            #if CONTROLLER == true
-                controller::iled_blinky(10);
-            #endif
-        }
-    }else{
-        #if LOG == true
-        log2ser( "SDcard: mounted");
-            switch(SD.cardType()){
-                case CARD_MMC: log2ser( "SDcard: Type: MMC"); break;
-                case CARD_SD: log2ser( "SDcard: Type: SDSC"); break;
-                case CARD_SDHC: log2ser( "SDcard: Type: SDHC"); break;
-                default: log2ser( "SDcard: Type: ?");
-            }
-        #endif
+        sdcard_imgs::is_available = false;
+        return;
     }
-}
+    if(SD.cardType() == CARD_NONE){
+        sdcard_imgs::is_available = false;
+        #if LOG == true
+            log2ser( "SDcard: No SDcard");
+        #endif
+        #if BASIC_IO == true
+            basic_io::led0_blinky(5, 15, 30);
+        #endif
 
-/// @brief Lists the directories on the SD card.
-/// @param fs  the main directory’s name
-/// @param dirname directory name, corresponds to the microSD card root directory
-/// @param levels  the levels to go into the directory
-/// @note  only return file/dir on same levels
-vector<String> sdcard_list_dir(fs::FS &fs, const char *dirname, uint8_t levels)
-{
+    }
+
     #if LOG == true
-        call("sdcard_list_dir");
+    log2ser( "SDcard: mounted");
     #endif
-
-    vector<String> res;
-
-    File root = fs.open(dirname);
-    if (!root) return res;
-    if (!root.isDirectory())return res;
-
-    File file = root.openNextFile();
-    while (file){
-        if (file.isDirectory()){
-            if(!levels == 0) res.push_back(file.name());
-            if (levels)
-                sdcard_list_dir(fs, file.name(), levels - 1);
-        }
-        else
-            if(levels == 0) res.push_back(file.name());
-        file = root.openNextFile();
+    switch(SD.cardType()){
+        case CARD_MMC: log2ser( "SDcard: Type: MMC"); break;
+        case CARD_SD: log2ser( "SDcard: Type: SDSC"); break;
+        case CARD_SDHC: log2ser( "SDcard: Type: SDHC"); break;
+        default: log2ser( "SDcard: Type: ?");
     }
-    return res;
-}
-
-/// @brief read bytes from a file stored in SDcard
-/// @tparam Tdest ```pointer type``` to the first element of block in *dest* 
-/// where will store data from src
-/// @param fs SD card file system object (usually: ```SD```)
-/// @param src path to path stored in SD card
-/// @param dest pointer start 
-/// @param dest_size a number of bytes will be read
-/// @param src_offset where the read process starts  
-/// @note FS stands --file.read();for File System, a mechanism for organizing, 
-template<class Tdest = char*>
-void sdcard_readbytes_file(
-    fs::FS &fs, const char *src, 
-    Tdest dest, uint64_t dest_size, uint64_t offset = 0,
-    bool readall = false
-){
-    File file = fs.open(src);
-    if (!file){
-        #if LOG == true
-            log2ser( "SDCard: Read: Can NOT open ", src);
-        #endif
-        return;
-    }
-    if(file.isDirectory() == true){
-        #if LOG == true
-            log2ser( "SDCard: Read: Err: isDirectory ");
-        #endif
-        return;
-    }
-    while(offset){file.read(); --offset;}
-    if(readall == false)
-        while (--dest_size) *(dest++) = file.read();
-    else
-        while(file.available()) *(dest++) = file.read();
-    file.close();
-}
-
-/// @brief read bytes from a file stored in SDcard
-/// @param fs SD card file system object (usually: ```SD```)
-/// @param src path to path stored in SD card
-/// @param read_size a number of bytes will be read
-/// @param byte_process the process will process with each read byte
-/// @param offset where the read process starts
-void sdcard_readbytes_file(
-    fs::FS &fs, const char *src,
-    uint64_t read_size,
-    function<void(int)> byte_process,
-    uint64_t offset = 0
-){
-    File file = fs.open(src);
-    if (!file){
-        #if LOG == true
-            log2ser( "SDCard: Read: Can NOT open ", src);
-        #endif
-        return;
-    }
-    if(file.isDirectory() == true){
-        #if LOG == true
-            log2ser( "SDCard: Read: Err: isDirectory ");
-        #endif
-        return;
-    }
-    
-    while(offset--)     file.read();
-    while (read_size--) byte_process(file.read());
-    
-    file.close();
-}
-
-
-/// @brief Writes byte data to a file on the file system.
-/// @param fs Reference to the file system object (e.g., SD, SPIFFS, LittleFS).
-/// @param path Path to the file to be written to.
-/// @param bytes Pointer to the byte data array to be written.
-/// @param size_t The number of bytes to write to the file.
-/// @param offset Optional parameter specifying the starting point (default is 0). 
-/// This allows appending or writing at a specific position in the file.
-/// @param raw Optional flag (default is false). When true, writes raw byte data using `file.write()`.
-/// If false, writes data using `file.print()`, which might result in formatting (e.g., printing a number as text).
-/// @note If the file cannot be opened or the write operation fails, an error message 
-/// will be printed to the serial monitor. Ensure the file system is initialized and the 
-/// file exists before calling this function. 
-/// - When `raw` is true, the function writes data byte-by-byte without conversion, which is more efficient for raw binary data.
-/// - When `raw` is false, the function writes data as text, which can introduce extra overhead for binary data.
-/// For better performance when writing raw binary data, it is recommended to use the `raw` flag.
-template<class Tsrc>
-void sdcard_writebytes_file(
-    fs::FS &fs, const char *path, 
-    const Tsrc bytes, uint64_t size_t, uint64_t offset = 0, 
-    bool raw = false
-){
-    File file = fs.open(path, FILE_WRITE);
-    if (!file) {
-        #if LOG == true
-            log2ser( "SDCard: Write file: Failed to open");
-        #endif
-        return;
-    }
-
-    if (raw) {
-        /// Write raw byte-by-byte data for binary content
-        rept(uint64_t, i, 0, size_t-1) {
-            file.write(bytes[i]);  /// Writing raw byte
-        }
-    } else {
-        /// Write byte-by-byte data as text
-        rept(uint64_t, i, 0, size_t-1) {
-            file.print(bytes[i]);  /// Writing byte as text
-        }
-    }
-
-    file.close();
-}
-
-/// @brief Reads a 565-format image from a binary file and stores it in a provided buffer.
-/// @param fs Reference to the file system object (e.g., SD, SPIFFS, LittleFS).
-/// @param img_path Path to the binary file containing the 565-format image.
-/// @param img Pointer to a buffer where the image pixels will be stored. The buffer must have enough space for the specified size.
-/// @param size The number of pixels to read from the file.
-/// @param offset The number of pixels to skip before starting to read. Defaults to 0.
-/// @note The 565-format is a 16-bit RGB format where:
-///       - 5 bits are for red.
-///       - 6 bits are for green.
-///       - 5 bits are for blue.
-///       Each pixel is stored as two bytes (little-endian format, LSB first).
-///       Ensure the file exists, and the buffer provided has sufficient space for `size` pixels.
-///       The function reads the image pixel by pixel and combines the two bytes to form each 16-bit pixel.
-void read_and_insert_565format_image(
-    fs::FS &fs, String img_path,
-    POINT<uint16_t> pos, uint16_t w, uint16_t h
-){
-    #if LOG == true
-        call( "read_and_insert_565format_image");
-    #endif
-    File file = fs.open(img_path, FILE_READ);
-    if (!file) {
-        #if LOG == true
-            log2ser( "SDCard: Read 565f img: Failed to open");
-        #endif
-        return;
-    }
-
-    uint8_t  buf16[2];
-    uint16_t r, c;
-    POINT<uint16_t> ins_pos;
-
-    rept(uint16_t, i, 0, w*h-1){
-        file.read(buf16, 2);
-        uint16_t pixel =  ((uint16_t(buf16[0])&0xFF) << 8) | (uint16_t(buf16[1])&0xFF);
-        r = uint16_t(i/w), c = uint16_t(i%w); 
-        ins_pos.X() = pos.X() + r;
-        ins_pos.Y() = pos.Y() + c;
-        canvas.set_pixel(ins_pos, pixel);
-    }
-
-    file.close();  /// Close the file after reading
-}
-
-/// @brief remove a file in SD card
-/// @param fs SD card file system object (usually: ```SD```)
-/// @param path path to file to be removed
-inline void sdcard_remove_file(fs::FS &fs, const char *path){
-    if (!fs.remove(path))
-        #if LOG == true
-            log2ser( "SDCard: Remove dir: failed");
-        #endif
-    ;
-}
-
-/// @brief remove directory
-/// @param fs SD card file system object (usually: ```SD```)
-/// @param path path to being removed dir
-inline void sdcard_remove_dir(fs::FS &fs, const char *path){
-    if (!fs.rmdir(path))
-        #if LOG == true
-            log2ser( "SDCard: Remove dir: failed");
-        #endif
-    ;
-}
-
-
-/// @brief Make a directory
-/// @param fs SD card file system object (usually: ```SD```)
-/// @param path path to the new directory
-inline void sdcard_make_dir(fs::FS &fs, const char *path){
-    if (!fs.mkdir(path))
-        #if LOG == true
-            log2ser( "SDCard: Make dir: failed");
-        #endif
-    ;
-}
-
-/// @brief Renames a file on the SD card.
-/// @param fs Reference to the SD card file system object (e.g., SD).
-/// @param path_old Path to the existing file to be renamed.
-/// @param path_new Path with the new name for the file.
-/// @note If the renaming fails, an error message is sent to the serial monitor.
-inline void sdcard_rename_file(fs::FS &fs, const char *path_old, const char *path_new){
-    if(fs.rename(path_old, path_new))
-        #if LOG == true
-            log2ser( "SDCard: Rename ", path_old, " failed");
-        #endif
-    ;
-}
-
-/// @brief 
-/// @return 
-uint32_t update_imgs_list(vector<String> &imgs_list){
-    #if SDCARD_RW == true
-        #if LOG == true
-            call("update_imgs_list");
-        #endif
-        imgs_list = sdcard_list_dir(SD, "/imgs", 0);
-    #endif
-    return imgs_list.size();
+    sdcard_imgs::is_available = true;
 }
 
 #endif

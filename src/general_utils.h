@@ -208,19 +208,6 @@ public:
     uint32_t get_last_t() { return this->last_t; }
 };
 
-String filename_get_extension(String filename){
-    String res = "";
-    uint8_t dot = 0;
-    if(filename.isEmpty()) return res;
-    revt(uint8_t, i, filename.length()-1, 0)
-        if(filename.charAt(i) != '.'){
-            res.concat(filename.charAt(i));
-        }else{
-            break;
-        }
-    return res;
-}
-
 template<class Tnum, class Tdelta, class Tmaxval, class Tminval>
 Tnum num_increase(Tnum num, Tdelta const delta, Tminval const minval, Tmaxval const maxval){
     num = (num < minval)?(minval):(num);
