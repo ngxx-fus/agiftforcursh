@@ -232,7 +232,7 @@ void slideshow_menuconfig_mode(){
                 btn_pressed &= basic_io::btn2_invbmask;
                 switch (sel){
                 case 0:
-                    delay0.set_interval(num_increase(delay0.get_interval(), 10000, 0, 600000));
+                    delay0.set_interval(num_increase(delay0.get_interval(), 5000, 0, 6000000));
                     delay(100);
                     break;
                 case 1:
@@ -240,7 +240,15 @@ void slideshow_menuconfig_mode(){
                     show_env_info = ! show_env_info;
                     break;
                 case 2:
-                    delay1.set_interval(num_increase(delay1.get_interval(), 10000, 0, 600000));
+                    delay1.set_interval(num_increase(delay1.get_interval(), 5000, 0, 6000000));
+                    delay(100);
+                    break;
+                case 3:
+                    env_box_pos.X() = num_increase(env_box_pos.X(), 2, 40, 174);
+                    delay(100);
+                    break;
+                case 4:
+                    env_box_pos.Y() = num_increase(env_box_pos.Y(), 2, 2, 60);
                     delay(100);
                     break;
                 case 5:
@@ -257,7 +265,7 @@ void slideshow_menuconfig_mode(){
                 btn_pressed &= basic_io::btn1_invbmask;
                 switch (sel){
                 case 0:
-                    delay0.set_interval(num_decrease(delay0.get_interval(), 10000, 0, 600000));
+                    delay0.set_interval(num_decrease(delay0.get_interval(), 5000, 0, 6000000));
                     delay(100);
                     break;
                 case 1:
@@ -265,7 +273,15 @@ void slideshow_menuconfig_mode(){
                     show_env_info = ! show_env_info;
                     break;
                 case 2:
-                    delay1.set_interval(num_decrease(delay1.get_interval(), 10000, 0, 600000));
+                    delay1.set_interval(num_decrease(delay1.get_interval(), 5000, 0, 6000000));
+                    delay(100);
+                    break;
+                case 3:
+                    env_box_pos.X() = num_increase(env_box_pos.X(), 2, 40, 174);
+                    delay(100);
+                    break;
+                case 4:
+                    env_box_pos.Y() = num_increase(env_box_pos.Y(), 2, 2, 60);
                     delay(100);
                     break;
                 case 5:
