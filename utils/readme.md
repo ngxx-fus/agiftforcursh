@@ -41,7 +41,8 @@ First, change the path to SDCard, the simple way, open SDCard dir, then ```ctrl+
 ```Makefile
 [line 25] SDCARD_TARGET   := /media/ngxxfus/SD_CARD
 ```
-![output](https://github.com/user-attachments/assets/4b238669-9ef3-4bf9-a3cc-ccd8b178b3b8)
+![Kooha-2025-02-02-07-23-00](https://github.com/user-attachments/assets/006b843c-4742-4468-aaed-486077f839e0)
+
 
 Seccond, copy all images (which you want to be converted) into ```imgs``` directory.
 
@@ -64,3 +65,4 @@ A recommended make command to run
     make convert_images copy2sdcard
 ```
 
+![Kooha-2025-02-02-07-28-41](https://github.com/user-attachments/assets/44ff4df7-bc8b-42b3-8846-39c1922c4ce5)
