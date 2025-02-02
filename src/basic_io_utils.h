@@ -54,6 +54,18 @@
 
 namespace basic_io{
 
+    static uint8_t const        btn4_bmask = 0x10,
+                                btn3_bmask = 0x08, 
+                                btn2_bmask = 0x04, 
+                                btn1_bmask = 0x02, 
+                                btn0_bmask = 0x01,
+                                btn4_invbmask = 0xEF,
+                                btn3_invbmask = 0xF7,
+                                btn2_invbmask = 0xFB,
+                                btn1_invbmask = 0xFD,
+                                btn0_invbmask = 0xFE;
+    
+
     bool                        led0_state = false,
                                 led1_state = false;
 
@@ -61,7 +73,7 @@ namespace basic_io{
         unsigned long           btn0_last_pressed = 0,
                                 btn1_last_pressed = 0,
                                 btn2_last_pressed = 0,
-                                btn3_last_pressed = 0;
+                                btn3_last_pressed = 0,
                                 btn4_last_pressed = 0;
     #endif
 
@@ -185,6 +197,19 @@ namespace basic_io{
     void led0_val(bool state){led0_state = !state; digitalWrite(LED0_PIN, !state);}
     void led1_state_value(bool state){led1_state = state; digitalWrite(LED1_PIN, state);}
 
+    void all_led_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
+        while(times--){
+            digitalWrite(LED0_PIN, HIGH); 
+            digitalWrite(LED1_PIN, HIGH); 
+            delay(t_on);
+            digitalWrite(LED0_PIN, LOW); 
+            digitalWrite(LED1_PIN, LOW); 
+            delay(t_off);
+            digitalWrite(LED0_PIN, HIGH);
+            digitalWrite(LED1_PIN, HIGH);
+        }
+    }
+
     void led0_blinky(uint16_t times, uint32_t t_on = 50, uint32_t t_off = 50){
         while(times--){
             digitalWrite(LED0_PIN, HIGH); delay(t_off);
@@ -206,6 +231,9 @@ namespace basic_io{
     }
 
     #if ISR_HANDLER == true
+        void isr4(){
+
+        }
         void isr3(){
             ISR_WAIT_FOR_STABLE;
             #if SAVE_LAST_PRESSED == true

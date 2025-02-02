@@ -1,25 +1,10 @@
-#define LOG                     true
-#define SHOW_AUTHOR_MESSAGE     false
-#define WIFI_CONNECTION         true
-#define USB_SERIAL              true
-#define TFT_SCREEN              true
-#define SENSORS                 true
-#define FIREBASE_RTDB           true
-#define SDCARD_RW               true
-#define SAVE_LAST_PRESSED       true
-#define CUSTOM_ISR_HANDLER      false
-#define SOFTWARE_TEST           false
-#define HARDWARE_TEST           false
-#define BASIC_IO                true
-#define LOCAL_CONFIG            true
-
 #include "main.h"
 
 void setup(){
     #if USB_SERIAL == true
         serial_init();
     #endif
-    #if BASIC_IO == true && HARDWARE_TEST == false
+    #if BASIC_IO == true
         basic_io_init();
     #endif
     #if SENSORS == true
@@ -28,14 +13,16 @@ void setup(){
     #if TFT_SCREEN == true
         canvas_init();
     #endif
-    #if WIFI_CONNECTION == true
-        wifi_setup();
-    #endif
-    #if SDCARD_RW == true
-        sdcard_init();
-    #endif
-    #if LOCAL_CONFIG == true
-        config_init();
+    #if HARDWARE_TEST == false && SOFTWARE_TEST == false
+        #if WIFI_CONNECTION == true
+            wifi_setup();
+        #endif
+        #if SDCARD_RW == true
+            sdcard_init();
+        #endif
+        #if LOCAL_CONFIG == true
+            config_init();
+        #endif
     #endif
 }
 
@@ -68,7 +55,6 @@ void loop(){
                 goto MAIN_LOOP;
             
             case enum_SCREEN_MODE::TEST_MODE_BLANK:
-                test_mode_blank();
                 goto MAIN_LOOP;
             
             default: 
@@ -76,11 +62,8 @@ void loop(){
         }
     #endif
 
-    #if SOFTWARE_TEST == true
-        slideshow_mode();
-    #endif
-
     #if HARDWARE_TEST == true
+        log2ser("btn4: ", digitalRead(BTN4_PIN));
         log2ser("btn3: ", digitalRead(BTN3_PIN));
         log2ser("btn2: ", digitalRead(BTN2_PIN));
         log2ser("btn1: ", digitalRead(BTN1_PIN));

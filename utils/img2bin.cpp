@@ -4,10 +4,6 @@ using namespace std;
 
 #include <cstdint> 
 
-void raise_exception(string msg = "unknown", int exit_code = 1){
-    cout << "Err: " << msg << '\n';
-    exit(exit_code);
-}
 
 class IMG_SHAPE{
 private:
@@ -15,6 +11,9 @@ private:
     uint16_t height;
 
 public:
+
+    IMG_SHAPE(const IMG_SHAPE& other) = default;
+
     IMG_SHAPE(uint16_t width = 0, uint16_t height = 0){
         this->height = height;
         this->width  = width;
@@ -73,6 +72,9 @@ private:
     }
 
 public:
+
+    RGB_PIXEL(const RGB_PIXEL& other) = default;
+
     // Constructor
     RGB_PIXEL(uint16_t red = 0, uint16_t green = 0, uint16_t blue = 0)
         : red(red), green(green), blue(blue) {}
@@ -86,13 +88,6 @@ public:
     uint16_t RED() const { return red; }
     uint16_t GREEN() const { return green; }
     uint16_t BLUE() const { return blue; }
-
-    // Normalize function
-    void NORMALIZE() {
-        red   = norm_1608(red);
-        green = norm_1608(green);
-        blue  = norm_1608(blue);
-    }
 
     // Assignment operator
     RGB_PIXEL& operator=(const RGB_PIXEL& o) {
@@ -109,71 +104,11 @@ public:
         return RGB_PIXEL(RED() + o.RED(), GREEN() + o.GREEN(), BLUE() + o.BLUE());
     }
 
-    template<class Tw>
-    RGB_PIXEL operator+(Tw white) const {
-        return RGB_PIXEL(RED() + white, GREEN() + white, BLUE() + white);
-    }
-
     // Self-addition
     RGB_PIXEL& operator += (const RGB_PIXEL& o) {
         this->red   = (this->red   + o.red   > 65535U) ? 65535 : this->red   + o.red;
         this->green = (this->green + o.green > 65535U) ? 65535 : this->green + o.green;
         this->blue  = (this->blue  + o.blue  > 65535U) ? 65535 : this->blue  + o.blue;
-        return *this;
-    }
-
-    // Subtraction operators
-    RGB_PIXEL operator-(const RGB_PIXEL& o) const {
-        return RGB_PIXEL(RED() - o.RED(), GREEN() - o.GREEN(), BLUE() - o.BLUE());
-    }
-
-    RGB_PIXEL& operator-=(const RGB_PIXEL& o){
-        this->green -= o.GREEN();
-        this->red   -= o.RED();
-        this->blue  -= o.BLUE();
-        return *this;
-    }
-
-    template<class Tw>
-    RGB_PIXEL operator-(Tw white) const {
-        return RGB_PIXEL(RED() - white, GREEN() - white, BLUE() - white);
-    }
-
-    // Multiplication operators
-    RGB_PIXEL operator*(const RGB_PIXEL& o) const {
-        return RGB_PIXEL(RED() * o.RED(), GREEN() * o.GREEN(), BLUE() * o.BLUE());
-    }
-
-    RGB_PIXEL& operator*=(const RGB_PIXEL& o){
-        this->green *= o.GREEN();
-        this->red   *= o.RED();
-        this->blue  *= o.BLUE();
-        return *this;
-    }
-
-    template<class Tw>
-    RGB_PIXEL operator*(Tw white) const {
-        return RGB_PIXEL(RED() * white, GREEN() * white, BLUE() * white);
-    }
-
-    // Division operators (avoid division by zero)
-    RGB_PIXEL operator/(const RGB_PIXEL& o) const {
-        return RGB_PIXEL(o.RED() ? RED() / o.RED() : 0,
-                         o.GREEN() ? GREEN() / o.GREEN() : 0,
-                         o.BLUE() ? BLUE() / o.BLUE() : 0);
-    }
-
-    template<class Tw>
-    RGB_PIXEL operator/(Tw white) const {
-        return RGB_PIXEL(white ? RED() / white : 0,
-                         white ? GREEN() / white : 0,
-                         white ? BLUE() / white : 0);
-    }
-
-    RGB_PIXEL& operator /= (const RGB_PIXEL& o){
-        this->green /= o.GREEN();
-        this->red   /= o.RED();
-        this->blue  /= o.BLUE();
         return *this;
     }
 
@@ -370,99 +305,6 @@ public:
         return *this;
     }
 
-    RGB_IMG& operator += (RGB_IMG const& o){
-        if(this->SHAPE() != o.SHAPE()) {
-            write_log("+=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
-            exit(1);
-        }
-        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
-            this->PIXEL(i) += o.PIXEL(i);
-        }
-        return *this;
-    }
-
-    RGB_IMG& operator -= (RGB_IMG const& o){
-        if(this->SHAPE() != o.SHAPE()) {
-            write_log("-=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
-            exit(1);
-        }
-        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
-            this->PIXEL(i) -= o.PIXEL(i);
-        }
-        return *this;
-    }
-
-    RGB_IMG& operator /= (RGB_IMG const& o){
-        if(this->SHAPE() != o.SHAPE()) {
-            write_log("-=operator::err ", " this->SHAPE=", SHAPE(), " o.SHAPE=", o.SHAPE());
-            exit(1);
-        }
-        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
-            this->PIXEL(i) /= o.PIXEL(i);
-        }
-        return *this;
-    }
-
-    RGB_IMG& operator /= (RGB_PIXEL const& pixel){
-        for(uint32_t i = 0; i < this->shape.HxW(); ++i){
-            this->PIXEL(i) /= pixel;
-        }
-        return *this;
-    }
-
-    RGB_IMG& conv_2d(const RGB_IMG& filter) {
-        if (!pixels || filter.HEIGHT() == 0 || filter.WIDTH() == 0) return *this;
-
-        uint16_t res_h = HEIGHT() - filter.HEIGHT() + 1;
-        uint16_t res_w = WIDTH() - filter.WIDTH() + 1;
-        
-        // Allocate new memory for the result
-        RGB_PIXEL* new_pixels = new RGB_PIXEL[res_h * res_w];
-
-        // Get raw pointers for fast access
-        RGB_PIXEL* orig_pixels = pixels;
-        RGB_PIXEL* filter_pixels = filter.pixels;
-
-        uint16_t filter_h = filter.HEIGHT();
-        uint16_t filter_w = filter.WIDTH();
-        uint16_t width = WIDTH();
-
-        // Process convolution using optimized access
-        for (uint16_t res_x = 0; res_x < res_h; ++res_x) {
-            for (uint16_t res_y = 0; res_y < res_w; ++res_y) {
-                
-                RGB_PIXEL sum = {0, 0, 0}; // Accumulator for convolution
-
-                // Unrolled loop for better performance
-                for (uint16_t fx = 0; fx < filter_h; ++fx) {
-                    RGB_PIXEL* orig_row = orig_pixels + (res_x + fx) * width;
-                    RGB_PIXEL* filter_row = filter_pixels + fx * filter_w;
-
-                    for (uint16_t fy = 0; fy < filter_w; fy += 2) {
-                        sum = sum + (orig_row[res_y + fy] * filter_row[fy]);
-
-                        // Unrolling second iteration (only if fy+1 is within bounds)
-                        if (fy + 1 < filter_w) {
-                            sum = sum + (orig_row[res_y + fy + 1] * filter_row[fy + 1]);
-                        }
-                    }
-                }
-
-                // Store the computed value
-                new_pixels[xy_to_index(res_x, res_y, {res_h, res_w})] = sum;
-            }
-        }
-
-        // Free old memory and replace with new data
-        delete[] pixels;
-        this->pixels = new_pixels;
-        this->shape.set(res_h, res_w);
-
-        write_log("e_conv_2d: res_h=", res_h, ", res_w=", res_w);
-
-        return *this;
-    }
-
     RGB_IMG& size_reducing(uint16_t percent) {
         if (percent == 0 || percent >= 100) {
             write_log("size_reducing::ERROR - Invalid percentage: ", percent);
@@ -642,6 +484,53 @@ public:
     }
 };
 
+string filename_extension(string filepath, bool sel = 0){
+    
+    /// sel  = 0 : return filename
+    /// sel  = 1 : return extension
+
+    string filename = "";
+    string extension = "";
+
+    bool got_extension = false;
+
+    if(filepath.back() == '/' || filepath.back() == '\\') 
+        filepath.pop_back();
+
+    while(!filepath.empty()){
+
+        if(filepath.back() == '/' || filepath.back() == '\\')
+                break;
+
+        if(filepath.back() == '.'){
+            if(got_extension){
+                filename.push_back(filepath.back());
+                filepath.pop_back();
+                continue;
+            }else{
+                got_extension = true;
+                filepath.pop_back();
+                continue;
+            }
+        }
+
+        if(got_extension){
+            filename.push_back(filepath.back());
+        }else{
+            extension.push_back(filepath.back());
+        }
+
+        filepath.pop_back();
+    }
+
+    sel?
+    reverse(extension.begin(), extension.end()):
+    reverse(filename.begin(), filename.end());
+
+    return sel?extension:filename;
+
+}
+
 int main(int argc, char* argv[]){
     
     for(int i = 1; i < argc; i++){
@@ -661,8 +550,8 @@ int main(int argc, char* argv[]){
         img0.size_reducing(percent);
         img0.crop(220, 172);
 
-        string jpg_output = "./resized_imgs/resized_img_" + to_string(i) + ".jpg";
-        string bin_output = "./bins/img" + to_string(i) + ".bin";
+        string jpg_output = "./resized_imgs/" + filename_extension(argv[i]) + ".jpg";
+        string bin_output = "./bins/" + filename_extension(argv[i]) + ".bin";
 
         img0.save_to_jpg(jpg_output.c_str(), 100);
         img0.save_to_bin(bin_output);

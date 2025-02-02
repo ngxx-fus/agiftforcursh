@@ -366,8 +366,8 @@ public:
     void resize(uint16_t h, uint16_t w, Tcanvas filled_value = 0)
     {
         _background_color = filled_value;
-        _canvas_prev.resize(h, w, filled_value);
         _canvas.resize(h, w, filled_value);
+        _canvas_prev.resize(h, w, filled_value);
     }
 
     /// @brief Resize a CANVAS object
@@ -379,6 +379,7 @@ public:
         uint8_t orientation = 0, Tcanvas filled_value = 0
     )
     {
+        
         tft.begin(orientation, filled_value);
         _background_color = filled_value;
         resize(h, w, filled_value);
@@ -678,13 +679,13 @@ public:
             rept(uint16_t, r, 0, h-1){
                 _canvas.pixel(pos.X() + r, pos.Y() + w-1) = border_color;
             }
-        /// draw the upper edge
+        /// draw the upper edge / top
         if(border_select & 0x1)
             rept(uint16_t, c, 0, w-1){
                 _canvas.pixel(pos.X() + 0,      pos.Y() + c) = border_color;
             }
-        /// draw the lower edge
-        if(border_select & 0x3)
+        /// draw the lower edge / bottom
+        if(border_select & 0x4)
             rept(uint16_t, c, 0, w-1){
                 _canvas.pixel(pos.X() + h-1,    pos.Y() + c) = border_color;
             }
@@ -767,7 +768,6 @@ uint16_t screen_mode = NORMAL_MODE;
 /// @brief The canvas object
 CANVAS<uint16_t> canvas;
 void canvas_init(){
-
     #if LOG == true
         call("canvas_init:");
     #endif
@@ -955,6 +955,9 @@ void show_humid_temp_box(POINT<> pos, float humid, float temp, uint16_t backgrou
     canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+70), String(temp), text_color);
 }
 
-
+void single_TEXT_LINE(uint16_t line, String text, uint16_t color = 0x0, uint16_t text_col = 5, uint16_t line_distance = 23){
+    if( line * line_distance > 215 ) return;
+    canvas.insert_text({uint16_t(line * line_distance), text_col}, text, color);
+}
 
 #endif
