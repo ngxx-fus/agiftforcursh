@@ -11,6 +11,9 @@ private:
     uint16_t height;
 
 public:
+
+    IMG_SHAPE(const IMG_SHAPE& other) = default;
+
     IMG_SHAPE(uint16_t width = 0, uint16_t height = 0){
         this->height = height;
         this->width  = width;
@@ -69,6 +72,9 @@ private:
     }
 
 public:
+
+    RGB_PIXEL(const RGB_PIXEL& other) = default;
+
     // Constructor
     RGB_PIXEL(uint16_t red = 0, uint16_t green = 0, uint16_t blue = 0)
         : red(red), green(green), blue(blue) {}
@@ -478,6 +484,53 @@ public:
     }
 };
 
+string filename_extension(string filepath, bool sel = 0){
+    
+    /// sel  = 0 : return filename
+    /// sel  = 1 : return extension
+
+    string filename = "";
+    string extension = "";
+
+    bool got_extension = false;
+
+    if(filepath.back() == '/' || filepath.back() == '\\') 
+        filepath.pop_back();
+
+    while(!filepath.empty()){
+
+        if(filepath.back() == '/' || filepath.back() == '\\')
+                break;
+
+        if(filepath.back() == '.'){
+            if(got_extension){
+                filename.push_back(filepath.back());
+                filepath.pop_back();
+                continue;
+            }else{
+                got_extension = true;
+                filepath.pop_back();
+                continue;
+            }
+        }
+
+        if(got_extension){
+            filename.push_back(filepath.back());
+        }else{
+            extension.push_back(filepath.back());
+        }
+
+        filepath.pop_back();
+    }
+
+    sel?
+    reverse(extension.begin(), extension.end()):
+    reverse(filename.begin(), filename.end());
+
+    return sel?extension:filename;
+
+}
+
 int main(int argc, char* argv[]){
     
     for(int i = 1; i < argc; i++){
@@ -497,8 +550,8 @@ int main(int argc, char* argv[]){
         img0.size_reducing(percent);
         img0.crop(220, 172);
 
-        string jpg_output = "./resized_imgs/resized_img_" + to_string(i) + ".jpg";
-        string bin_output = "./bins/img" + to_string(i) + ".bin";
+        string jpg_output = "./resized_imgs/" + filename_extension(argv[i]) + ".jpg";
+        string bin_output = "./bins/" + filename_extension(argv[i]) + ".bin";
 
         img0.save_to_jpg(jpg_output.c_str(), 100);
         img0.save_to_bin(bin_output);
