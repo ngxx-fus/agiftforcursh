@@ -90,16 +90,17 @@ static void show_MENUCONFIG_LINE(
     canvas.insert_text(POINT<>(row, conf_val_col), String(conf_val), conf_val_color);
 }
 
-static void show_GUIDE(String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK"){
-    static uint16_t const line_distance = 30;
-    static uint16_t const anchor_x        = 65;
-    static uint16_t const anchor_y        = 140;
+static void show_GUIDE(
+    String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK",
+    uint16_t anchor_x = 65, uint16_t const anchor_y = 140, uint16_t line_distance = 30,
+    uint16_t guide_color = GUIDE_COLOR
+){
     /// show guide
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(1)*line_distance, anchor_y), g3, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(2)*line_distance, anchor_y), g2, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(3)*line_distance, anchor_y), g1, GUIDE_COLOR);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(4)*line_distance, anchor_y), g0, GUIDE_COLOR);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(1)*line_distance, anchor_y), g3, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(2)*line_distance, anchor_y), g2, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(3)*line_distance, anchor_y), g1, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(4)*line_distance, anchor_y), g0, guide_color);
 }
 
 #if FIREBASE_RTDB == true
@@ -351,6 +352,9 @@ void wifi_setup(){
     call("wifi_setup: ");
 
     WiFi.mode(WIFI_STA);
+
+    single_screen_color_and_text_line(1, "[Wi-Fi setup]", 0xFFFF, 0x0, false);
+    single_screen_color_and_text_line(2, "Connect saved Wi-Fi...", 0xFFFF, 0x0, true, false);
 
     canvas.refill(0xFFFF);
     canvas.insert_text({25, 5}, "loading...", 0x0);

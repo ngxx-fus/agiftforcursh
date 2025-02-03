@@ -12,7 +12,7 @@
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
 #define LOCAL_CONFIG            false
-
+#define SKIP_WIFI_SETUP         true
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #define DHT_TYPE                DHT11
@@ -118,13 +118,20 @@ void get_and_show_image(
     #if SDCARD_RW == true
 
         if(!sdcard_imgs::is_available){
-            canvas.refill(0xFFFF);
-            single_TEXT_LINE(1, "SDCard error!");
-            goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
+            sdcard_init();
+            if(!sdcard_imgs::is_available){
+                canvas.refill(0xFFFF);
+                single_text_line(1, "[SDCard]");
+                single_text_line(2, "un-available!");
+                goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
+            }else{
+                sdcard_imgs::list();
+            }
         }
         if(sdcard_imgs::img_list.empty()){
             canvas.refill(0xFFFF);
-            single_TEXT_LINE(1, "No img found!");
+            single_text_line(1, "[Images]");
+            single_text_line(2, "No img found!");
             goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
         }
 
@@ -311,7 +318,7 @@ void slideshow_menuconfig_mode(){
             /// show option - slideshow duration
             show_MENUCONFIG_LINE(x_option + uint16_t(0)*row_distance, "Img/Interval:", delay0.get_interval()/1000);
             /// show option - show temp,humid
-            show_MENUCONFIG_LINE(x_option + uint16_t(1)*row_distance, "Env/ShowInfo:", show_env_info?"Y":"N");
+            show_MENUCONFIG_LINE(x_option + uint16_t(1)*row_distance, "Env/Enable:", show_env_info?"Y":"N");
             show_MENUCONFIG_LINE(x_option + uint16_t(2)*row_distance, "Env/Interval:", delay1.get_interval()/1000);
             show_MENUCONFIG_LINE(x_option + uint16_t(3)*row_distance, "Env/Pos/Row:", env_box_pos.X());
             show_MENUCONFIG_LINE(x_option + uint16_t(4)*row_distance, "Env/Pos/Col:",  env_box_pos.Y());
@@ -336,23 +343,23 @@ void slideshow_menuconfig_mode(){
 /// @brief slide show mode
 void slideshow_mode(){
     /// [3] : next image
-    /// [2] : prev image
-    /// [1] : next mode (aka OKE)
-    /// [0] : menu mode 
+    /// [3] : prev image
+    /// [2] : light control
+    /// [1] : env info control
+    /// [0] : enter menu mode / oke 
 
     #if LOG == true
         call( "slideshow_mode");
     #endif
-    
+
+    single_screen_color_and_text_line(1, "[slideshow]", 0xFFFF, 0x0, false);
+    single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
+
     basic_io::btn4_attach_interrupt(slideshow_btn4_isr);
     basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
     basic_io::btn2_attach_interrupt(slideshow_btn2_isr);
     basic_io::btn1_attach_interrupt(slideshow_btn1_isr);
     basic_io::btn0_attach_interrupt(slideshow_btn0_isr);
-
-    canvas.refill(0xFFFF);
-    canvas.insert_text({25, 5}, "loading...", 0x0);
-    canvas.show();
 
     #if TFT_SCREEN == true
 
@@ -381,18 +388,37 @@ void slideshow_mode(){
             /// @brief -> next
             if( btn_pressed & basic_io::btn4_bmask){
                 btn_pressed &= basic_io::btn4_invbmask;
-                if(sel == 0){
+                switch (sel){
+                case 0: 
                     get_and_show_image(img_pos, true, true, false);
                     goto SHOW_CHANGED;
+                    break;
+                /// control selected box 
+                case 1:
+                    sel = 2; prev_sel = sel-1;
+                    break;
+                case 2:
+                    sel = 0; prev_sel = 0;
+                    goto RE_DRAW;
+                    break;
                 }
             }
 
             /// @brief -> previous
             if( btn_pressed & basic_io::btn3_bmask ){ 
                 btn_pressed &= basic_io::btn3_invbmask;
-                if(sel == 0){
+                switch (sel){
+                /// toggle inv box show state
+                case 0: 
                     get_and_show_image(img_pos, true, false, false);
                     goto SHOW_CHANGED;
+                /// control selected box 
+                case 1:
+                    sel = 0; prev_sel = 1;
+                    goto RE_DRAW;
+                case 2:
+                    sel = 1; prev_sel = 2;
+                    break;
                 }
             }
 
@@ -405,13 +431,6 @@ void slideshow_mode(){
                     light_level = (light_level > 100) ? 0 :
                                   (light_level == 0 ) ? 100 : (light_level-10);
                     break;
-                /// control selected box 
-                case 1:
-                    sel = 0; prev_sel = 1;
-                    goto RE_DRAW;
-                case 2:
-                    sel = 1; prev_sel = 2;
-                    break;
                 }
             }
 
@@ -422,14 +441,6 @@ void slideshow_mode(){
                 /// toggle inv box show state
                 case 0: 
                     if(show_env_info = !show_env_info); goto RE_DRAW;
-                /// control selected box 
-                case 1:
-                    sel = 2; prev_sel = sel-1;
-                    break;
-                case 2:
-                    sel = 0; prev_sel = 0;
-                    goto RE_DRAW;
-                    break;
                 }
             }
 
@@ -457,13 +468,13 @@ void slideshow_mode(){
 
 
             /// periody update env info
-            if(delay1.time_to_run()){
+            if( sel == 0 && delay1.time_to_run() ){
                 humid = sensors::read_humid(0);
                 temp = sensors::read_temp(0);
             }
 
             /// periody update image
-            if( delay0.time_to_run(true)){
+            if( sel == 0 &&  delay0.time_to_run(true) ){
                 SHOW_IMAGE:
                 get_and_show_image(img_pos, true);
                 goto SHOW_CHANGED;
@@ -474,12 +485,14 @@ void slideshow_mode(){
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
                 /// show image 
-                get_and_show_image(img_pos, false, true, true, true); 
+                // get_and_show_image(img_pos, false, true, true, true); 
                 /// show title
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
                 /// show guide
-                show_GUIDE("--", "--", "L<", "R>", "OK");
+                show_GUIDE("NEXT", "PREV", "ENV", "LIGHT", "MENU", 60, 65);
+                show_GUIDE("/", "/", "/", "/", "/", 60, 125);
+                show_GUIDE("->", "<-", "--", "--", "OK", 60, 140);
                 /// show next/mode button
                 show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
                 /// show btn_pressed box based on ```sel```
