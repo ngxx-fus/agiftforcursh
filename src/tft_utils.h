@@ -960,7 +960,7 @@ void single_text_line(uint16_t line, String text, uint16_t color = 0x0, uint16_t
     if(text_wrap == false)
         canvas.insert_text({uint16_t(line * line_distance), text_col}, text.substring(0, 22), color);
     else
-        for(uint16_t i = 0; 22+i*22 <= text.length() || i == 0; ++i){
+        for(uint16_t i = 0; i*22 < text.length() || i == 0; ++i){
             canvas.insert_text({uint16_t((line+i) * line_distance), text_col}, text.substring(0+i*22, 22+i*22), color);
         }
 }
