@@ -127,7 +127,8 @@ namespace sdcard_imgs{
                     log2ser("sdcard_imgs::is_available: ", sdcard_imgs::is_available?'T':'F');
                 #endif
                 canvas.refill(0xFFFF);
-                single_text_line(1, "An error occured!");
+                single_text_line(1, "[SDCard]");
+                single_text_line(2, "un-available!");
                 return false;
             }
             if( img_index >= img_list.size()){
@@ -135,7 +136,8 @@ namespace sdcard_imgs{
                     log2ser("sdcard_imgs::cache_and_insert(): ", "out of range");
                 #endif
                 canvas.refill(0xFFFF);
-                single_text_line(1, "An error occured!");
+                single_text_line(1, "[Images list]");
+                single_text_line(2, "out of range!");
                 return false;
             };
 
@@ -151,7 +153,8 @@ namespace sdcard_imgs{
                 #endif
                 sdcard_imgs::is_available = false;
                 canvas.refill(0xFFFF);
-                single_text_line(1, "An error occured!");
+                single_text_line(1, "[Images]");
+                single_text_line(2, concatenate("failed to open:", img_list[img_index]), 0x0, 0, 23U, true);
                 return false;
             }
             uint8_t  buf16[2];
@@ -188,7 +191,8 @@ void sdcard_init(){
         call("sdcard_init");
     #endif
 
-    SPI.setFrequency(UINT32_MAX);
+    SD.end();
+
     if(!SD.begin(SDCARD_SPI_CS_PIN)){
         #if LOG == true
             log2ser( "SDcard: failed to mount");
@@ -204,7 +208,7 @@ void sdcard_init(){
         #if BASIC_IO == true
             basic_io::led0_blinky(5, 15, 30);
         #endif
-
+        return;
     }
 
     #if LOG == true
