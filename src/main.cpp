@@ -25,6 +25,7 @@ void setup(){
             config_init();
         #endif
     #endif
+    screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
 }
 
 void loop(){
