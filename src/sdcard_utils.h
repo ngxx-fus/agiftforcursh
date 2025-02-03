@@ -127,7 +127,7 @@ namespace sdcard_imgs{
                     log2ser("sdcard_imgs::is_available: ", sdcard_imgs::is_available?'T':'F');
                 #endif
                 canvas.refill(0xFFFF);
-                single_TEXT_LINE(1, "An error occured!");
+                single_text_line(1, "An error occured!");
                 return false;
             }
             if( img_index >= img_list.size()){
@@ -135,7 +135,7 @@ namespace sdcard_imgs{
                     log2ser("sdcard_imgs::cache_and_insert(): ", "out of range");
                 #endif
                 canvas.refill(0xFFFF);
-                single_TEXT_LINE(1, "An error occured!");
+                single_text_line(1, "An error occured!");
                 return false;
             };
 
@@ -151,7 +151,7 @@ namespace sdcard_imgs{
                 #endif
                 sdcard_imgs::is_available = false;
                 canvas.refill(0xFFFF);
-                single_TEXT_LINE(1, "An error occured!");
+                single_text_line(1, "An error occured!");
                 return false;
             }
             uint8_t  buf16[2];

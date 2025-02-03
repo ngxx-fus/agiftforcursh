@@ -14,7 +14,8 @@ void setup(){
         canvas_init();
     #endif
     #if HARDWARE_TEST == false && SOFTWARE_TEST == false
-        #if WIFI_CONNECTION == true
+        #if WIFI_CONNECTION == true \
+            && SKIP_WIFI_SETUP == false
             wifi_setup();
         #endif
         #if SDCARD_RW == true

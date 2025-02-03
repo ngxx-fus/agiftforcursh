@@ -12,7 +12,7 @@
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
 #define LOCAL_CONFIG            false
-
+#define SKIP_WIFI_SETUP         true
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #define DHT_TYPE                DHT11
@@ -119,12 +119,12 @@ void get_and_show_image(
 
         if(!sdcard_imgs::is_available){
             canvas.refill(0xFFFF);
-            single_TEXT_LINE(1, "SDCard error!");
+            single_text_line(1, "SDCard error!");
             goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
         }
         if(sdcard_imgs::img_list.empty()){
             canvas.refill(0xFFFF);
-            single_TEXT_LINE(1, "No img found!");
+            single_text_line(1, "No img found!");
             goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
         }
 
