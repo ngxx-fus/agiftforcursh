@@ -388,18 +388,37 @@ void slideshow_mode(){
             /// @brief -> next
             if( btn_pressed & basic_io::btn4_bmask){
                 btn_pressed &= basic_io::btn4_invbmask;
-                if(sel == 0){
+                switch (sel){
+                case 0: 
                     get_and_show_image(img_pos, true, true, false);
                     goto SHOW_CHANGED;
+                    break;
+                /// control selected box 
+                case 1:
+                    sel = 0; prev_sel = 1;
+                    goto RE_DRAW;
+                case 2:
+                    sel = 1; prev_sel = 2;
+                    break;
                 }
             }
 
             /// @brief -> previous
             if( btn_pressed & basic_io::btn3_bmask ){ 
                 btn_pressed &= basic_io::btn3_invbmask;
-                if(sel == 0){
+                switch (sel){
+                /// toggle inv box show state
+                case 0: 
                     get_and_show_image(img_pos, true, false, false);
                     goto SHOW_CHANGED;
+                /// control selected box 
+                case 1:
+                    sel = 2; prev_sel = sel-1;
+                    break;
+                case 2:
+                    sel = 0; prev_sel = 0;
+                    goto RE_DRAW;
+                    break;
                 }
             }
 
@@ -412,13 +431,6 @@ void slideshow_mode(){
                     light_level = (light_level > 100) ? 0 :
                                   (light_level == 0 ) ? 100 : (light_level-10);
                     break;
-                /// control selected box 
-                case 1:
-                    sel = 0; prev_sel = 1;
-                    goto RE_DRAW;
-                case 2:
-                    sel = 1; prev_sel = 2;
-                    break;
                 }
             }
 
@@ -429,14 +441,6 @@ void slideshow_mode(){
                 /// toggle inv box show state
                 case 0: 
                     if(show_env_info = !show_env_info); goto RE_DRAW;
-                /// control selected box 
-                case 1:
-                    sel = 2; prev_sel = sel-1;
-                    break;
-                case 2:
-                    sel = 0; prev_sel = 0;
-                    goto RE_DRAW;
-                    break;
                 }
             }
 
@@ -481,14 +485,14 @@ void slideshow_mode(){
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
                 /// show image 
-                get_and_show_image(img_pos, false, true, true, true); 
+                // get_and_show_image(img_pos, false, true, true, true); 
                 /// show title
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
                 /// show guide
-                show_GUIDE("NEXT", "PREV", "ENV", "LIGHT", "MENU", 65, 100);
+                show_GUIDE("NEXT", "PREV", "ENV", "LIGHT", "MENU", 65, 65);
                 show_GUIDE("/", "/", "/", "/", "/", 65, 125);
-                show_GUIDE("--", "--", "<-", "->", "OK");
+                show_GUIDE("->", "<-", "--", "--", "OK");
                 /// show next/mode button
                 show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
                 /// show btn_pressed box based on ```sel```
