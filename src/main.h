@@ -118,13 +118,18 @@ void get_and_show_image(
     #if SDCARD_RW == true
 
         if(!sdcard_imgs::is_available){
-            canvas.refill(0xFFFF);
-            single_text_line(1, "SDCard error!");
-            goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
+            sdcard_init();
+            if(!sdcard_imgs::is_available){
+                canvas.refill(0xFFFF);
+                single_text_line(5, "SDCard error!");
+                goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
+            }else{
+                sdcard_imgs::list();
+            }
         }
         if(sdcard_imgs::img_list.empty()){
             canvas.refill(0xFFFF);
-            single_text_line(1, "No img found!");
+            single_text_line(5, "No img found!");
             goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
         }
 
@@ -343,16 +348,15 @@ void slideshow_mode(){
     #if LOG == true
         call( "slideshow_mode");
     #endif
-    
+
+    single_screen_color_and_text_line(1, "[slideshow]", 0xFFFF, 0x0, false);
+    single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
+
     basic_io::btn4_attach_interrupt(slideshow_btn4_isr);
     basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
     basic_io::btn2_attach_interrupt(slideshow_btn2_isr);
     basic_io::btn1_attach_interrupt(slideshow_btn1_isr);
     basic_io::btn0_attach_interrupt(slideshow_btn0_isr);
-
-    canvas.refill(0xFFFF);
-    canvas.insert_text({25, 5}, "loading...", 0x0);
-    canvas.show();
 
     #if TFT_SCREEN == true
 
