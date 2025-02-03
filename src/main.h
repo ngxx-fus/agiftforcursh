@@ -464,13 +464,13 @@ void slideshow_mode(){
 
 
             /// periody update env info
-            if(delay1.time_to_run()){
+            if( sel == 0 && delay1.time_to_run() ){
                 humid = sensors::read_humid(0);
                 temp = sensors::read_temp(0);
             }
 
             /// periody update image
-            if( delay0.time_to_run(true)){
+            if( sel == 0 &&  delay0.time_to_run(true) ){
                 SHOW_IMAGE:
                 get_and_show_image(img_pos, true);
                 goto SHOW_CHANGED;
@@ -486,7 +486,7 @@ void slideshow_mode(){
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
                 /// show guide
-                show_GUIDE("--", "--", "L<", "R>", "OK");
+                show_GUIDE("  ", "  ", "<-", "->", "OK");
                 /// show next/mode button
                 show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
                 /// show btn_pressed box based on ```sel```
