@@ -93,7 +93,7 @@ static void show_MENUCONFIG_LINE(
 static void show_GUIDE(
     String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK",
     uint16_t anchor_x = 65, uint16_t const anchor_y = 140, uint16_t line_distance = 30,
-    uint16_t guide_color
+    uint16_t guide_color = GUIDE_COLOR
 ){
     /// show guide
     canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, guide_color);
