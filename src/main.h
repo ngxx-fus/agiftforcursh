@@ -318,7 +318,7 @@ void slideshow_menuconfig_mode(){
             /// show option - slideshow duration
             show_MENUCONFIG_LINE(x_option + uint16_t(0)*row_distance, "Img/Interval:", delay0.get_interval()/1000);
             /// show option - show temp,humid
-            show_MENUCONFIG_LINE(x_option + uint16_t(1)*row_distance, "Env/ShowInfo:", show_env_info?"Y":"N");
+            show_MENUCONFIG_LINE(x_option + uint16_t(1)*row_distance, "Env/Enable:", show_env_info?"Y":"N");
             show_MENUCONFIG_LINE(x_option + uint16_t(2)*row_distance, "Env/Interval:", delay1.get_interval()/1000);
             show_MENUCONFIG_LINE(x_option + uint16_t(3)*row_distance, "Env/Pos/Row:", env_box_pos.X());
             show_MENUCONFIG_LINE(x_option + uint16_t(4)*row_distance, "Env/Pos/Col:",  env_box_pos.Y());
@@ -486,7 +486,9 @@ void slideshow_mode(){
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
                 /// show guide
-                show_GUIDE("  ", "  ", "<-", "->", "OK");
+                show_GUIDE("NEXT", "PREV", "ENV", "LIGHT", "MENU", 65, 100);
+                show_GUIDE("/", "/", "/", "/", "/", 65, 125);
+                show_GUIDE("--", "--", "<-", "->", "OK");
                 /// show next/mode button
                 show_2button_on_1line( btn0, "Setup", 25, "Exit", 110, sensors_color_4, sensors_color_6, sensors_color_5, sensors_color_7 );
                 /// show btn_pressed box based on ```sel```
