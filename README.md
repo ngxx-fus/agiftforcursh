@@ -34,6 +34,14 @@ p/s: I have modified ```TFT 22 ILI9225``` lib of **nkawu** to add a function for
 |<img src="https://github.com/user-attachments/assets/c2bfa7ae-f121-4d09-9495-6632ea713d3c" alt="demo6" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2773fbf3-ce89-427b-8c0d-a0fbfcfe1250" alt="demo7" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/543cf145-e043-4f39-9fb5-f373b0661265" alt="demo8" style="width: 150px;"/>|
 
 ## Product Preview
+v.3.0
+|    |    |    |
+|:--:|:--:|:--:|
+|<img src="https://github.com/user-attachments/assets/915bc990-8b94-4750-8c77-2634e9bd6e94" alt="preview0" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/efc32539-a637-4e28-b3d8-d24e574531ea" alt="preview0" style="width: 150px;"/>|  <img src="https://github.com/user-attachments/assets/f3fbfb9a-278e-489b-a8e8-99dabbf045b0" alt="preview0" style="width: 150px;"/>  |
+
+v.2.0
+
 |    |    |    |
 |:--:|:--:|:--:|
 |<img src="https://github.com/user-attachments/assets/c5ccf7fb-b355-42e7-ac97-4338d27a062b" alt="preview0" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2b1f1c54-aa25-4484-b9b0-69b92d5a4b47" alt="preview0" style="width: 150px;"/>|  <img src="https://github.com/user-attachments/assets/3d31c5d9-b428-46c1-9e01-d384613b1570" alt="preview0" style="width: 150px;"/>  |
+
