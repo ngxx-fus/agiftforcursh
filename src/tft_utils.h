@@ -958,9 +958,9 @@ void show_humid_temp_box(POINT<> pos, float humid, float temp, uint16_t backgrou
 void single_text_line(uint16_t line, String text, uint16_t color = 0x0, uint16_t text_col = 5, uint16_t line_distance = 23, bool text_wrap = false){
     if( line * line_distance > 215 ) return;
     if(text_wrap == false)
-        canvas.insert_text({uint16_t(line * line_distance), text_col}, text.substring(0, 22), color);
+        canvas.insert_text({uint16_t(line * line_distance), text_col}, text, color);
     else
-        for(uint16_t i = 0; i*22 < text.length() || i == 0; ++i){
+        for(uint16_t i = 0; i*22 < text.length(); ++i){
             canvas.insert_text({uint16_t((line+i) * line_distance), text_col}, text.substring(0+i*22, 22+i*22), color);
         }
 }

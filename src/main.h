@@ -121,7 +121,8 @@ void get_and_show_image(
             sdcard_init();
             if(!sdcard_imgs::is_available){
                 canvas.refill(0xFFFF);
-                single_text_line(5, "SDCard error!");
+                single_text_line(1, "[SDCard]");
+                single_text_line(2, "un-available!");
                 goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
             }else{
                 sdcard_imgs::list();
@@ -129,7 +130,8 @@ void get_and_show_image(
         }
         if(sdcard_imgs::img_list.empty()){
             canvas.refill(0xFFFF);
-            single_text_line(5, "No img found!");
+            single_text_line(1, "[Images]");
+            single_text_line(2, "No img found!");
             goto GET_AND_SHOW_IMAGE_SAFE_EXIT;
         }
 
@@ -341,9 +343,10 @@ void slideshow_menuconfig_mode(){
 /// @brief slide show mode
 void slideshow_mode(){
     /// [3] : next image
-    /// [2] : prev image
-    /// [1] : next mode (aka OKE)
-    /// [0] : menu mode 
+    /// [3] : prev image
+    /// [2] : light control
+    /// [1] : env info control
+    /// [0] : enter menu mode / oke 
 
     #if LOG == true
         call( "slideshow_mode");
