@@ -961,11 +961,11 @@ void single_text_line(uint16_t line, String text, uint16_t color = 0x0, uint16_t
 }
 
 void single_screen_color_and_text_line(
-    uint16_t line = 0, String text = "loading...", 
+    uint16_t line = 1, String text = "loading...", 
     uint16_t background_color = 0xFFFF, uint16_t text_color = 0x0,
-    bool immediately_show = true
+    bool immediately_show = true, bool draw_background = true
 ){
-    canvas.refill(background_color);
+    if(draw_background) canvas.refill(background_color);
     single_text_line(line, text, text_color);
     if(immediately_show) canvas.show();
 }
