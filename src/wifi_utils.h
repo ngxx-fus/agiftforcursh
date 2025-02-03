@@ -352,6 +352,9 @@ void wifi_setup(){
 
     WiFi.mode(WIFI_STA);
 
+    single_screen_color_and_text_line(1, "[Wi-Fi setup]", 0xFFFF, 0x0, false);
+    single_screen_color_and_text_line(2, "Connect saved Wi-Fi...", 0xFFFF, 0x0, true, false);
+
     canvas.refill(0xFFFF);
     canvas.insert_text({25, 5}, "loading...", 0x0);
     canvas.show();
