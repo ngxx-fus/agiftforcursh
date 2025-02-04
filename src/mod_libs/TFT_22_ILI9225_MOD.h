@@ -2,7 +2,7 @@
 #define TFT_22_ILI9225_MOD_H
 
 #if SHOW_AUTHOR_MESSAGE == true
-    #pragma message("\nIncluded\nIncluded TFT_22_ILI9225_MOD.h!\n")
+    #pragma message("\nIncluded TFT_22_ILI9225_MOD.h!\n")
 #endif
 
 #include <SPI.h>
