@@ -40,8 +40,10 @@ void loop(){
                 slideshow_mode();
                 goto MAIN_LOOP;
             
-            case enum_SCREEN_MODE::SETUP_WIFI_MODE: 
-                wifi_setup(); 
+            case enum_SCREEN_MODE::SETUP_WIFI_MODE:
+                #if WIFI_CONNECTION == true
+                    wifi_setup(); 
+                #endif
                 goto MAIN_LOOP;
             
             case enum_SCREEN_MODE::SHOW_ENVINFO_MODE:

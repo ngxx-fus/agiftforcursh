@@ -1,6 +1,10 @@
 #ifndef CONFIG_UTILS_H
 #define CONFIG_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded config_utils.h!\n")
+#endif
+
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
 #include "Arduino.h"
 #include "serial_utils.h"

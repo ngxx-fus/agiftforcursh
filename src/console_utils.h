@@ -1,6 +1,10 @@
 #ifndef CONSOLE_UTILS_H
 #define CONSOLE_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded console_utils.h! (legacy header)\n")
+#endif
+
 #include "Arduino.h"
 #include <tft_utils.h>
 #include <serial_utils.h>

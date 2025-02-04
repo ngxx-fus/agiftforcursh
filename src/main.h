@@ -1,6 +1,6 @@
 #define LOG                     true
-#define SHOW_AUTHOR_MESSAGE     false
-#define WIFI_CONNECTION         true
+#define SHOW_AUTHOR_MESSAGE     true
+#define WIFI_CONNECTION         false
 #define USB_SERIAL              true
 #define TFT_SCREEN              true
 #define SENSORS                 true

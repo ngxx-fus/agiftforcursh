@@ -1,6 +1,10 @@
 #ifndef WIFI_UTILS_H
 #define WIFI_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded wifi_utils.h!\n")
+#endif
+
 #define elif else if
 
 #include "WiFi.h"
@@ -77,30 +81,6 @@ static void wifi_setup_btn0_isr(){
     #endif
     basic_io::btn0_last_pressed = millis();
     btn_pressed |= basic_io::btn0_bmask;
-}
-
-template<class Tconfig_name, class Tconfig_val>
-static void show_MENUCONFIG_LINE(
-    uint16_t row, 
-    Tconfig_name conf_name,             Tconfig_val conf_val, 
-    uint16_t conf_name_col = 4,         uint16_t conf_val_col = 115, 
-    uint16_t conf_name_color = 0x10a9,  uint16_t conf_val_color = 0x19ec
-){
-    canvas.insert_text(POINT<>(row, conf_name_col), String(conf_name), conf_name_color);
-    canvas.insert_text(POINT<>(row, conf_val_col), String(conf_val), conf_val_color);
-}
-
-static void show_GUIDE(
-    String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK",
-    uint16_t anchor_x = 65, uint16_t const anchor_y = 140, uint16_t line_distance = 30,
-    uint16_t guide_color = GUIDE_COLOR
-){
-    /// show guide
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, guide_color);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(1)*line_distance, anchor_y), g3, guide_color);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(2)*line_distance, anchor_y), g2, guide_color);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(3)*line_distance, anchor_y), g1, guide_color);
-    canvas.insert_text(POINT<>(anchor_x+uint16_t(4)*line_distance, anchor_y), g0, guide_color);
 }
 
 #if FIREBASE_RTDB == true

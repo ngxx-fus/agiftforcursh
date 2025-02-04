@@ -1,6 +1,10 @@
 #ifndef CONTROLLER_UTILS
 #define CONTROLLER_UTILS
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded controller_utils.h  (legacy header)!\n")
+#endif
+
 #include <algorithm>
 #include <functional>
 using namespace std;
