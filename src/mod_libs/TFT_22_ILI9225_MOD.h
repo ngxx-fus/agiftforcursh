@@ -2,27 +2,7 @@
 #define TFT_22_ILI9225_MOD_H
 
 #if SHOW_AUTHOR_MESSAGE == true
-#pragma message("\
-\n--------***--------\
-\nHello from ngxxfus,\n\
-    This header file have packaged again from TFT_22_ILI9225 \nlib. \
-For add some notes and functions :v.\n\
-\
-The dependencies (PlatformIO.ini):\n\
-    lib_deps = \n\
-        SPI\n\
-        nkawu/TFT 22 ILI9225@^1.4.5\n\
-" \
-                "The connections:\n\
-    LCD-TFT (slave)     ESP32 (master)\n\
-    VCC                 VIN (5V)\n\
-    GND                 GND\n\
-    CLK                 HSPI-CLK  (GPIO14)\n\
-    SDA                 HSPI-MOSI (GPIO13)\n\
-    RS                  (any GPIO)\n\
-    RST                 (any GPIO)\n\
-    CS                  HSPI-CS (GPIO15)\n"\
-)
+    #pragma message("\nIncluded TFT_22_ILI9225_MOD.h!\n")
 #endif
 
 #include <SPI.h>

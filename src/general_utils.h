@@ -1,6 +1,10 @@
 #ifndef GENERAL_UTILS_H
 #define GENERAL_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded general_utils.h!\n")
+#endif
+
 #include <Arduino.h>
 #include <serial_utils.h>
 #include <algorithm>

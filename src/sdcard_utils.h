@@ -1,6 +1,11 @@
 #ifndef SDCARD_UTILS_H
 #define SDCARD_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded sdcard_utils.h!\n")
+#endif
+
+
 #ifndef rep
 #define rep(i,a,b) for(int i = (a); i <= (b); ++i)
 #endif

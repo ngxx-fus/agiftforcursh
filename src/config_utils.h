@@ -1,11 +1,15 @@
 #ifndef CONFIG_UTILS_H
 #define CONFIG_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded config_utils.h!\n")
+#endif
+
 /// >>>>>>>>>>>>>>>>>>>>> HEADER INCLUDES >>>>>>>>>>>>>>>>>>>>>>>>>>
 #include "Arduino.h"
+
 #include "serial_utils.h"
 #include "sdcard_utils.h"
-
 
 /*
 segment0:
@@ -20,15 +24,26 @@ segment0:
             └────   bit7:                   reserved
     ├────   byte [2...3]:                   slideshow mode / image duration
     ├────   byte [4...5]:                   slideshow mode / env sensors refresh interval
-    ├────   byte 6:
-    ├────   byte 7:
-    ├────   byte 8:
-    ├────   byte 9:
-    ├────   byte10:
+    ├────   byte [6...7]:                   slideshow mode / env / x_pos
+    ├────   byte [8...9]:                   slideshow mode / env / y_pos
+    ├────   byte 10:                        slideshow mode / light_level
+    ├────   byte [11...12]:                 slideshow mode / image_index
+    ├────   byte 13:
+    ├────   byte 14:
+    ├────   ...
     └────   byte31:
 
 */
 
+template<class Tn>
+uint8_t __byte_at(Tn num, uint8_t pos){
+    uint64_t _num = uint64_t(num);
+    if(pos >= 0x8) return 0x0;
+    while(pos > 0x0 && pos--){
+        _num >>= 0x8;
+    }
+    return _num&0xFF;
+}
 
 namespace local_config{
     /// >>>>>>>>>>>>>>>>>>>>> GLOBAL DEFS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -40,109 +55,186 @@ namespace local_config{
 
     static const uint8_t PROGMEM    max_size            = 64 __bytes;
     static const uint8_t PROGMEM    segment_size        = 32 __bytes;
-    uint8_t*                        config_file         = nullptr;
-    bool                            is_opened           = false;
+    uint8_t*                        config         = nullptr;
+    bool                            is_cached           = false;
     
     /// >>>>>>>>>>>>>>>>>>>>> OTHER DEFINITIONS >>>>>>>>>>>>>>>>>>>>>>>>
-    bool open_config_file(){
+    
+    
+    bool cache_config(){
         #if LOG == true
-        call("import_config_file");
+            call("cache_config");
         #endif
-        if(esp_get_free_heap_size() < 64 __bytes){
+
+        if(sdcard_imgs::is_available == false){
+            sdcard_init();
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: ", sdcard_imgs::is_available?'Y':'N');
+                #endif
+                return false;
+            }
+        }
+
+        if(esp_get_free_heap_size() < max_size __bytes){
             #if LOG == true
                 log2ser("esp_get_free_heap_size: ", esp_get_free_heap_size());
                 log2ser("Not enough heap space to store the config!");
             #endif
-            is_opened = false;
+            is_cached = false;
             return false;
         }
 
         /// open config file in SDcard
-        File file = SD.open(CONFIG_FILE_PATH);
-        if (!file){
-            is_opened = false;
+        File config_file = SD.open(CONFIG_FILE_PATH);
+        if(!config_file){
             #if LOG == true
-                log2ser( "Failed to open `config_file`!");
+                log2ser("SD.exists(\"/config\"): ", SD.exists("/config")?'Y':'N');
             #endif
-            return false;
+            if (!SD.exists("/config")) SD.mkdir("/config");
+            config_file = SD.open(CONFIG_FILE_PATH, "w");
+            if(!config_file){
+                config_file.close();
+                #if LOG == true
+                    log2ser("Failed to open ", CONFIG_FILE_PATH);
+                #endif
+                return false;
+            }
         }
-        if(file.isDirectory() == true){
+        if(config_file.isDirectory() == true){
             #if LOG == true
-                log2ser( "Err: isDirectory!");
+                log2ser( "Error: isDirectory!");
             #endif
-            is_opened = false;
+            is_cached = false;
             #if LOG == true
-                log2ser( "Failed to open `config_file`!");
+                log2ser( "Failed to open `config`!");
             #endif
             return false;
         }
 
         /// Allocate 64 bytes for the config
-        config_file = new uint8_t[local_config::max_size];
+        config = new uint8_t[local_config::max_size];
 
-        auto read_size = file.read(config_file, max_size);
+        auto read_size = config_file.read(config, max_size);
 
         #if LOG == true
-            log2ser("read ", read_size, "/",max_size, " `config_file`!");
+            log2ser("read ", read_size, "/",max_size, " bytes `config`!");
         #endif
 
-        if( read_size < max_size){
+        if( read_size < max_size ){
             #if LOG == true
-                log2ser("Err: `config_file` may be corrupted!");
+                log2ser("Err: `config` may be corrupted!");
             #endif
-            delete[] config_file;
-            config_file = nullptr;
-            is_opened = false;
-            #if LOG == true
-                log2ser( "Failed to open `config_file`!");
-            #endif
+            delete[] config;               config = nullptr;
+            is_cached = false;
             return false;
         };
 
         #if LOG == true
-            log2ser("`config_file` is openned at ", String((int)config_file, HEX), "!");
+            log2ser("`config` is openned at ", String((int)config, HEX), "!");
         #endif
-        is_opened = true;
+        config_file.close();
+        is_cached = true;
         return true;
     }
 
-    void close_config_file(){
+    void flush_config(){
         #if LOG == true
-            call("close_config_file");
+            call("flush_config");
         #endif
-        is_opened = false;
-        delete[] config_file;
-        config_file = nullptr;
+        is_cached = false;
+        delete[] config;    config = nullptr;
         #if LOG == true
-            log2ser("`config_file` is closed!");
+            log2ser("`config` is flushed!");
         #endif
     }
 
     /// @brief allocate `max_size` bytes to store the config
-    /// if non-existed `config_file`
-    uint8_t* generate_config_file(){
+    /// if non-existed `config`
+    uint8_t* generate_config(){
         #if LOG == true
-            call("generate_config_file");
+            call("generate_config");
         #endif
-        if( config_file != nullptr ){
-            delete[] config_file;
+
+        if(sdcard_imgs::is_available == false){
+            sdcard_init();
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: N");
+                #endif
+                return nullptr;
+            }
         }
-        if(esp_get_free_heap_size() < 64 __bytes){
+
+        if(is_cached == true || config != nullptr){
+            #if LOG == true
+                log2ser("`config` existed!");
+                log2ser("Delete existed `config`!");
+            #endif
+            delete[] config;                   config = nullptr;
+        }
+
+        if(esp_get_free_heap_size() < max_size __bytes){
             #if LOG == true
                 log2ser("esp_get_free_heap_size: ", esp_get_free_heap_size());
                 log2ser("Not enough heap space to store the config!");
             #endif
-            is_opened = false;
+            is_cached = false;
             return nullptr;
         }
 
-        is_opened = true;
-        
-        config_file = new uint8_t[max_size];
-        return config_file;
+        is_cached = true;
+        config = new uint8_t[max_size];
+        return config;
     }
 
-    bool save_config_file(){
+    bool save_config(){
+        #if LOG == true
+            call("save_config");
+        #endif
+
+        if(is_cached == false){
+            #if LOG == true
+                log2ser("Failed! No config existed! ");
+            #endif
+            return false;
+        }
+
+        if(sdcard_imgs::is_available == false){
+            sdcard_init();
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: ", sdcard_imgs::is_available?'Y':'N');
+                #endif
+                return false;
+            }
+        }
+
+        File config_file = SD.open(CONFIG_FILE_PATH, "w");
+        if(!config_file){
+            #if LOG == true
+                log2ser("SD.exists(\"/config\"): ", SD.exists("/config")?'Y':'N');
+            #endif
+            if (!SD.exists("/config")) SD.mkdir("/config");
+            config_file = SD.open(CONFIG_FILE_PATH, "w");
+            if(!config_file){
+                config_file.close();
+                #if LOG == true
+                    log2ser("Failed to open ", CONFIG_FILE_PATH);
+                #endif
+                return false;
+            }
+        }
+
+        auto written_bytes = config_file.write(config, max_size __bytes);
+
+        #if LOG == true
+            log2ser("Written ",written_bytes, "/", max_size, " bytes `config`!" );
+        #endif
+
+        if( written_bytes != max_size __bytes){
+            return false;
+        }
 
         return true;
     }
@@ -152,8 +244,21 @@ namespace local_config{
     /// @param byte_id      index of byte in the segment
     /// @return the byte corresponding to  `segment_id` and `byte_id`,
     /// if `segment_id` and `byte_id` is invalid, return 0xFF.
-    uint8_t get_config_byte(uint8_t segment_id, uint8_t byte_id){
-        if(!is_opened){
+    template<class Treturn = uint8_t>
+    Treturn byte_config(uint8_t segment_id, uint8_t byte_id){
+        // #if LOG == true
+        //     call("byte_config");
+        // #endif
+        if(sdcard_imgs::is_available == false){
+            sdcard_init();
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: N");
+                #endif
+                return 0xFF;
+            }
+        }
+        if(!is_cached){
             #if LOG == true
                 log2ser("Err: No config file is opened!");
             #endif
@@ -165,7 +270,7 @@ namespace local_config{
             #endif
             return 0xFF;
         }
-        return *(config_file + segment_id * segment_size + byte_id);
+        return *(config + segment_id * segment_size + byte_id);
     }
 
     /// @brief Set a byte in config file
@@ -173,8 +278,20 @@ namespace local_config{
     /// @param byte_id      index of byte in the segment
     /// @param byte_val     the value will be set
     /// @return 0 if success!, otherwise 0xFF.
-    uint8_t set_config_byte(uint8_t segment_id, uint8_t byte_id, uint8_t byte_val){
-        if(!is_opened){
+    uint8_t byte_config(uint8_t segment_id, uint8_t byte_id, uint8_t byte_val){
+        // #if LOG == true
+        //     call("byte_config");
+        // #endif
+        if(sdcard_imgs::is_available == false){
+            sdcard_init();
+            if(sdcard_imgs::is_available == false){
+                #if LOG == true
+                    log2ser("sdcard_imgs::is_available: N");
+                #endif
+                return 0xFF;
+            }
+        }
+        if(!is_cached){
             #if LOG == true
                 log2ser("Err: No config file is opened!");
             #endif
@@ -186,16 +303,19 @@ namespace local_config{
             #endif
             return 0xFF;
         }
-        *(config_file + segment_id * segment_size + byte_id) = byte_val;
+        *(config + segment_id * segment_size + byte_id) = byte_val;
         return 0;
     }
 
 };
 
-void config_init(){
+void local_config_init(){
     #if LOG == true
-    call("");
+        call("local_config_init");
     #endif
+    if(!local_config::cache_config()){
+        local_config::generate_config();
+    };
 }
 
 #endif

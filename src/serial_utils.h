@@ -1,6 +1,10 @@
 #ifndef SERIAL_UTILS_H
 #define SERIAL_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded serial_utils.h!\n")
+#endif
+
 #include "Arduino.h"
 
 #ifndef LOG

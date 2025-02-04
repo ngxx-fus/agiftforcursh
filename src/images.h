@@ -2,6 +2,11 @@
 #ifndef IMAGES_H
 #define IMAGES_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded images.h!\n")
+#endif
+
+
 #include "Arduino.h"
 #include <vector>
 using namespace std;

@@ -1,6 +1,10 @@
 #ifndef BASIC_IO_UTILS_H
 #define BASIC_IO_UTILS_H
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded basic_io_utils.h!\n")
+#endif
+
 #include <Arduino.h>
 
 #include "serial_utils.h"

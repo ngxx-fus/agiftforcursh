@@ -22,9 +22,12 @@ void setup(){
             sdcard_init();
         #endif
         #if LOCAL_CONFIG == true
-            config_init();
+            single_screen_color_and_text_line(1, "[config]", 0xFFFF, 0x0, false);
+            single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
+            local_config_init();
         #endif
     #endif
+    
     screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
 }
 
@@ -40,8 +43,10 @@ void loop(){
                 slideshow_mode();
                 goto MAIN_LOOP;
             
-            case enum_SCREEN_MODE::SETUP_WIFI_MODE: 
-                wifi_setup(); 
+            case enum_SCREEN_MODE::SETUP_WIFI_MODE:
+                #if WIFI_CONNECTION == true
+                    wifi_setup(); 
+                #endif
                 goto MAIN_LOOP;
             
             case enum_SCREEN_MODE::SHOW_ENVINFO_MODE:

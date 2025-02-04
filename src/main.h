@@ -1,6 +1,6 @@
 #define LOG                     true
-#define SHOW_AUTHOR_MESSAGE     false
-#define WIFI_CONNECTION         true
+#define SHOW_AUTHOR_MESSAGE     true
+#define WIFI_CONNECTION         false
 #define USB_SERIAL              true
 #define TFT_SCREEN              true
 #define SENSORS                 true
@@ -11,7 +11,7 @@
 #define SOFTWARE_TEST           false
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
-#define LOCAL_CONFIG            false
+#define LOCAL_CONFIG            true
 #define SKIP_WIFI_SETUP         true
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -101,11 +101,12 @@
 /// >>>>>>>>>>>>>>>>>>>>> SLIDESHOW MODE >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static uint8_t              light_level = 100U;
 static bool                 show_env_info = true;
-static bool                 turn_on_bedroom_light = true;
+static bool                 bedroom_light = true;
 static DELAY_CTL            delay0(60000U);
 static DELAY_CTL            delay1(30000U);
 static float                humid = 0.0, temp = 0.0;
-static POINT<uint16_t>                env_box_pos(174, 2);
+static POINT<uint16_t>      env_box_pos(174, 2);
+static uint16_t             image_index = 0;
 
 void get_and_show_image(
     uint16_t& i, bool auto_update = true, 
@@ -165,7 +166,6 @@ static void slideshow_btn4_isr(){
     basic_io::btn4_last_pressed = millis();
     btn_pressed |= basic_io::btn4_bmask;
 }
-
 static void slideshow_btn3_isr(){
     if(millis() - basic_io::btn3_last_pressed < 200) return;
     #if LOG == true
@@ -174,7 +174,6 @@ static void slideshow_btn3_isr(){
     basic_io::btn3_last_pressed = millis();
     btn_pressed |= basic_io::btn3_bmask;
 }
-
 static void slideshow_btn2_isr(){
     if(millis() - basic_io::btn2_last_pressed < 200) return;
     #if LOG == true
@@ -183,7 +182,6 @@ static void slideshow_btn2_isr(){
     basic_io::btn2_last_pressed = millis();
     btn_pressed |= basic_io::btn2_bmask;
 }
-
 static void slideshow_btn1_isr(){
     if(millis() - basic_io::btn1_last_pressed < 200) return;
     #if LOG == true
@@ -192,7 +190,6 @@ static void slideshow_btn1_isr(){
     basic_io::btn1_last_pressed = millis();
     btn_pressed |= basic_io::btn1_bmask;
 }
-
 static void slideshow_btn0_isr(){
     if(millis() - basic_io::btn0_last_pressed < 200) return;
     #if LOG == true
@@ -200,6 +197,84 @@ static void slideshow_btn0_isr(){
     #endif
     basic_io::btn0_last_pressed = millis();
     btn_pressed |= basic_io::btn0_bmask;
+}
+
+bool slideshow_local_config_sync(char RW){
+    #if LOG == true
+        call("slideshow_local_config_sync(", RW, ")");
+    #endif
+    if(sdcard_imgs::is_available == false){
+        sdcard_init();
+        if(sdcard_imgs::is_available == false){
+            #if LOG == true
+                log2ser("sdcard_imgs::is_available: N");
+            #endif
+            return false;
+        }
+    }
+    if(local_config::is_cached ==  false){
+        local_config_init();
+        if(local_config::is_cached ==  false){
+            #if LOG == true
+                log2ser("slideshow::config_sync: failed!");
+            #endif
+            return false;
+        }
+        RW = 'W';
+    }
+    if(RW == 'R' || RW == 'r'){
+
+        show_env_info = local_config::byte_config(0, 1) & 0x1;
+        bedroom_light = local_config::byte_config(0, 1) & 0x2;
+        
+        delay0.set_interval(
+            1000U * (local_config::byte_config<uint32_t>(0, 3)) + 
+            1000U * (local_config::byte_config<uint32_t>(0, 2))
+        );
+        delay1.set_interval(
+            1000U * (local_config::byte_config<uint32_t>(0, 5) << 0x8) + 
+            1000U * (local_config::byte_config<uint32_t>(0, 4))
+        );
+
+        env_box_pos.X() = (
+            (local_config::byte_config<uint32_t>(0, 7) << 0x8) + 
+            (local_config::byte_config<uint32_t>(0, 6))
+        );
+
+        env_box_pos.Y() = (
+            (local_config::byte_config<uint32_t>(0, 9) << 0x8) + 
+            (local_config::byte_config<uint32_t>(0, 8))
+        );
+
+        light_level = local_config::byte_config<uint32_t>(0, 10);
+
+        image_index = (local_config::byte_config<uint16_t>(0, 12)<<0x8) +
+                      local_config::byte_config<uint16_t>(0, 11);
+    }
+    if(RW == 'W' || RW == 'w'){
+        local_config::byte_config(0, 1, (0x1 * show_env_info) + (0x2 * bedroom_light));
+
+        local_config::byte_config(0, 3, __byte_at(delay0.get_interval()/1000U, 1));
+        local_config::byte_config(0, 2, __byte_at(delay0.get_interval()/1000U, 0));
+
+        local_config::byte_config(0, 5, __byte_at(delay1.get_interval()/1000U, 1));
+        local_config::byte_config(0, 4, __byte_at(delay1.get_interval()/1000U, 0));
+
+
+        local_config::byte_config(0, 7, __byte_at(env_box_pos.X(), 1));
+        local_config::byte_config(0, 6, __byte_at(env_box_pos.X(), 0));
+
+        local_config::byte_config(0, 9, __byte_at(env_box_pos.Y(), 1));
+        local_config::byte_config(0, 8, __byte_at(env_box_pos.Y(), 0));
+
+        local_config::byte_config(0, 10, light_level);
+
+        local_config::byte_config(0, 12, __byte_at(image_index, 1));
+        local_config::byte_config(0, 11, __byte_at(image_index, 0));
+
+        local_config::save_config();
+    }
+    return true;
 }
 
 void slideshow_menuconfig_mode(){
@@ -260,7 +335,7 @@ void slideshow_menuconfig_mode(){
                     break;
                 case 5:
                     delay(300);
-                    turn_on_bedroom_light = ! turn_on_bedroom_light;
+                    bedroom_light = ! bedroom_light;
                     break;
                 case 6:
                     delay(100);
@@ -293,7 +368,7 @@ void slideshow_menuconfig_mode(){
                     break;
                 case 5:
                     delay(300);
-                    turn_on_bedroom_light = ! turn_on_bedroom_light;
+                    bedroom_light = ! bedroom_light;
                     break;
                 case 6:
                     delay(100);
@@ -324,7 +399,7 @@ void slideshow_menuconfig_mode(){
             show_MENUCONFIG_LINE(x_option + uint16_t(4)*row_distance, "Env/Pos/Col:",  env_box_pos.Y());
 
             /// show option - show bedroom led light
-            show_MENUCONFIG_LINE(x_option + uint16_t(5)*row_distance, "Light/Enable:", turn_on_bedroom_light?"Y":"N");
+            show_MENUCONFIG_LINE(x_option + uint16_t(5)*row_distance, "Light/Enable:", bedroom_light?"Y":"N");
             show_MENUCONFIG_LINE(x_option + uint16_t(6)*row_distance, "Light/Level:", light_level);
 
             /// show current selection
@@ -337,6 +412,7 @@ void slideshow_menuconfig_mode(){
     return;
     MENUCONFIG_SLIDESHOW_SAFE_EXIT:
     btn_pressed = 0x0;
+    slideshow_local_config_sync('W');
     return;
 }
 
@@ -355,6 +431,8 @@ void slideshow_mode(){
     single_screen_color_and_text_line(1, "[slideshow]", 0xFFFF, 0x0, false);
     single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
 
+    slideshow_local_config_sync('R');
+
     basic_io::btn4_attach_interrupt(slideshow_btn4_isr);
     basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
     basic_io::btn2_attach_interrupt(slideshow_btn2_isr);
@@ -368,16 +446,16 @@ void slideshow_mode(){
 
         uint8_t     title0 = 2;
         uint16_t    btn_pressedBox_W = 68, btn_pressedBox_H = 31, btn0 = 190,
-                    img_pos = 0, sel = 0, prev_sel = 2;
+                    sel = 0, prev_sel = 2;
 
-        get_and_show_image(img_pos, false);
+        get_and_show_image(image_index, false);
 
         while(0x1){ /// slideshow - main loop
             SLIDESHOW:
             
             /// set bedroom led light
             #if BASIC_IO == true
-                if(turn_on_bedroom_light){
+                if(bedroom_light){
                     basic_io::led1_analog_ctl(light_level);
                 }else{
                     basic_io::led1_analog_ctl(0);
@@ -390,7 +468,7 @@ void slideshow_mode(){
                 btn_pressed &= basic_io::btn4_invbmask;
                 switch (sel){
                 case 0: 
-                    get_and_show_image(img_pos, true, true, false);
+                    get_and_show_image(image_index, true, true, false);
                     goto SHOW_CHANGED;
                     break;
                 /// control selected box 
@@ -410,7 +488,7 @@ void slideshow_mode(){
                 switch (sel){
                 /// toggle inv box show state
                 case 0: 
-                    get_and_show_image(img_pos, true, false, false);
+                    get_and_show_image(image_index, true, false, false);
                     goto SHOW_CHANGED;
                 /// control selected box 
                 case 1:
@@ -439,8 +517,9 @@ void slideshow_mode(){
                 btn_pressed &= basic_io::btn1_invbmask;
                 switch (sel){
                 /// toggle inv box show state
-                case 0: 
-                    if(show_env_info = !show_env_info); goto RE_DRAW;
+                case 0:
+                    show_env_info = !show_env_info;
+                    if(show_env_info); goto RE_DRAW;
                 }
             }
 
@@ -458,7 +537,7 @@ void slideshow_mode(){
                     RE_DRAW:
                     /// re-draw img
                     sel = 0; prev_sel = sel-1;
-                    get_and_show_image(img_pos, false); 
+                    get_and_show_image(image_index, false); 
                     goto SHOW_CHANGED;
                 case 2:
                     screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
@@ -476,7 +555,8 @@ void slideshow_mode(){
             /// periody update image
             if( sel == 0 &&  delay0.time_to_run(true) ){
                 SHOW_IMAGE:
-                get_and_show_image(img_pos, true);
+                get_and_show_image(image_index, true);
+                slideshow_local_config_sync('W');
                 goto SHOW_CHANGED;
             }
             
@@ -485,7 +565,7 @@ void slideshow_mode(){
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
                 /// show image 
-                // get_and_show_image(img_pos, false, true, true, true); 
+                // get_and_show_image(image_index, false, true, true, true); 
                 /// show title
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);

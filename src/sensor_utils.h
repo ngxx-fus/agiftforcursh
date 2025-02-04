@@ -1,6 +1,12 @@
 #ifndef SENSOR_UTILS
 #define SENSOR_UTILS
 
+
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded sensor_utils.h!\n")
+#endif
+
+
 #define sensors_color_0 0xffff          /// screen background
 #define sensors_color_1 0x18c3          /// title bar background
 #define sensors_color_2 0xdfdd          /// title bar text

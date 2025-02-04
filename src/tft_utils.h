@@ -1,6 +1,10 @@
 #ifndef TFT_UTILS
 #define TFT_UTILS
 
+#if SHOW_AUTHOR_MESSAGE == true
+    #pragma message("\nIncluded tft_utils.h!\n")
+#endif
+
 #include <vector>
 #include <algorithm>
 #include <Arduino.h>
@@ -973,6 +977,30 @@ void single_screen_color_and_text_line(
     if(draw_background) canvas.refill(background_color);
     single_text_line(line, text, text_color);
     if(immediately_show) canvas.show();
+}
+
+template<class Tconfig_name, class Tconfig_val>
+static void show_MENUCONFIG_LINE(
+    uint16_t row, 
+    Tconfig_name conf_name,             Tconfig_val conf_val, 
+    uint16_t conf_name_col = 4,         uint16_t conf_val_col = 115, 
+    uint16_t conf_name_color = 0x10a9,  uint16_t conf_val_color = 0x19ec
+){
+    canvas.insert_text(POINT<>(row, conf_name_col), String(conf_name), conf_name_color);
+    canvas.insert_text(POINT<>(row, conf_val_col), String(conf_val), conf_val_color);
+}
+
+static void show_GUIDE(
+    String g4 = "UP", String g3 = "DN", String g2 = "LF", String g1 = "RT", String g0 = "OK",
+    uint16_t anchor_x = 65, uint16_t const anchor_y = 140, uint16_t line_distance = 30,
+    uint16_t guide_color = GUIDE_COLOR
+){
+    /// show guide
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(0)*line_distance, anchor_y), g4, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(1)*line_distance, anchor_y), g3, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(2)*line_distance, anchor_y), g2, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(3)*line_distance, anchor_y), g1, guide_color);
+    canvas.insert_text(POINT<>(anchor_x+uint16_t(4)*line_distance, anchor_y), g0, guide_color);
 }
 
 #endif
