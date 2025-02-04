@@ -34,6 +34,15 @@ segment0:
 
 */
 
+template<class Tn>
+uint8_t __byte_at(Tn num, uint8_t pos){
+    uint64_t _num = uint64_t(num);
+    if(pos >= 0x8) return 0x0;
+    while(pos > 0x0 && pos--){
+        _num >>= 0x8;
+    }
+    return _num&0xFF;
+}
 
 namespace local_config{
     /// >>>>>>>>>>>>>>>>>>>>> GLOBAL DEFS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -236,9 +245,9 @@ namespace local_config{
     /// if `segment_id` and `byte_id` is invalid, return 0xFF.
     template<class Treturn = uint8_t>
     Treturn byte_config(uint8_t segment_id, uint8_t byte_id){
-        #if LOG == true
-            call("byte_config");
-        #endif
+        // #if LOG == true
+        //     call("byte_config");
+        // #endif
         if(sdcard_imgs::is_available == false){
             sdcard_init();
             if(sdcard_imgs::is_available == false){
@@ -269,9 +278,9 @@ namespace local_config{
     /// @param byte_val     the value will be set
     /// @return 0 if success!, otherwise 0xFF.
     uint8_t byte_config(uint8_t segment_id, uint8_t byte_id, uint8_t byte_val){
-        #if LOG == true
-            call("byte_config");
-        #endif
+        // #if LOG == true
+        //     call("byte_config");
+        // #endif
         if(sdcard_imgs::is_available == false){
             sdcard_init();
             if(sdcard_imgs::is_available == false){

@@ -224,10 +224,10 @@ bool slideshow_local_config_sync(char RW){
     if(RW == 'R' || RW == 'r'){
 
         show_env_info = local_config::byte_config(0, 1) & 0x1;
-        bedroom_light = local_config::byte_config(0, 1) & 0x1 & 0x2;
+        bedroom_light = local_config::byte_config(0, 1) & 0x2;
         
         delay0.set_interval(
-            1000U * (local_config::byte_config<uint32_t>(0, 3) << 0x8) + 
+            1000U * (local_config::byte_config<uint32_t>(0, 3)) + 
             1000U * (local_config::byte_config<uint32_t>(0, 2))
         );
         delay1.set_interval(
@@ -248,19 +248,20 @@ bool slideshow_local_config_sync(char RW){
         light_level = local_config::byte_config<uint32_t>(0, 10);
     }
     if(RW == 'W' || RW == 'w'){
-        local_config::byte_config(0, 1, (0x1 & show_env_info) + (0x2 &  bedroom_light));
+        local_config::byte_config(0, 1, (0x1 * show_env_info) + (0x2 * bedroom_light));
 
-        local_config::byte_config(0, 3, uint8_t((delay0.get_interval()/1000)&0xF0) >> 0x8);
-        local_config::byte_config(0, 2, uint8_t((delay0.get_interval()/1000)&0x0F));
+        local_config::byte_config(0, 3, __byte_at(delay0.get_interval()/1000U, 1));
+        local_config::byte_config(0, 2, __byte_at(delay0.get_interval()/1000U, 0));
 
-        local_config::byte_config(0, 5, uint8_t((delay1.get_interval()/1000)&0xF0) >> 0x8);
-        local_config::byte_config(0, 4, uint8_t((delay1.get_interval()/1000)&0x0F));
+        local_config::byte_config(0, 5, __byte_at(delay1.get_interval()/1000U, 1));
+        local_config::byte_config(0, 4, __byte_at(delay1.get_interval()/1000U, 0));
 
-        local_config::byte_config(0, 7, uint8_t(env_box_pos.X()&0xF0) >> 0x8);
-        local_config::byte_config(0, 6, uint8_t(env_box_pos.X()&0x0F));
 
-        local_config::byte_config(0, 9, uint8_t(env_box_pos.Y()&0xF0) >> 0x8);
-        local_config::byte_config(0, 8, uint8_t(env_box_pos.Y()&0x0F));
+        local_config::byte_config(0, 7, __byte_at(env_box_pos.X(), 1));
+        local_config::byte_config(0, 6, __byte_at(env_box_pos.X(), 0));
+
+        local_config::byte_config(0, 9, __byte_at(env_box_pos.Y(), 1));
+        local_config::byte_config(0, 8, __byte_at(env_box_pos.Y(), 0));
 
         local_config::byte_config(0, 10, light_level);
 
@@ -509,8 +510,9 @@ void slideshow_mode(){
                 btn_pressed &= basic_io::btn1_invbmask;
                 switch (sel){
                 /// toggle inv box show state
-                case 0: 
-                    if(show_env_info = !show_env_info); goto RE_DRAW;
+                case 0:
+                    show_env_info = !show_env_info;
+                    if(show_env_info); goto RE_DRAW;
                 }
             }
 
