@@ -26,9 +26,10 @@ segment0:
     ├────   byte [4...5]:                   slideshow mode / env sensors refresh interval
     ├────   byte [6...7]:                   slideshow mode / env / x_pos
     ├────   byte [8...9]:                   slideshow mode / env / y_pos
-    ├────   byte 10:                        light_level
-    ├────   byte 11:                        image_inndex
-    ├────   byte 12:
+    ├────   byte 10:                        slideshow mode / light_level
+    ├────   byte [11...12]:                 slideshow mode / image_index
+    ├────   byte 13:
+    ├────   byte 14:
     ├────   ...
     └────   byte31:
 

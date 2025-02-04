@@ -106,6 +106,7 @@ static DELAY_CTL            delay0(60000U);
 static DELAY_CTL            delay1(30000U);
 static float                humid = 0.0, temp = 0.0;
 static POINT<uint16_t>      env_box_pos(174, 2);
+static uint16_t             image_index = 0;
 
 void get_and_show_image(
     uint16_t& i, bool auto_update = true, 
@@ -246,6 +247,9 @@ bool slideshow_local_config_sync(char RW){
         );
 
         light_level = local_config::byte_config<uint32_t>(0, 10);
+
+        image_index = (local_config::byte_config<uint16_t>(0, 12)<<0x8) +
+                      local_config::byte_config<uint16_t>(0, 11);
     }
     if(RW == 'W' || RW == 'w'){
         local_config::byte_config(0, 1, (0x1 * show_env_info) + (0x2 * bedroom_light));
@@ -264,6 +268,9 @@ bool slideshow_local_config_sync(char RW){
         local_config::byte_config(0, 8, __byte_at(env_box_pos.Y(), 0));
 
         local_config::byte_config(0, 10, light_level);
+
+        local_config::byte_config(0, 12, __byte_at(image_index, 1));
+        local_config::byte_config(0, 11, __byte_at(image_index, 0));
 
         local_config::save_config();
     }
@@ -439,9 +446,9 @@ void slideshow_mode(){
 
         uint8_t     title0 = 2;
         uint16_t    btn_pressedBox_W = 68, btn_pressedBox_H = 31, btn0 = 190,
-                    img_pos = 0, sel = 0, prev_sel = 2;
+                    sel = 0, prev_sel = 2;
 
-        get_and_show_image(img_pos, false);
+        get_and_show_image(image_index, false);
 
         while(0x1){ /// slideshow - main loop
             SLIDESHOW:
@@ -461,7 +468,7 @@ void slideshow_mode(){
                 btn_pressed &= basic_io::btn4_invbmask;
                 switch (sel){
                 case 0: 
-                    get_and_show_image(img_pos, true, true, false);
+                    get_and_show_image(image_index, true, true, false);
                     goto SHOW_CHANGED;
                     break;
                 /// control selected box 
@@ -481,7 +488,7 @@ void slideshow_mode(){
                 switch (sel){
                 /// toggle inv box show state
                 case 0: 
-                    get_and_show_image(img_pos, true, false, false);
+                    get_and_show_image(image_index, true, false, false);
                     goto SHOW_CHANGED;
                 /// control selected box 
                 case 1:
@@ -530,7 +537,7 @@ void slideshow_mode(){
                     RE_DRAW:
                     /// re-draw img
                     sel = 0; prev_sel = sel-1;
-                    get_and_show_image(img_pos, false); 
+                    get_and_show_image(image_index, false); 
                     goto SHOW_CHANGED;
                 case 2:
                     screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
@@ -548,7 +555,8 @@ void slideshow_mode(){
             /// periody update image
             if( sel == 0 &&  delay0.time_to_run(true) ){
                 SHOW_IMAGE:
-                get_and_show_image(img_pos, true);
+                get_and_show_image(image_index, true);
+                slideshow_local_config_sync('W');
                 goto SHOW_CHANGED;
             }
             
@@ -557,7 +565,7 @@ void slideshow_mode(){
             if(sel > 0 && sel != prev_sel) {
                 canvas.refill(0xFFFF);
                 /// show image 
-                // get_and_show_image(img_pos, false, true, true, true); 
+                // get_and_show_image(image_index, false, true, true, true); 
                 /// show title
                 canvas.insert_rectangle(POINT<>(title0-1, 2), 168, 35, 0x18c3, true, sensors_color_1);
                 canvas.insert_text(POINT<>(title0+22, 50), "Slideshow", sensors_color_2);
