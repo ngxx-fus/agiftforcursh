@@ -11,7 +11,7 @@
 #define SOFTWARE_TEST           false
 #define HARDWARE_TEST           false
 #define BASIC_IO                true
-#define LOCAL_CONFIG            false
+#define LOCAL_CONFIG            true
 #define SKIP_WIFI_SETUP         true
 /// >>>>>>>>>>>>>>>>>>>>> PIN DEFINE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -101,11 +101,11 @@
 /// >>>>>>>>>>>>>>>>>>>>> SLIDESHOW MODE >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static uint8_t              light_level = 100U;
 static bool                 show_env_info = true;
-static bool                 turn_on_bedroom_light = true;
+static bool                 bedroom_light = true;
 static DELAY_CTL            delay0(60000U);
 static DELAY_CTL            delay1(30000U);
 static float                humid = 0.0, temp = 0.0;
-static POINT<uint16_t>                env_box_pos(174, 2);
+static POINT<uint16_t>      env_box_pos(174, 2);
 
 void get_and_show_image(
     uint16_t& i, bool auto_update = true, 
@@ -165,7 +165,6 @@ static void slideshow_btn4_isr(){
     basic_io::btn4_last_pressed = millis();
     btn_pressed |= basic_io::btn4_bmask;
 }
-
 static void slideshow_btn3_isr(){
     if(millis() - basic_io::btn3_last_pressed < 200) return;
     #if LOG == true
@@ -174,7 +173,6 @@ static void slideshow_btn3_isr(){
     basic_io::btn3_last_pressed = millis();
     btn_pressed |= basic_io::btn3_bmask;
 }
-
 static void slideshow_btn2_isr(){
     if(millis() - basic_io::btn2_last_pressed < 200) return;
     #if LOG == true
@@ -183,7 +181,6 @@ static void slideshow_btn2_isr(){
     basic_io::btn2_last_pressed = millis();
     btn_pressed |= basic_io::btn2_bmask;
 }
-
 static void slideshow_btn1_isr(){
     if(millis() - basic_io::btn1_last_pressed < 200) return;
     #if LOG == true
@@ -192,7 +189,6 @@ static void slideshow_btn1_isr(){
     basic_io::btn1_last_pressed = millis();
     btn_pressed |= basic_io::btn1_bmask;
 }
-
 static void slideshow_btn0_isr(){
     if(millis() - basic_io::btn0_last_pressed < 200) return;
     #if LOG == true
@@ -200,6 +196,77 @@ static void slideshow_btn0_isr(){
     #endif
     basic_io::btn0_last_pressed = millis();
     btn_pressed |= basic_io::btn0_bmask;
+}
+
+bool slideshow_local_config_sync(char RW){
+    #if LOG == true
+        call("slideshow_local_config_sync(", RW, ")");
+    #endif
+    if(sdcard_imgs::is_available == false){
+        sdcard_init();
+        if(sdcard_imgs::is_available == false){
+            #if LOG == true
+                log2ser("sdcard_imgs::is_available: N");
+            #endif
+            return false;
+        }
+    }
+    if(local_config::is_cached ==  false){
+        local_config_init();
+        if(local_config::is_cached ==  false){
+            #if LOG == true
+                log2ser("slideshow::config_sync: failed!");
+            #endif
+            return false;
+        }
+        RW = 'W';
+    }
+    if(RW == 'R' || RW == 'r'){
+
+        show_env_info = local_config::byte_config(0, 1) & 0x1;
+        bedroom_light = local_config::byte_config(0, 1) & 0x1 & 0x2;
+        
+        delay0.set_interval(
+            1000U * (local_config::byte_config<uint32_t>(0, 3) << 0x8) + 
+            1000U * (local_config::byte_config<uint32_t>(0, 2))
+        );
+        delay1.set_interval(
+            1000U * (local_config::byte_config<uint32_t>(0, 5) << 0x8) + 
+            1000U * (local_config::byte_config<uint32_t>(0, 4))
+        );
+
+        env_box_pos.X() = (
+            (local_config::byte_config<uint32_t>(0, 7) << 0x8) + 
+            (local_config::byte_config<uint32_t>(0, 6))
+        );
+
+        env_box_pos.Y() = (
+            (local_config::byte_config<uint32_t>(0, 9) << 0x8) + 
+            (local_config::byte_config<uint32_t>(0, 8))
+        );
+
+        light_level = local_config::byte_config<uint32_t>(0, 10);
+    }
+    if(RW == 'W' || RW == 'w'){
+        local_config::byte_config(0, 1, (0x1 & show_env_info) + (0x2 &  bedroom_light));
+
+        local_config::byte_config(0, 3, uint8_t((delay0.get_interval()/1000)&0xF0) >> 0x8);
+        local_config::byte_config(0, 2, uint8_t((delay0.get_interval()/1000)&0x0F));
+
+        local_config::byte_config(0, 5, uint8_t((delay1.get_interval()/1000)&0xF0) >> 0x8);
+        local_config::byte_config(0, 4, uint8_t((delay1.get_interval()/1000)&0x0F));
+
+        local_config::byte_config(0, 7, uint8_t(env_box_pos.X()&0xF0) >> 0x8);
+        local_config::byte_config(0, 6, uint8_t(env_box_pos.X()&0x0F));
+
+        local_config::byte_config(0, 9, uint8_t(env_box_pos.Y()&0xF0) >> 0x8);
+        local_config::byte_config(0, 8, uint8_t(env_box_pos.Y()&0x0F));
+
+        local_config::byte_config(0, 10, light_level);
+
+        local_config::save_config();
+    }
+    return true;
 }
 
 void slideshow_menuconfig_mode(){
@@ -260,7 +327,7 @@ void slideshow_menuconfig_mode(){
                     break;
                 case 5:
                     delay(300);
-                    turn_on_bedroom_light = ! turn_on_bedroom_light;
+                    bedroom_light = ! bedroom_light;
                     break;
                 case 6:
                     delay(100);
@@ -293,7 +360,7 @@ void slideshow_menuconfig_mode(){
                     break;
                 case 5:
                     delay(300);
-                    turn_on_bedroom_light = ! turn_on_bedroom_light;
+                    bedroom_light = ! bedroom_light;
                     break;
                 case 6:
                     delay(100);
@@ -324,7 +391,7 @@ void slideshow_menuconfig_mode(){
             show_MENUCONFIG_LINE(x_option + uint16_t(4)*row_distance, "Env/Pos/Col:",  env_box_pos.Y());
 
             /// show option - show bedroom led light
-            show_MENUCONFIG_LINE(x_option + uint16_t(5)*row_distance, "Light/Enable:", turn_on_bedroom_light?"Y":"N");
+            show_MENUCONFIG_LINE(x_option + uint16_t(5)*row_distance, "Light/Enable:", bedroom_light?"Y":"N");
             show_MENUCONFIG_LINE(x_option + uint16_t(6)*row_distance, "Light/Level:", light_level);
 
             /// show current selection
@@ -337,6 +404,7 @@ void slideshow_menuconfig_mode(){
     return;
     MENUCONFIG_SLIDESHOW_SAFE_EXIT:
     btn_pressed = 0x0;
+    slideshow_local_config_sync('W');
     return;
 }
 
@@ -354,6 +422,8 @@ void slideshow_mode(){
 
     single_screen_color_and_text_line(1, "[slideshow]", 0xFFFF, 0x0, false);
     single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
+
+    slideshow_local_config_sync('R');
 
     basic_io::btn4_attach_interrupt(slideshow_btn4_isr);
     basic_io::btn3_attach_interrupt(slideshow_btn3_isr);
@@ -377,7 +447,7 @@ void slideshow_mode(){
             
             /// set bedroom led light
             #if BASIC_IO == true
-                if(turn_on_bedroom_light){
+                if(bedroom_light){
                     basic_io::led1_analog_ctl(light_level);
                 }else{
                     basic_io::led1_analog_ctl(0);

@@ -22,9 +22,12 @@ void setup(){
             sdcard_init();
         #endif
         #if LOCAL_CONFIG == true
-            config_init();
+            single_screen_color_and_text_line(1, "[config]", 0xFFFF, 0x0, false);
+            single_screen_color_and_text_line(2, "loading...", 0xFFFF, 0x0, true, false);
+            local_config_init();
         #endif
     #endif
+    
     screen_mode = enum_SCREEN_MODE::NORMAL_MODE;
 }
 
