@@ -426,16 +426,6 @@ public:
         for(auto &p:_canvas.vector_image()) p = filled_color;
     }
 
-    // /// @brief Set pixel at <pos> on screen
-    // /// @param pos The position on the screen(unit: pixel) 
-    // /// @param color The color of the text (16bit-color) 
-    // /// @note  X and y in this header file is different with  x and y in FontGlyph.
-    // /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
-    // /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
-    // void set_pixel(POINT<uint16_t> pos, uint16_t color){
-    //     _canvas.set_pixel(point, color);
-    // }
-
     /// @return the height of the canvas
     uint16_t H(){
         return _canvas.H();
