@@ -22,7 +22,7 @@ WIDTH          	:= 220
 HEIGHT         	:= 172
 
 # 
-SDCARD_TARGET	:= /media/ngxxfus/SD_CARD
+SDCARD_TARGET	:= /media/ngxxfus/SDCARD
 
 # Create the output directories if they don't exist
 $(shell mkdir -p $(BIN_DIR) $(RESIZED_IMG_DIR))

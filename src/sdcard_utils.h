@@ -122,7 +122,7 @@ namespace sdcard_imgs{
         return img_list.size();
     }
 
-    bool cache_and_insert(CANVAS<uint16_t> &canvas, uint32_t img_index){
+    bool cache_and_insert(CANVAS<uint16_t> &canvas, uint16_t &img_index){
         #if LOG == true
             call("sdcard_imgs::cache_and_insert");
         #endif
@@ -141,8 +141,10 @@ namespace sdcard_imgs{
                     log2ser("sdcard_imgs::cache_and_insert: ", "out of range");
                 #endif
                 canvas.refill(0xFFFF);
-                single_text_line(1, "[Images list]");
+                single_text_line(1, "[Images]");
                 single_text_line(2, "out of range!");
+                img_index = 0;
+                sdcard_imgs::list();
                 return false;
             };
 
