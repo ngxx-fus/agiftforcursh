@@ -33,7 +33,13 @@ p/s: I have modified ```TFT 22 ILI9225``` lib of **nkawu** to add a function for
 |<img src="https://github.com/user-attachments/assets/57a74e81-983f-470a-a947-f26a9358fb0e" alt="demo3" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/a62f6bda-be75-4091-b6ab-8399d77415f5" alt="demo4" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2608c0ca-1dee-4f68-955e-29e6da5038e8" alt="demo5" style="width: 150px;"/>|
 |<img src="https://github.com/user-attachments/assets/c2bfa7ae-f121-4d09-9495-6632ea713d3c" alt="demo6" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/2773fbf3-ce89-427b-8c0d-a0fbfcfe1250" alt="demo7" style="width: 150px;"/>|<img src="https://github.com/user-attachments/assets/543cf145-e043-4f39-9fb5-f373b0661265" alt="demo8" style="width: 150px;"/>|
 
+## Demo Video
+
+[![Watch the video](https://img.youtube.com/vi/72zCZsygvGs/0.jpg)](https://youtu.be/72zCZsygvGs)
+
+
 ## Product Preview
+
 v.3.0
 |    |    |    |
 |:--:|:--:|:--:|
