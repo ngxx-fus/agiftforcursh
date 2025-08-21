@@ -326,7 +326,7 @@ void slideshow_menuconfig_mode(){
                     delay(100);
                     break;
                 case 3:
-                    env_box_pos.X() = num_increase(env_box_pos.X(), 2, 2, 174);
+                    env_box_pos.X() = num_increase(env_box_pos.X(), 2, 2, 200);
                     delay(100);
                     break;
                 case 4:
@@ -359,7 +359,7 @@ void slideshow_menuconfig_mode(){
                     delay(100);
                     break;
                 case 3:
-                    env_box_pos.X() = num_decrease(env_box_pos.X(), 2, 2, 174);
+                    env_box_pos.X() = num_decrease(env_box_pos.X(), 2, 2, 200);
                     delay(100);
                     break;
                 case 4:
