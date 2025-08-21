@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <Arduino.h>
 #include <serial_utils.h>
+#include <general_utils.h>
 #include <mod_libs/TFT_22_ILI9225_MOD.h>
 
 using namespace std;
@@ -371,6 +372,7 @@ public:
     {
         _background_color = filled_value;
         _canvas.resize(h, w, filled_value);
+        // _changed.resize(vector<bool>(w, false), h);
         _canvas_prev.resize(h, w, filled_value);
     }
 
@@ -395,6 +397,11 @@ public:
     /// While x in this header file is row-order-number (start from ZERO), x in FontGlyph 
     /// and tft_screen is col-order-number (start from ZERO). The similar ro y. 
     void show(bool force_show = false){
+        // for(uint16_t c = 0; c < _canvas.W(); ++c)
+        // for(uint16_t r = 0; r < _canvas.H(); ++r){
+        //         _canvas_prev.pixel(r, c) = _canvas.pixel(r, c);
+        //         tft.drawPixel(c, r, _canvas.pixel(r, c));
+        //     }  
         if(force_show)
             for(uint16_t r = 0; r < _canvas.H(); ++r)
                 for(uint16_t c = 0; c < _canvas.W(); ++c){
@@ -940,13 +947,13 @@ void reserved_feature_mode(){
 /// @brief show humid and temp box (for slide show mode)
 void show_humid_temp_box(POINT<> pos, float humid, float temp, uint16_t background_color = 0x0, uint16_t text_color = 0xFFFF){
     /// insert background
-    canvas.insert_rectangle(pos, 120, 43, background_color, true, background_color);
-    /// insert humid/
-    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+5), "Humid: ", text_color);
-    canvas.insert_text(POINT<>(pos.X()+16, pos.Y()+70), String(humid), text_color);
-    /// insert temp
-    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+5), "Temp: ", text_color);
-    canvas.insert_text(POINT<>(pos.X()+36, pos.Y()+70), String(temp), text_color);
+    canvas.insert_rectangle(pos, 130, 21, background_color, true, background_color);
+    /// insert humid
+    canvas.insert_text(
+        POINT<>(pos.X()+16, pos.Y()+5), 
+        concatenate(String(temp), "oC ", String(humid), "% "), 
+        text_color
+    );
 }
 
 void single_text_line(uint16_t line, String text, uint16_t color = 0x0, uint16_t text_col = 5, uint16_t line_distance = 23, bool text_wrap = false){
