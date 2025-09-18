@@ -1,0 +1,15 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/main.h: In function 'mainInit':
+/home/fus/Documents/agiftforcrush/include/main.h:18:16: error: passing argument 1 of 'tftInitial' from incompatible pointer type [-Wincompatible-pointer-types]
+   18 |     tftInitial(&tft);
+      |                ^~~~
+      |                |
+      |                tftInfo_t **
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:6:
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:93:29: note: expected 'tftInfo_t *' but argument is of type 'tftInfo_t **'
+   93 | void tftInitial(tftInfo_t * tft);
+      |                 ~~~~~~~~~~~~^~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

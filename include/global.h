@@ -22,6 +22,12 @@
 #define LED_YELLOW_PIN          26
 #define LED_WHITE_PIN           27
 
+#define TFT_PIN_CLK             14
+#define TFT_PIN_MOSI            13
+#define TFT_PIN_CS              15
+#define TFT_PIN_RS              4
+#define TFT_PIN_RST             2
+
 /// HELPERS ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "espidf-helper.h"

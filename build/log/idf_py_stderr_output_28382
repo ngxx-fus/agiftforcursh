@@ -1,0 +1,32 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftCtrlWrite':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:44:5: error: implicit declaration of function 'tftSetSPICS'; did you mean 'tftSetCS'? [-Wimplicit-function-declaration]
+   44 |     tftSetSPICS(tft,    LOW);
+      |     ^~~~~~~~~~~
+      |     tftSetCS
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+In file included from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/main.h: In function 'mainInit':
+/home/fus/Documents/agiftforcrush/include/main.h:20:5: error: implicit declaration of function 'tftInitial' [-Wimplicit-function-declaration]
+   20 |     tftInitial(&tftSPI);
+      |     ^~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c: In function 'app_main':
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:11:5: error: implicit declaration of function 'tftEnterStandby' [-Wimplicit-function-declaration]
+   11 |     tftEnterStandby(tftSPI);
+      |     ^~~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:13:5: error: implicit declaration of function 'tftExitStandby' [-Wimplicit-function-declaration]
+   13 |     tftExitStandby(tftSPI);
+      |     ^~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:17:23: error: passing argument 1 of 'tftFillScreen' from incompatible pointer type [-Wincompatible-pointer-types]
+   17 |         tftFillScreen(tftSPI, colorTable[(var = (var+1) % 40)].value);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t *
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:6:
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:129:32: note: expected 'tftInfo_t *' but argument is of type 'spiDevice_t *'
+  129 | void tftFillScreen(tftInfo_t * tft, color_t color);
+      |                    ~~~~~~~~~~~~^~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

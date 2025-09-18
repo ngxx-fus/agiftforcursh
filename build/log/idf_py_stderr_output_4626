@@ -1,0 +1,66 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h:55:9: error: unknown type name 'spiDevice_t'
+   55 |         spiDevice_t* dev;   /// SPI device (store clk, miso, mosi, cs)
+      |         ^~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h: In function 'createTFTScreen':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h:117:21: error: assignment to 'int *' from incompatible pointer type 'spiDevice_t *' [-Wincompatible-pointer-types]
+  117 |         (*tft)->dev = createNewTFTSPIDev(clk, mosi, miso, cs, clkFreq, clkDutyCycle);
+      |                     ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftSendCommand':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:23:24: error: passing argument 1 of 'spiSendWord' from incompatible pointer type [-Wincompatible-pointer-types]
+   23 |         spiSendWord(tft->dev, cmd);
+      |                     ~~~^~~~~
+      |                        |
+      |                        int *
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:70:
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:120:32: note: expected 'spiDevice_t *' but argument is of type 'int *'
+  120 | void spiSendWord(spiDevice_t * dev, word_t data16);
+      |                  ~~~~~~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftSendData':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:34:24: error: passing argument 1 of 'spiSendWord' from incompatible pointer type [-Wincompatible-pointer-types]
+   34 |         spiSendWord(tft->dev, data);
+      |                     ~~~^~~~~
+      |                        |
+      |                        int *
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:120:32: note: expected 'spiDevice_t *' but argument is of type 'int *'
+  120 | void spiSendWord(spiDevice_t * dev, word_t data16);
+      |                  ~~~~~~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftCtrlWrite':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:44:5: error: implicit declaration of function 'tftSetSPICS'; did you mean 'tftSetCS'? [-Wimplicit-function-declaration]
+   44 |     tftSetSPICS(tft,    LOW);
+      |     ^~~~~~~~~~~
+      |     tftSetCS
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:6,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:55:9: error: unknown type name 'spiDevice_t'
+   55 |         spiDevice_t* dev;   /// SPI device (store clk, miso, mosi, cs)
+      |         ^~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h: In function 'createTFTScreen':
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:117:21: error: assignment to 'int *' from incompatible pointer type 'spiDevice_t *' [-Wincompatible-pointer-types]
+  117 |         (*tft)->dev = createNewTFTSPIDev(clk, mosi, miso, cs, clkFreq, clkDutyCycle);
+      |                     ^
+/home/fus/Documents/agiftforcrush/include/main.h: In function 'mainInit':
+/home/fus/Documents/agiftforcrush/include/main.h:20:5: error: implicit declaration of function 'tftInitial' [-Wimplicit-function-declaration]
+   20 |     tftInitial(&tftSPI);
+      |     ^~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c: In function 'app_main':
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:11:5: error: implicit declaration of function 'tftEnterStandby' [-Wimplicit-function-declaration]
+   11 |     tftEnterStandby(tftSPI);
+      |     ^~~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:13:5: error: implicit declaration of function 'tftExitStandby' [-Wimplicit-function-declaration]
+   13 |     tftExitStandby(tftSPI);
+      |     ^~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:17:23: error: passing argument 1 of 'tftFillScreen' from incompatible pointer type [-Wincompatible-pointer-types]
+   17 |         tftFillScreen(tftSPI, colorTable[(var = (var+1) % 40)].value);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t *
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:127:32: note: expected 'tftInfo_t *' but argument is of type 'spiDevice_t *'
+  127 | void tftFillScreen(tftInfo_t * tft, color_t color);
+      |                    ~~~~~~~~~~~~^~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

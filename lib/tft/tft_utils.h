@@ -51,6 +51,7 @@
 #define TFT_CMD_MODE                    0x0
 #define TFT_DATA_MODE                   0x1
 
+// autoincrement modes (register ILI9225_ENTRY_MODE, bit 5..3 )
 enum autoIncMode_t { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown, TopDown_R2L, L2R_TopDown, TopDown_L2R };
 
 /* RGB 16-bit color table definition (RG565) */

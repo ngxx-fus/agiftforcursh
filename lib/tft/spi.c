@@ -1,5 +1,7 @@
 #include "spi.h"
 
+#ifdef __SPI_H__
+
 spiDevice_t * createNewTFTSPIDev(pin_t CLK, pin_t MOSI, pin_t MISO, pin_t CS, qword_t clkFreq, byte_t  clkDutyCycle){
     spiDevice_t* dev = (spiDevice_t*)malloc(sizeof(spiDevice_t));
     dev->CLK = __is_positive(CLK)?CLK:SPI_UNUSED;
@@ -59,3 +61,5 @@ void spiSendWord(spiDevice_t * dev, word_t data16){
     }
     // __exit("spiSendWord()");
 }
+
+#endif

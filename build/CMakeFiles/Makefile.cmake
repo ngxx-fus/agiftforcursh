@@ -218,7 +218,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/fus/.fus/esp-idf/tools/kconfig_new/confgen.py"
   "/home/fus/.fus/esp-idf/tools/kconfig_new/config.env.in"
   "/home/fus/Documents/agiftforcrush/.git/HEAD"
-  "/home/fus/Documents/agiftforcrush/.git/refs/heads/master"
+  "/home/fus/Documents/agiftforcrush/.git/refs/heads/dev-using-clang"
   "/home/fus/Documents/agiftforcrush/CMakeLists.txt"
   "CMakeFiles/4.1.0/CMakeASMCompiler.cmake"
   "CMakeFiles/4.1.0/CMakeCCompiler.cmake"

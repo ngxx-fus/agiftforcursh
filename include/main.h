@@ -6,20 +6,19 @@
 #include "../lib/tft/tft.h"
 #include "../lib/ctrl/ctrl.h"
 
-extern spiDevice_t* tftSPI;
+// extern spiDevice_t* tftSPI;
+extern tftInfo_t * tft;
 
 /// INIT //////////////////////////////////////////////////////////////////////////////////////////
 
 void mainInit(){
     __entry("mainInit()");
-    esp_log_level_set("spi_master", ESP_LOG_VERBOSE);
     systemStatus __set_flag64(SYS_RUNNING);
-    ledBlink(__mask64(LED_YELLOW_PIN), 100, 0);
     buttonAndLEDInit();
-    ledBlink(__mask64(LED_YELLOW_PIN), 100, 0);
-    tftInitial(&tftSPI);
-    ledBlink(__mask64(LED_YELLOW_PIN), 100, 0);
-    // tftFillScreen(COLOR_SKYBLUE);
+    ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
+    createTFTScreen(&tft, TFT_PIN_CLK, TFT_PIN_MOSI, -1, TFT_PIN_CS, TFT_PIN_RS, TFT_PIN_RST, 1000000ULL, 50);
+    ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
+    tftFillScreen(tft, COLOR_BLACK);
     __exit("mainInit()");
 }
 

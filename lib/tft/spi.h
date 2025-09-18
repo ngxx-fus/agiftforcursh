@@ -1,4 +1,5 @@
-#ifndef __SPI_H__
+#if !defined(__SPI_H__) && \
+    __SPI_DRIVER_TYPE__ == __BIT_BANGING__
 #define __SPI_H__
 
 /// HEADERS ///////////////////////////////////////////////////////////////////////////////////////
@@ -90,9 +91,9 @@ static inline void spiEndTransaction(spiDevice_t * spiDev){
     }
 }
 
-#define spiSetCLK(dev, level) gpioSetLevel(__clk(dev), level)
-#define spiSetMOSI(dev, level) gpioSetLevel(__mosi(dev), level)
-#define spiSetCS(dev, level) gpioSetLevel(__cs(dev), level)
+#define spiSetCLK(dev, level)   gpioSetLevel(__clk(dev), level)
+#define spiSetMOSI(dev, level)  gpioSetLevel(__mosi(dev), level)
+#define spiSetCS(dev, level)    gpioSetLevel(__cs(dev), level)
 
 /// SPI DRIVER ////////////////////////////////////////////////////////////////////////////////////
 

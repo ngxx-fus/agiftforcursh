@@ -124,7 +124,7 @@ typedef uint64_t flag64_t;
     #include "hal/gpio_ll.h"
     #include "soc/gpio_struct.h"
 
-    /// Set level of output
+    /// Set ouput of GPIO
     static inline void gpioSetLevel(gpio_num_t gpio, bool level) {
         if (gpio < 32) {
             if (level) {
