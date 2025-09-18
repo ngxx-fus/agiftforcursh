@@ -1,0 +1,31 @@
+{
+    "files.associations": {
+        "tft.h": "c",
+        "stdint.h": "c",
+        "spi_master.h": "c",
+        "gpio.h": "c",
+        "gpio_ll.h": "c",
+        "esp_rom_sys.h": "c",
+        "global.h": "c",
+        "ctrl.h": "c",
+        "random": "c",
+        "gpio_struct.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "span": "c",
+        "chrono": "c",
+        "deque": "c",
+        "list": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "text_encoding": "c",
+        "regex": "c",
+        "freertos.h": "c",
+        "task.h": "c",
+        "system_error": "c"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
+}

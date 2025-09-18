@@ -1,0 +1,48 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftInitial':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:61:23: error: passing argument 1 of 'spiEndTransaction' from incompatible pointer type [-Wincompatible-pointer-types]
+   61 |     spiEndTransaction(tftSPI);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t **
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:22,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/tft.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:82:52: note: expected 'spiDevice_t *' but argument is of type 'spiDevice_t **'
+   82 | static inline void spiEndTransaction(spiDevice_t * spiDev){
+      |                                      ~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:72:23: error: passing argument 1 of 'spiEndTransaction' from incompatible pointer type [-Wincompatible-pointer-types]
+   72 |     spiEndTransaction(tftSPI);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t **
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:82:52: note: expected 'spiDevice_t *' but argument is of type 'spiDevice_t **'
+   82 | static inline void spiEndTransaction(spiDevice_t * spiDev){
+      |                                      ~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:90:23: error: passing argument 1 of 'spiEndTransaction' from incompatible pointer type [-Wincompatible-pointer-types]
+   90 |     spiEndTransaction(tftSPI);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t **
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:82:52: note: expected 'spiDevice_t *' but argument is of type 'spiDevice_t **'
+   82 | static inline void spiEndTransaction(spiDevice_t * spiDev){
+      |                                      ~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:105:23: error: passing argument 1 of 'spiEndTransaction' from incompatible pointer type [-Wincompatible-pointer-types]
+  105 |     spiEndTransaction(tftSPI);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t **
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:82:52: note: expected 'spiDevice_t *' but argument is of type 'spiDevice_t **'
+   82 | static inline void spiEndTransaction(spiDevice_t * spiDev){
+      |                                      ~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:120:23: error: passing argument 1 of 'spiEndTransaction' from incompatible pointer type [-Wincompatible-pointer-types]
+  120 |     spiEndTransaction(tftSPI);
+      |                       ^~~~~~
+      |                       |
+      |                       spiDevice_t **
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:82:52: note: expected 'spiDevice_t *' but argument is of type 'spiDevice_t **'
+   82 | static inline void spiEndTransaction(spiDevice_t * spiDev){
+      |                                      ~~~~~~~~~~~~~~^~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

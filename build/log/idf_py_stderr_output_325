@@ -1,0 +1,12 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftFillScreen':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:184:53: error: 'i' undeclared (first use in this function)
+  184 |     tftCtrlWrite(tftSPI, ILI9225_RAM_ADDR_SET1, (15*i)%70);
+      |                                                     ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:184:53: note: each undeclared identifier is reported only once for each function it appears in
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:174:14: warning: unused variable 'total' [-Wunused-variable]
+  174 |     uint32_t total = ILI9225_LCD_WIDTH * ILI9225_LCD_HEIGHT;
+      |              ^~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

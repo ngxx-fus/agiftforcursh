@@ -1,0 +1,18 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:206:3: error: conflicting types for 'colorTable_t'; have 'struct <anonymous>'
+  206 | } colorTable_t;
+      |   ^~~~~~~~~~~~
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h:42:3: note: previous declaration of 'colorTable_t' with type 'colorTable_t'
+   42 | } colorTable_t;
+      |   ^~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:208:20: error: conflicting types for 'colorTable'; have 'const colorTable_t[40]'
+  208 | const colorTable_t colorTable[40] = {
+      |                    ^~~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h:44:27: note: previous declaration of 'colorTable' with type 'const colorTable_t[40]'
+   44 | extern const colorTable_t colorTable[40];
+      |                           ^~~~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

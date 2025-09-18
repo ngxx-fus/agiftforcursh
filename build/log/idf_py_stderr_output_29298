@@ -1,0 +1,22 @@
+Command: make -j 10 flash
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftReset':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:49:39: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+   49 | void tftInitial(spiDevice_t ** tftSPI){
+      |                                       ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:144:1: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+  144 | {
+      | ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:151:1: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+  151 | {
+      | ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:160:1: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+  160 | {
+      | ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:168:1: error: expected '=', ',', ';', 'asm' or '__attribute__' before '{' token
+  168 | {
+      | ^
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:186: error: expected '{' at end of input
+make[3]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make[1]: *** [CMakeFiles/Makefile2:3007: CMakeFiles/flash.dir/rule] Error 2
+make: *** [Makefile:208: flash] Error 2

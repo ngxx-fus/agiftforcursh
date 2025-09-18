@@ -1,0 +1,34 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/main.h:3:8: error: unknown type name 'spiDevice_t'
+    3 | extern spiDevice_t* tftSPI;
+      |        ^~~~~~~~~~~
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:5:
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:33:21: error: conflicting types for 'tftSPI'; have 'spiDevice_t *'
+   33 | extern spiDevice_t* tftSPI;
+      |                     ^~~~~~
+/home/fus/Documents/agiftforcrush/include/main.h:3:21: note: previous declaration of 'tftSPI' with type 'int *'
+    3 | extern spiDevice_t* tftSPI;
+      |                     ^~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:4:17: error: conflicting types for 'tftSPI'; have 'spiDevice_t *'
+    4 | spiDevice_t*    tftSPI              = NULL;
+      |                 ^~~~~~
+/home/fus/Documents/agiftforcrush/include/main.h:3:21: note: previous declaration of 'tftSPI' with type 'int *'
+    3 | extern spiDevice_t* tftSPI;
+      |                     ^~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c: In function 'app_main':
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:11:5: error: too few arguments to function 'tftEnterStandby'; expected 1, have 0
+   11 |     tftEnterStandby();
+      |     ^~~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:40:6: note: declared here
+   40 | void tftEnterStandby(spiDevice_t * tftSPI);
+      |      ^~~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:13:5: error: too few arguments to function 'tftExitStandby'; expected 1, have 0
+   13 |     tftExitStandby();
+      |     ^~~~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:41:6: note: declared here
+   41 | void tftExitStandby(spiDevice_t * tftSPI);
+      |      ^~~~~~~~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:107: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

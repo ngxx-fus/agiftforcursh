@@ -1,0 +1,24 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/spi.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c: In function 'spiSendWord':
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:50:60: error: 'data8' undeclared (first use in this function); did you mean 'data16'?
+   50 |         __tag_log("[spiSendByte]", "Sending [%d]", spiBool(data8 & mask));
+      |                                                            ^~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:23:28: note: in definition of macro 'spiBool'
+   23 | #define spiBool(x)       ((x)?(1):(0))
+      |                            ^
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:50:9: note: in expansion of macro '__tag_log'
+   50 |         __tag_log("[spiSendByte]", "Sending [%d]", spiBool(data8 & mask));
+      |         ^~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:50:60: note: each undeclared identifier is reported only once for each function it appears in
+   50 |         __tag_log("[spiSendByte]", "Sending [%d]", spiBool(data8 & mask));
+      |                                                            ^~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/spi.h:23:28: note: in definition of macro 'spiBool'
+   23 | #define spiBool(x)       ((x)?(1):(0))
+      |                            ^
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:50:9: note: in expansion of macro '__tag_log'
+   50 |         __tag_log("[spiSendByte]", "Sending [%d]", spiBool(data8 & mask));
+      |         ^~~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:93: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/spi.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

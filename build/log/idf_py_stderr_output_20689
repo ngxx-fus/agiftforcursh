@@ -1,0 +1,14 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/../../include/global.h:27,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:4,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/tft.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftInitial':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:79:19: error: implicit declaration of function '_' [-Wimplicit-function-declaration]
+   79 |     microSecDelay(_(40));
+      |                   ^
+/home/fus/Documents/agiftforcrush/lib/tft/../../include/espidf-helper.h:114:54: note: in definition of macro 'microSecDelay'
+  114 |         #define microSecDelay(usec) esp_rom_delay_us(usec);
+      |                                                      ^~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

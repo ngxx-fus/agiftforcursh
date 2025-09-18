@@ -1,0 +1,29 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c: In function 'spiSendByte':
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:42:1: error: control reaches end of non-void function [-Werror=return-type]
+   42 | }
+      | ^
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c: In function 'spiSendWord':
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:53:1: error: control reaches end of non-void function [-Werror=return-type]
+   53 | }
+      | ^
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/spi.h:12,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/spi.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c: In function 'createNewTFTSPIDev':
+/home/fus/Documents/agiftforcrush/lib/tft/../../include/espidf-helper.h:59:37: error: 'outPinMask' is used uninitialized [-Werror=uninitialized]
+   59 | #define __set_flag64(flagNum)       |=  __mask64(flagNum)
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:13:16: note: in expansion of macro '__set_flag64'
+   13 |     outPinMask __set_flag64(dev->CLK);
+      |                ^~~~~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/spi.c:12:14: note: 'outPinMask' was declared here
+   12 |     uint64_t outPinMask;
+      |              ^~~~~~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftInitial':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:51:9: warning: unsigned conversion from 'int' to 'byte_t' {aka 'unsigned char'} changes value from '1000000' to '64' [-Woverflow]
+   51 |         1000000
+      |         ^~~~~~~
+cc1: some warnings being treated as errors
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:93: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/spi.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

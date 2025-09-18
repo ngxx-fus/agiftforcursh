@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/fus/.fus/esp-idf/components/**",
+                "/home/fus/.fus/esp-idf/components/xtensa/include/**",
+                "/home/fus/.fus/esp-idf/components/esp_common/include**",
+                "/home/fus/.fus/esp-idf/components/esp_timer/include/**",
+                "/home/fus/.fus/esp-idf/components/esp_driver_spi/include/**",
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}

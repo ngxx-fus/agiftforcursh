@@ -1,0 +1,17 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.c:1:
+/home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.h:8:10: fatal error: FreeRTOS.h: No such file or directory
+    8 | #include "FreeRTOS.h"
+      |          ^~~~~~~~~~~~
+compilation terminated.
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:107: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/ctrl/ctrl.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:3,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:8:10: fatal error: FreeRTOS.h: No such file or directory
+    8 | #include "FreeRTOS.h"
+      |          ^~~~~~~~~~~~
+compilation terminated.
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

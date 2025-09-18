@@ -1,0 +1,5 @@
+Command: make -j 10 all
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftFillScreen':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:173:14: warning: unused variable 'total' [-Wunused-variable]
+  173 |     uint32_t total = ILI9225_LCD_WIDTH * ILI9225_LCD_HEIGHT;
+      |              ^~~~~
