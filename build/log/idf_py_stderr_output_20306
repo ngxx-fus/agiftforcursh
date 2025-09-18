@@ -1,0 +1,32 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/include/global.h:33,
+                 from /home/fus/Documents/agiftforcrush/include/main.h:1,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c: In function 'app_main':
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:81:109: error: expected expression before ')' token
+   81 |         #define __log(fmt, ...)     ets_printf("[%lld] [log] " fmt "\n", esp_timer_get_time(), ##__VA_ARGS__)
+      |                                                                                                             ^
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:17:9: note: in expansion of macro '__log'
+   17 |         __log("[main_app] Fill background!", );
+      |         ^~~~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:81:109: error: expected expression before ')' token
+   81 |         #define __log(fmt, ...)     ets_printf("[%lld] [log] " fmt "\n", esp_timer_get_time(), ##__VA_ARGS__)
+      |                                                                                                             ^
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:19:9: note: in expansion of macro '__log'
+   19 |         __log("[main_app] Draw line!", );
+      |         ^~~~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:81:109: error: expected expression before ')' token
+   81 |         #define __log(fmt, ...)     ets_printf("[%lld] [log] " fmt "\n", esp_timer_get_time(), ##__VA_ARGS__)
+      |                                                                                                             ^
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:21:9: note: in expansion of macro '__log'
+   21 |         __log("[main_app] Draw circle!", );
+      |         ^~~~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:81:109: error: expected expression before ')' token
+   81 |         #define __log(fmt, ...)     ets_printf("[%lld] [log] " fmt "\n", esp_timer_get_time(), ##__VA_ARGS__)
+      |                                                                                                             ^
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:23:9: note: in expansion of macro '__log'
+   23 |         __log("[main_app] Wait for ir event!", );
+      |         ^~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

@@ -62,4 +62,6 @@ void spiSendWord(spiDevice_t * dev, word_t data16){
     // __exit("spiSendWord()");
 }
 
+
+
 #endif

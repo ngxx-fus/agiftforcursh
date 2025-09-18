@@ -44,12 +44,12 @@ static inline void tftSendData(tftInfo_t * tft, data16_t data)
 
 void tftCtrlWrite(tftInfo_t * tft, command16_t cmd, data16_t data)
 {
-    __entry("tftCtrlWrite(0x%02X, 0x%04X)", cmd, data);
+    // __entry("tftCtrlWrite(0x%02X, 0x%04X)", cmd, data);
     tftSetCS(tft,       LOW);
     tftSendCommand(tft, cmd);
     tftSendData(tft,    data);
     tftSetCS(tft,    HIGH);
-    __exit("tftCtrlWrite()");
+    // __exit("tftCtrlWrite()");
 }
 
 /// TFT ///////////////////////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ void tftExitStandby(tftInfo_t * tft)
 
 void tftFillScreen(tftInfo_t * tft, color_t color)
 {
-    __entry("tftFillScreen(%d)", color);
+    // __entry("tftFillScreen(%d)", color);
     uint32_t total = ILI9225_LCD_WIDTH * ILI9225_LCD_HEIGHT;
     
     tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, 0);
@@ -214,7 +214,110 @@ void tftFillScreen(tftInfo_t * tft, color_t color)
         tftSendData(tft, color);
     }
     tftSetCS(tft, 0x1);
-    __exit("tftFillScreen()");
+    // __exit("tftFillScreen()");
+}
+
+void tftPutPixel(tftInfo_t * tft, xy_t row, xy_t col, color_t color){
+    tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, row);
+    tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET2, col);
+    tftCtrlWrite(tft, ILI9225_GRAM_DATA_REG, color);
+}
+
+
+//// Chat
+
+void tftDrawLine(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1, color_t color)
+{
+    int dx = abs(col1 - col0);
+    int sx = (col0 < col1) ? 1 : -1;
+    int dy = -abs(row1 - row0);
+    int sy = (row0 < row1) ? 1 : -1;
+    int err = dx + dy;
+
+    while (1) {
+        // ghi pixel (row0, col0)
+        // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, row0);
+        // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET2, col0);
+        // tftSendCommand(tft, ILI9225_GRAM_DATA_REG);
+        // tftSendData(tft, color);
+        tftPutPixel(tft, row0, col0, color);
+
+        if (col0 == col1 && row0 == row1) break;
+        int e2 = 2 * err;
+        if (e2 >= dy) { err += dy; col0 += sx; }
+        if (e2 <= dx) { err += dx; row0 += sy; }
+    }
+}
+
+void tftDrawEmptyRect(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1, color_t border_color)
+{
+    tftDrawLine(tft, row0, col0, row0, col1, border_color); // top
+    tftDrawLine(tft, row1, col0, row1, col1, border_color); // bottom
+    tftDrawLine(tft, row0, col0, row1, col0, border_color); // left
+    tftDrawLine(tft, row0, col1, row1, col1, border_color); // right
+}
+
+void tftDrawRect(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1,
+                 color_t border_color, color_t fill_color)
+{
+    for (xy_t r = row0; r <= row1; r++) {
+        tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, r);
+        tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET2, col0);
+        tftSendCommand(tft, ILI9225_GRAM_DATA_REG);
+        for (xy_t c = col0; c <= col1; c++) {
+            if (r == row0 || r == row1 || c == col0 || c == col1)
+                tftSendData(tft, border_color);
+            else
+                tftSendData(tft, fill_color);
+        }
+    }
+}
+
+void tftDrawEmptyCircle(tftInfo_t *tft, xy_t rowO, xy_t colO, xy_t radius, color_t border_color)
+{
+    int f = 1 - radius;
+    int ddF_x = 1;
+    int ddF_y = -2 * radius;
+    int x = 0;
+    int y = radius;
+
+    while (x <= y) {
+        xy_t px[8] = { rowO + y, rowO - y, rowO + y, rowO - y,
+                       rowO + x, rowO - x, rowO + x, rowO - x };
+        xy_t py[8] = { colO + x, colO + x, colO - x, colO - x,
+                       colO + y, colO + y, colO - y, colO - y };
+
+        for (int i = 0; i < 8; i++) {
+            tftPutPixel(tft, px[i], py[i], border_color);
+            // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, px[i]);
+            // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET2, py[i]);
+            // tftSendCommand(tft, ILI9225_GRAM_DATA_REG);
+            // tftSendData(tft, border_color);
+        }
+
+        if (f >= 0) { y--; ddF_y += 2; f += ddF_y; }
+        x++; ddF_x += 2; f += ddF_x;
+    }
+}
+
+void tftDrawCircle(tftInfo_t *tft, xy_t rowO, xy_t colO, xy_t radius,
+                   color_t border_color, color_t fill_color)
+{
+    for (int r = -radius; r <= radius; r++) {
+        for (int c = -radius; c <= radius; c++) {
+            if (r*r + c*c <= radius*radius) {
+                // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET1, rowO + r);
+                // tftCtrlWrite(tft, ILI9225_RAM_ADDR_SET2, colO + c);
+                // tftSendCommand(tft, ILI9225_GRAM_DATA_REG);
+                if (r*r + c*c >= (radius-1)*(radius-1))
+                    tftPutPixel(tft, rowO + r, colO + c, border_color);
+                    // tftSendData(tft, border_color);
+                else
+                    tftPutPixel(tft, rowO + r, colO + c, fill_color);
+                    // tftSendData(tft, fill_color);
+            }
+        }
+    }
 }
 
 

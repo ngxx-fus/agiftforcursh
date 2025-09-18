@@ -112,6 +112,12 @@ void tftFree(tftInfo_t ** tft);
 void tftEnterStandby(tftInfo_t * tft);
 void tftExitStandby(tftInfo_t * tft);
 void tftFillScreen(tftInfo_t * tft, color_t color);
+void tftPutPixel(tftInfo_t * tft, xy_t row, xy_t col, color_t color);
 
+void tftDrawLine(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1, color_t color);
+void tftDrawEmptyRect(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1, color_t border_color);
+void tftDrawRect(tftInfo_t *tft, xy_t row0, xy_t col0, xy_t row1, xy_t col1, color_t border_color, color_t fill_color);
+void tftDrawEmptyCircle(tftInfo_t *tft, xy_t rowO, xy_t colO, xy_t radius, color_t border_color);
+void tftDrawCircle(tftInfo_t *tft, xy_t rowO, xy_t colO, xy_t radius, color_t border_color, color_t fill_color);
 
 #endif 

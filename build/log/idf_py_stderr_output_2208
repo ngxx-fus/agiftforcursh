@@ -1,0 +1,74 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/include/global.h:33,
+                 from /home/fus/Documents/agiftforcrush/include/main.h:1,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/main.h: In function 'mainInit':
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:35:45: error: passing argument 1 of 'ledBlink' makes pointer from integer without a cast [-Wint-conversion]
+   35 |     #define __mask64(i)                     (((uint64_t)1)<< (i))
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             long long unsigned int
+/home/fus/Documents/agiftforcrush/include/main.h:42:14: note: in expansion of macro '__mask64'
+   42 |     ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
+      |              ^~~~~~~~
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:9:
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:41:24: note: expected 'simpUI *' {aka 'struct simpleUserInteractive *'} but argument is of type 'long long unsigned int'
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |               ~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:35:45: error: passing argument 1 of 'ledBlink' makes pointer from integer without a cast [-Wint-conversion]
+   35 |     #define __mask64(i)                     (((uint64_t)1)<< (i))
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             long long unsigned int
+/home/fus/Documents/agiftforcrush/include/main.h:44:14: note: in expansion of macro '__mask64'
+   44 |     ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
+      |              ^~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:41:24: note: expected 'simpUI *' {aka 'struct simpleUserInteractive *'} but argument is of type 'long long unsigned int'
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |               ~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c: In function 'app_main':
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:35:45: error: passing argument 1 of 'ledBlink' makes pointer from integer without a cast [-Wint-conversion]
+   35 |     #define __mask64(i)                     (((uint64_t)1)<< (i))
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             long long unsigned int
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:12:14: note: in expansion of macro '__mask64'
+   12 |     ledBlink(__mask64(LED_YELLOW_PIN), 50, 5);
+      |              ^~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:41:24: note: expected 'simpUI *' {aka 'struct simpleUserInteractive *'} but argument is of type 'long long unsigned int'
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |               ~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:35:45: error: passing argument 1 of 'ledBlink' makes pointer from integer without a cast [-Wint-conversion]
+   35 |     #define __mask64(i)                     (((uint64_t)1)<< (i))
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             long long unsigned int
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:17:18: note: in expansion of macro '__mask64'
+   17 |         ledBlink(__mask64(LED_YELLOW_PIN), 100, 5);
+      |                  ^~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:41:24: note: expected 'simpUI *' {aka 'struct simpleUserInteractive *'} but argument is of type 'long long unsigned int'
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |               ~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/include/espidf-helper.h:35:45: error: passing argument 1 of 'ledBlink' makes pointer from integer without a cast [-Wint-conversion]
+   35 |     #define __mask64(i)                     (((uint64_t)1)<< (i))
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             long long unsigned int
+/home/fus/Documents/agiftforcrush/main/agiftforcrush.c:19:18: note: in expansion of macro '__mask64'
+   19 |         ledBlink(__mask64(LED_YELLOW_PIN), 100, 5);
+      |                  ^~~~~~~~
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:41:24: note: expected 'simpUI *' {aka 'struct simpleUserInteractive *'} but argument is of type 'long long unsigned int'
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |               ~~~~~~~~~^~~
+/home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.c:36:6: error: conflicting types for 'ledBlink'; have 'void(flag64_t,  millisecTime_t,  uint32_t)' {aka 'void(long long unsigned int,  long unsigned int,  long unsigned int)'}
+   36 | void ledBlink(flag64_t ledMask, millisecTime_t msTimeDelay, uint32_t num){
+      |      ^~~~~~~~
+In file included from /home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.c:1:
+/home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.h:41:6: note: previous declaration of 'ledBlink' with type 'void(simpUI *, millisecTime_t,  uint32_t)' {aka 'void(struct simpleUserInteractive *, long unsigned int,  long unsigned int)'}
+   41 | void ledBlink(simpUI * sui,millisecTime_t msTimeDelay, uint32_t num);
+      |      ^~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:107: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/ctrl/ctrl.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

@@ -1,0 +1,22 @@
+Command: make -j 10 flash
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:7,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:15:1: error: expected '{' before 'void'
+   15 | void buttonAndLEDInit();
+      | ^~~~
+/home/fus/Documents/agiftforcrush/include/../lib/ctrl/ctrl.h:15:1: error: two or more data types in declaration specifiers
+In file included from /home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.c:1:
+/home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.h:15:1: error: expected '{' before 'void'
+   15 | void buttonAndLEDInit();
+      | ^~~~
+/home/fus/Documents/agiftforcrush/lib/ctrl/ctrl.h:15:1: error: two or more data types in declaration specifiers
+make[3]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:107: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/ctrl/ctrl.c.obj] Error 1
+make[3]: *** Waiting for unfinished jobs....
+/home/fus/Documents/agiftforcrush/include/main.h: In function 'mainInit':
+/home/fus/Documents/agiftforcrush/include/main.h:17:5: error: implicit declaration of function 'buttonAndLEDInit' [-Wimplicit-function-declaration]
+   17 |     buttonAndLEDInit();
+      |     ^~~~~~~~~~~~~~~~
+make[3]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[2]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make[1]: *** [CMakeFiles/Makefile2:3007: CMakeFiles/flash.dir/rule] Error 2
+make: *** [Makefile:208: flash] Error 2

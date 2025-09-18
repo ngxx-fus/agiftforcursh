@@ -25,7 +25,8 @@
         "regex": "c",
         "freertos.h": "c",
         "task.h": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "espidf-helper.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
