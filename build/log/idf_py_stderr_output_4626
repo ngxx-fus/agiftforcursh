@@ -26,7 +26,7 @@ In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:70:
 /home/fus/Documents/agiftforcrush/lib/tft/spi.h:120:32: note: expected 'spiDevice_t *' but argument is of type 'int *'
   120 | void spiSendWord(spiDevice_t * dev, word_t data16);
       |                  ~~~~~~~~~~~~~~^~~
-/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftCtrlWrite':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftRegisterWrite':
 /home/fus/Documents/agiftforcrush/lib/tft/tft.c:44:5: error: implicit declaration of function 'tftSetSPICS'; did you mean 'tftSetCS'? [-Wimplicit-function-declaration]
    44 |     tftSetSPICS(tft,    LOW);
       |     ^~~~~~~~~~~

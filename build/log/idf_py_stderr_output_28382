@@ -1,5 +1,5 @@
 Command: make -j 10 all
-/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftCtrlWrite':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftRegisterWrite':
 /home/fus/Documents/agiftforcrush/lib/tft/tft.c:44:5: error: implicit declaration of function 'tftSetSPICS'; did you mean 'tftSetCS'? [-Wimplicit-function-declaration]
    44 |     tftSetSPICS(tft,    LOW);
       |     ^~~~~~~~~~~

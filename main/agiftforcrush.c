@@ -21,7 +21,7 @@ void app_main(void)
         __log("[main_app] Draw circle!");
         tftDrawEmptyCircle(tft, 70, 100, 50, colorTable[(var+2) % 40].value);
         __log("[main_app] Wait for ir event!");
-        while(!(btnStatus __has_flag64(NEXT_IMG)))vTaskDelay(1);
+        while(!(btnStatus __has_flag64(NEXT_IMG))) vTaskDelay(1);
         btnStatus __clr_flag64(NEXT_IMG);
         __log("[main_app] Received an ir event!");
         vTaskDelay(1);

@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "agiftforcrush",
-    "project_version":    "2bb3dde-dirty",
+    "project_version":    "625e179-dirty",
     "project_path":       "/home/fus/Documents/agiftforcrush",
     "idf_path":           "/home/fus/.fus/esp-idf",
     "build_dir":          "/home/fus/Documents/agiftforcrush/build",

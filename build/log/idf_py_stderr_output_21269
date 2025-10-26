@@ -1,0 +1,50 @@
+Command: make -j 10 all
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.c:1:
+/home/fus/Documents/agiftforcrush/lib/tft/tft.h:75:9: error: unknown type name 'spi_device_handle_t'
+   75 |         spi_device_handle_t handle;
+      |         ^~~~~~~~~~~~~~~~~~~
+In file included from /home/fus/.fus/esp-idf/components/esp_timer/include/esp_timer.h:38,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/../../include/espidf-helper.h:72,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/../../include/global.h:33,
+                 from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:4:
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftHWSPIInit':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:43:59: error: passing argument 3 of 'spi_bus_add_device' from incompatible pointer type [-Wincompatible-pointer-types]
+   43 |     ESP_ERROR_CHECK(spi_bus_add_device(LCD_HOST, &devcfg, &(tft->handle)));
+      |                                                           ^~~~~~~~~~~~~~
+      |                                                           |
+      |                                                           int *
+/home/fus/.fus/esp-idf/components/esp_common/include/esp_err.h:116:30: note: in definition of macro 'ESP_ERROR_CHECK'
+  116 |         esp_err_t err_rc_ = (x);                                        \
+      |                              ^
+In file included from /home/fus/Documents/agiftforcrush/lib/tft/tft.h:83:
+/home/fus/.fus/esp-idf/components/esp_driver_spi/include/driver/spi_master.h:190:127: note: expected 'struct spi_device_t **' but argument is of type 'int *'
+  190 | esp_err_t spi_bus_add_device(spi_host_device_t host_id, const spi_device_interface_config_t *dev_config, spi_device_handle_t *handle);
+      |                                                                                                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftSendCommand':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:63:33: error: passing argument 1 of 'spi_device_transmit' makes pointer from integer without a cast [-Wint-conversion]
+   63 |         spi_device_transmit((tft->handle), &t);
+      |                             ~~~~^~~~~~~~~
+      |                                 |
+      |                                 int
+/home/fus/.fus/esp-idf/components/esp_driver_spi/include/driver/spi_master.h:262:51: note: expected 'spi_device_handle_t' {aka 'struct spi_device_t *'} but argument is of type 'int'
+  262 | esp_err_t spi_device_transmit(spi_device_handle_t handle, spi_transaction_t *trans_desc);
+      |                               ~~~~~~~~~~~~~~~~~~~~^~~~~~
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c: In function 'tftSendData':
+/home/fus/Documents/agiftforcrush/lib/tft/tft.c:79:33: error: passing argument 1 of 'spi_device_transmit' makes pointer from integer without a cast [-Wint-conversion]
+   79 |         spi_device_transmit((tft->handle), &t);
+      |                             ~~~~^~~~~~~~~
+      |                                 |
+      |                                 int
+/home/fus/.fus/esp-idf/components/esp_driver_spi/include/driver/spi_master.h:262:51: note: expected 'spi_device_handle_t' {aka 'struct spi_device_t *'} but argument is of type 'int'
+  262 | esp_err_t spi_device_transmit(spi_device_handle_t handle, spi_transaction_t *trans_desc);
+      |                               ~~~~~~~~~~~~~~~~~~~~^~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:79: esp-idf/main/CMakeFiles/__idf_main.dir/__/lib/tft/tft.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+In file included from /home/fus/Documents/agiftforcrush/include/main.h:8,
+                 from /home/fus/Documents/agiftforcrush/main/agiftforcrush.c:1:
+/home/fus/Documents/agiftforcrush/include/../lib/tft/tft.h:75:9: error: unknown type name 'spi_device_handle_t'
+   75 |         spi_device_handle_t handle;
+      |         ^~~~~~~~~~~~~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:121: esp-idf/main/CMakeFiles/__idf_main.dir/agiftforcrush.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7295: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

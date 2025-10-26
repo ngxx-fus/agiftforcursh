@@ -43,7 +43,14 @@ void mainInit(){
     );
     attachISF(sui, BTN0_PIN, isr0);
     ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
-    createTFTScreen(&tft, TFT_PIN_CLK, TFT_PIN_MOSI, -1, TFT_PIN_CS, TFT_PIN_RS, TFT_PIN_RST, 1000000ULL, 50);
+    createTFTScreen(
+        &tft, 
+        TFT_PIN_CLK, TFT_PIN_MOSI, -1, TFT_PIN_CS, 
+        TFT_PIN_RS, TFT_PIN_RST, 10ULL, 50
+        #if __SPI_DRIVER_TYPE__ == __HARDWARE__
+        , 2, SPI2_HOST
+        #endif
+    );
     ledBlink(__mask64(LED_YELLOW_PIN), 10, 5);
     tftFillScreen(tft, COLOR_BLACK);
     __exit("mainInit()");
